@@ -507,3 +507,19 @@ The resulting response:
 |
 |===
 
+== Release
+
+Release is done via the Maven Release Plugin:
+
+`mvn release:prepare`
+
+and
+
+`mvn release:perform`
+
+Finally, push the local commits and the tag to remote.
+
+[NOTE]
+====
+Before releasing, run `export GPG_TTY=$(tty)`
+====
