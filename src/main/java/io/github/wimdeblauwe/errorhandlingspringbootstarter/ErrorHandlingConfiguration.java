@@ -3,6 +3,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.ObjectOptimisticLockingFailureApiExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.SpringSecurityApiExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.SpringValidationApiExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.TypeMismatchApiExceptionHandler;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -31,6 +32,11 @@ public class ErrorHandlingConfiguration {
     @Bean
     public FallbackApiExceptionHandler defaultHandler(ErrorHandlingProperties properties) {
         return new DefaultFallbackApiExceptionHandler(properties);
+    }
+
+    @Bean
+    public TypeMismatchApiExceptionHandler typeMismatchApiExceptionHandler(ErrorHandlingProperties properties) {
+        return new TypeMismatchApiExceptionHandler(properties);
     }
 
     @Bean
