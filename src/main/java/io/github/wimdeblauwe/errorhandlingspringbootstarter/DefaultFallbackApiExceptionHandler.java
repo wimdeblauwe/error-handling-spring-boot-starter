@@ -43,13 +43,13 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
         return exception.getMessage();
     }
 
-    private Map<String, String> getFieldResponseErrorProperties(Throwable exception) {
-        Map<String, String> result = new HashMap<>();
+    private Map<String, Object> getFieldResponseErrorProperties(Throwable exception) {
+        Map<String, Object> result = new HashMap<>();
         for (Field field : exception.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(ResponseErrorProperty.class)) {
                 try {
                     field.setAccessible(true);
-                    result.put(getPropertyName(field), String.valueOf(field.get(exception)));
+                    result.put(getPropertyName(field), field.get(exception));
                 } catch (IllegalAccessException e) {
                     LOGGER.error(String.format("Unable to use field result of field %s.%s", exception.getClass().getName(), field.getName()));
                 }
@@ -58,8 +58,8 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
         return result;
     }
 
-    private Map<String, String> getMethodResponseErrorProperties(Throwable exception) {
-        Map<String, String> result = new HashMap<>();
+    private Map<String, Object> getMethodResponseErrorProperties(Throwable exception) {
+        Map<String, Object> result = new HashMap<>();
         Class<? extends Throwable> exceptionClass = exception.getClass();
         for (Method method : exceptionClass.getMethods()) {
             if (method.isAnnotationPresent(ResponseErrorProperty.class)
@@ -69,7 +69,7 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
                     method.setAccessible(true);
 
                     result.put(getPropertyName(exceptionClass, method),
-                               String.valueOf(method.invoke(exception)));
+                               method.invoke(exception));
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     LOGGER.error(String.format("Unable to use method result of method %s.%s", exceptionClass.getName(), method.getName()));
                 }

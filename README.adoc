@@ -119,7 +119,7 @@ Using `error-handling-spring-boot-starter`, this becomes:
 [source,json]
 ----
 {
-  "code": "INVALID_REQUEST",
+  "code": "VALIDATION_FAILED",
   "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
   "fieldErrors": [
     {
@@ -145,7 +145,7 @@ If there would be global errors next to the field related errors, they would app
 [source,json]
 ----
 {
-  "code": "INVALID_REQUEST",
+  "code": "VALIDATION_FAILED",
   "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
   "globalErrors": [
     {
@@ -208,7 +208,7 @@ Then the resulting response for the field errors example will be:
 [source,json]
 ----
 {
-  "code": "INVALID_REQUEST",
+  "code": "VALIDATION_FAILED",
   "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
   "fieldErrors": [
     {
@@ -232,7 +232,7 @@ And for the global errors example:
 [source,json]
 ----
 {
-  "code": "INVALID_REQUEST",
+  "code": "VALIDATION_FAILED",
   "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
   "globalErrors": [
     {
@@ -267,7 +267,7 @@ This results in:
 [source,json]
 ----
 {
-  "code": "INVALID_REQUEST",
+  "code": "VALIDATION_FAILED",
   "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
   "globalErrors": [
     {

@@ -3,7 +3,6 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ public class ApiErrorResponse {
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
-    private final Map<String, String> properties;
+    private final Map<String, Object> properties;
     private final List<ApiFieldError> fieldErrors;
     private final List<ApiGlobalError> globalErrors;
 
@@ -43,7 +42,7 @@ public class ApiErrorResponse {
     }
 
     @JsonAnyGetter
-    public Map<String, String> getProperties() {
+    public Map<String, Object> getProperties() {
         return properties;
     }
 
@@ -55,8 +54,12 @@ public class ApiErrorResponse {
         return globalErrors;
     }
 
-    public void addErrorProperties(Map<String, String> errorProperties) {
+    public void addErrorProperties(Map<String, Object> errorProperties) {
         properties.putAll(errorProperties);
+    }
+
+    public void addErrorProperty(String propertyName, Object propertyValue) {
+        properties.put(propertyName, propertyValue);
     }
 
     public void addFieldError(ApiFieldError fieldError) {

@@ -1,6 +1,9 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.ObjectOptimisticLockingFailureApiExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.SpringSecurityApiExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.SpringValidationApiExceptionHandler;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -11,7 +14,7 @@ import org.springframework.context.annotation.PropertySource;
 import java.util.List;
 
 @Configuration
-@ConditionalOnWebApplication
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @EnableConfigurationProperties(ErrorHandlingProperties.class)
 @ConditionalOnProperty(value = "error.handling.enabled", matchIfMissing = true)
 @PropertySource("classpath:/error-handling-defaults.properties")
@@ -33,5 +36,17 @@ public class ErrorHandlingConfiguration {
     @Bean
     public SpringValidationApiExceptionHandler springValidationApiExceptionHandler(ErrorHandlingProperties properties) {
         return new SpringValidationApiExceptionHandler(properties);
+    }
+
+    @Bean
+    @ConditionalOnClass(name = "org.springframework.security.access.AccessDeniedException")
+    public SpringSecurityApiExceptionHandler springSecurityApiExceptionHandler(ErrorHandlingProperties properties) {
+        return new SpringSecurityApiExceptionHandler(properties);
+    }
+
+    @Bean
+    @ConditionalOnClass(name = "org.springframework.orm.ObjectOptimisticLockingFailureException")
+    public ObjectOptimisticLockingFailureApiExceptionHandler objectOptimisticLockingFailureApiExceptionHandler(ErrorHandlingProperties properties) {
+        return new ObjectOptimisticLockingFailureApiExceptionHandler(properties);
     }
 }
