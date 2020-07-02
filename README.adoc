@@ -1,0 +1,465 @@
+= Error Handling Spring Boot Starter
+:toc: macro
+
+toc::[]
+
+== Goal
+
+The goal of the project is to make it easy to have proper error responses for REST APIs build with Spring Boot.
+
+== Usage
+
+Add the dependency to your project. For Maven:
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.github.wimdeblauwe</groupId>
+    <artifactId>error-handling-spring-boot-starter</artifactId>
+    <version>LATEST_VERSION_HERE</version>
+</dependency>
+----
+
+== What does this bring out-of-the-box?
+
+=== Request body validation errors
+
+Suppose there is a validation error for a request body that looks like this:
+
+[source,java]
+----
+    public static class ExampleRequestBody {
+        @Size(min = 10)
+        private String name;
+        @NotBlank
+        private String favoriteMovie;
+
+        // getters and setters
+    }
+----
+
+When sending a JSON body like this:
+[source,json]
+----
+{
+    "name": "",
+    "favoriteMovie": null
+}
+----
+
+This is the default that Spring Boot gives:
+
+[source,json]
+----
+{
+  "timestamp": "2020-07-02T06:03:16.855+0000",
+  "status": 400,
+  "error": "Bad Request",
+  "errors": [
+    {
+      "codes": [
+        "Size.exampleRequestBody.name",
+        "Size.name",
+        "Size.java.lang.String",
+        "Size"
+      ],
+      "arguments": [
+        {
+          "codes": [
+            "exampleRequestBody.name",
+            "name"
+          ],
+          "arguments": null,
+          "defaultMessage": "name",
+          "code": "name"
+        },
+        2147483647,
+        10
+      ],
+      "defaultMessage": "size must be between 10 and 2147483647",
+      "objectName": "exampleRequestBody",
+      "field": "name",
+      "rejectedValue": "",
+      "bindingFailure": false,
+      "code": "Size"
+    },
+    {
+      "codes": [
+        "NotBlank.exampleRequestBody.favoriteMovie",
+        "NotBlank.favoriteMovie",
+        "NotBlank.java.lang.String",
+        "NotBlank"
+      ],
+      "arguments": [
+        {
+          "codes": [
+            "exampleRequestBody.favoriteMovie",
+            "favoriteMovie"
+          ],
+          "arguments": null,
+          "defaultMessage": "favoriteMovie",
+          "code": "favoriteMovie"
+        }
+      ],
+      "defaultMessage": "must not be blank",
+      "objectName": "exampleRequestBody",
+      "field": "favoriteMovie",
+      "rejectedValue": null,
+      "bindingFailure": false,
+      "code": "NotBlank"
+    }
+  ],
+  "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
+  "path": "/api/exception/invalidbody"
+}
+----
+
+Using `error-handling-spring-boot-starter`, this becomes:
+
+[source,json]
+----
+{
+  "code": "INVALID_REQUEST",
+  "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
+  "fieldErrors": [
+    {
+      "code": "Size",
+      "property": "name",
+      "message": "size must be between 10 and 2147483647",
+      "rejectedValue": ""
+    },
+    {
+      "code": "NotBlank",
+      "property": "favoriteMovie",
+      "message": "must not be blank",
+      "rejectedValue": null
+    }
+  ]
+}
+----
+
+==== Global errors
+
+If there would be global errors next to the field related errors, they would appear under the `globalErrors` property:
+
+[source,json]
+----
+{
+  "code": "INVALID_REQUEST",
+  "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
+  "globalErrors": [
+    {
+      "code": "ValidCustomer",
+      "message": "Invalid customer"
+    },
+    {
+      "code": "ValidCustomer",
+      "message": "UserAlreadyExists"
+    }
+  ]
+}
+----
+
+The `code` and `message` used is based on the annotation that was used for validation:
+
+[source,java]
+----
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = CustomerValidator.class)
+public @interface ValidCustomer {
+    String message() default "Invalid customer";
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
+}
+----
+
+As well as the template that is used in the validator itself:
+
+[source,java]
+----
+public class CustomerValidator implements ConstraintValidator<ValidCustomer, CreateCustomerFormData> {
+    @Override
+    public boolean isValid(CreateCustomerFormData formData, ConstraintValidatorContext context) {
+
+        if(...) {
+            context.buildConstraintViolationWithTemplate("UserAlreadyExists").addConstraintViolation();
+        }
+    }
+}
+----
+
+==== Override codes in field errors and global errors
+
+Using the `error.handling.codes` property in `application.properties`, the used codes can be overridden.
+Suppose you have this:
+
+[source,properties]
+----
+error.handling.codes.NotBlank=NOT_BLANK
+error.handling.codes.Size=BAD_SIZE
+error.handling.codes.ValidCustomer=INVALID_CUSTOMER
+----
+
+Then the resulting response for the field errors example will be:
+
+[source,json]
+----
+{
+  "code": "INVALID_REQUEST",
+  "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
+  "fieldErrors": [
+    {
+      "code": "BAD_SIZE",
+      "property": "name",
+      "message": "size must be between 10 and 2147483647",
+      "rejectedValue": ""
+    },
+    {
+      "code": "NOT_BLANK",
+      "property": "favoriteMovie",
+      "message": "must not be blank",
+      "rejectedValue": null
+    }
+  ]
+}
+----
+
+And for the global errors example:
+
+[source,json]
+----
+{
+  "code": "INVALID_REQUEST",
+  "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
+  "globalErrors": [
+    {
+      "code": "INVALID_CUSTOMER",
+      "message": "Invalid customer"
+    },
+    {
+      "code": "INVALID_CUSTOMER",
+      "message": "UserAlreadyExists"
+    }
+  ]
+}
+----
+
+[NOTE]
+====
+If you want to change the message for the global errors, the default Spring mechanismn to do see keeps working.
+
+So use `{}` to indicate that Spring should search the `messages.properties` file:
+[source,java]
+----
+context.buildConstraintViolationWithTemplate("{UserAlreadyExists}").addConstraintViolation();
+----
+
+Now add the translation to the `messages.properties`:
+[source,properties]
+----
+UserAlreadyExists=The user already exists
+----
+
+This results in:
+[source,json]
+----
+{
+  "code": "INVALID_REQUEST",
+  "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
+  "globalErrors": [
+    {
+      "code": "INVALID_CUSTOMER",
+      "message": "Invalid customer"
+    },
+    {
+      "code": "INVALID_CUSTOMER",
+      "message": "The user already exists"
+    }
+  ]
+}
+----
+
+
+====
+
+=== Custom exceptions
+
+If you define a custom Exception and throw that from a `@RestController` method, then Spring Boot will turn this into a `500 INTERNAL SERVER ERROR` by default. The response status is easily changed by using `@ResponseStatus`:
+
+[source,java]
+----
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(UserId userId) {
+        super(String.format("Could not find user with id %s", userId));
+    }
+}
+----
+
+This is the Spring Boot default response for this:
+
+[source,json]
+----
+{
+  "timestamp": "2020-07-02T06:06:41.400+0000",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Could not find user with id UserId{id=b8285c14-06bd-41db-a4df-724d0d1e590b}",
+  "path": "/api/exception/test"
+}
+----
+
+Using `error-handling-spring-boot-starter`, this becomes:
+
+[source,json]
+----
+{
+  "code": "be.privatedrivers.backend.user.UserNotFoundException",
+  "message": "Could not find user with id UserId{id=a6cd68f2-b305-4b2d-8442-ee1696e6eb8f}"
+}
+----
+
+We can now further enhance the response in 2 ways:
+
+* Set the code to use instead of the full qualified name of the Exception class
+* Add additional fields to enrich the error response
+
+==== Setting the error code
+
+To override the error code, we change the exception class to:
+
+[source,java]
+----
+@ResponseStatus(HttpStatus.NOT_FOUND)
+@ResponseErrorCode("USER_NOT_FOUND") // <.>
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(UserId userId) {
+        super(String.format("Could not find user with id %s", userId));
+    }
+}
+----
+<.> Set the error code that should be used in the response when this Exception is thrown from a `@RestController` method.
+
+The resulting response:
+[source,json]
+----
+{
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id UserId{id=8c7fb13c-0924-47d4-821a-36f73558c898}"
+}
+----
+
+==== Setting the error code via properties
+
+It is also possible to set the error code via `application.properties`.
+
+Suppose some method throws an `com.amazonaws.AmazonClientException`.
+We can't annotate the class with `@ResponseErrorCode` since it is 3rd party code.
+
+To set an error code, add the following to your `application.properties`:
+
+[source,properties]
+----
+error.handling.codes.com.amazonaws.AmazonClientException=CLOUD_PROVIDER_ERROR
+----
+
+The resulting response:
+[source,json]
+----
+{
+  "code": "CLOUD_PROVIDER_ERROR",
+  "message": "Some exception message from Amazon here"
+}
+----
+
+
+==== Adding extra properties in the response
+
+To add extra properties in the error response, you can annotate fields and/or methods on your exception classes with `@ResponseErrorProperty`. For example:
+
+[source,java]
+----
+@ResponseStatus(HttpStatus.NOT_FOUND)
+@ResponseErrorCode("USER_NOT_FOUND")
+public class UserNotFoundException extends RuntimeException {
+
+    private final UserId userId;
+
+    public UserNotFoundException(UserId userId) {
+        super(String.format("Could not find user with id %s", userId));
+        this.userId = userId;
+    }
+
+    @ResponseErrorProperty // <.>
+    public String getUserId() {
+        return userId.asString();
+    }
+}
+----
+<.> Add the result of this method as an extra property in the response
+
+The resulting response:
+[source,json]
+----
+{
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id UserId{id=8c7fb13c-0924-47d4-821a-36f73558c898}",
+  "userId": "8c7fb13c-0924-47d4-821a-36f73558c898"
+}
+----
+
+The `@ResponseErrorProperty` can be used on a method or on a field.
+
+==== Overriding the property name
+
+It is also possible to override the property name that will be used in the response by using the `value` argument of the annotation.
+
+[source,java]
+----
+@ResponseStatus(HttpStatus.NOT_FOUND)
+@ResponseErrorCode("USER_NOT_FOUND")
+public class UserNotFoundException extends RuntimeException {
+
+    ...
+
+    @ResponseErrorProperty("id")
+    public String getUserId() {
+        return userId.asString();
+    }
+}
+----
+
+
+The resulting response:
+[source,json]
+----
+{
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id UserId{id=8c7fb13c-0924-47d4-821a-36f73558c898}",
+  "id": "8c7fb13c-0924-47d4-821a-36f73558c898"
+}
+----
+
+== Properties
+
+
+|===
+|Property |Description|Default
+
+|error.handling.enabled
+|Allows to enable or disable the error handling
+|true
+
+|error.handling.exception-logging
+|Allows to set how the exception should be logged. One of: `NO_LOGGING`, `MESSAGE_ONLY`,
+`WITH_STACKTRACE`
+|WITH_STACKTRACE
+
+|error.handling.codes
+|Allows to set the code that should be used for the full qualified name of an `Exception`
+|
+|===
+
