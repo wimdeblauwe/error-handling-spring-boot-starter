@@ -282,12 +282,56 @@ This results in:
 }
 ----
 
-
 ====
+
+=== Type conversion exceptions
+
+Type conversion exceptions like `MethodArgumentTypeMismatchException` and `TypeMismatchException` will have some extra info about the class that was expected and the value that was rejected:
+
+[source,json]
+----
+{
+  "code": "ARGUMENT_TYPE_MISMATCH",
+  "message": "Failed to convert value of type 'java.lang.String' to required type 'com.example.user.UserId'; nested exception is org.springframework.core.convert.ConversionFailedException: Failed to convert from type [java.lang.String] to type [@org.springframework.web.bind.annotation.PathVariable com.example.user.UserId] for value 'fake_UUID'; nested exception is java.lang.IllegalArgumentException: Invalid UUID string: fake_UUID",
+  "expectedType": "com.example.user.UserId",
+  "property": "userId",
+  "rejectedValue": "fake_UUID"
+}
+----
+
+=== Optimistic locking exceptions
+
+When an `org.springframework.orm.ObjectOptimisticLockingFailureException` is thrown, the resulting response will be something like:
+
+[source,json]
+----
+{
+  "code": "OPTIMISTIC_LOCKING_ERROR",
+  "message": "Object of class [com.example.user.User] with identifier [87518c6b-1ba7-4757-a5d9-46e84c539f43]: optimistic locking failed",
+  "identifier": "87518c6b-1ba7-4757-a5d9-46e84c539f43",
+  "persistentClassName": "com.example.user.User"
+}
+----
+
+=== Spring Security exceptions
+
+If Spring Security is on the classpath, then those exceptions will be handled.
+They will just have a `code` and a `message`.
+
+For example:
+
+[source,json]
+----
+{
+  "code": "ACCESS_DENIED",
+  "message": "Access is denied"
+}
+----
 
 === Custom exceptions
 
-If you define a custom Exception and throw that from a `@RestController` method, then Spring Boot will turn this into a `500 INTERNAL SERVER ERROR` by default. The response status is easily changed by using `@ResponseStatus`:
+If you define a custom Exception and throw that from a `@RestController` method, then Spring Boot will turn this into a `500 INTERNAL SERVER ERROR` by default.
+The response status is easily changed by using `@ResponseStatus`:
 
 [source,java]
 ----
