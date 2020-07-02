@@ -1,7 +1,6 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -13,9 +12,8 @@ import java.util.Map;
 
 import static org.springframework.http.HttpStatus.*;
 
-public class SpringSecurityApiExceptionHandler implements ApiExceptionHandler {
+public class SpringSecurityApiExceptionHandler extends AbstractApiExceptionHandler {
 
-    private final ErrorHandlingProperties properties;
     private static final Map<Class<? extends Exception>, HttpStatus> EXCEPTION_TO_STATUS_MAPPING;
 
     static {
@@ -32,7 +30,7 @@ public class SpringSecurityApiExceptionHandler implements ApiExceptionHandler {
     }
 
     public SpringSecurityApiExceptionHandler(ErrorHandlingProperties properties) {
-        this.properties = properties;
+        super(properties);
     }
 
     @Override
@@ -44,12 +42,7 @@ public class SpringSecurityApiExceptionHandler implements ApiExceptionHandler {
     public ApiErrorResponse handle(Throwable exception) {
         HttpStatus httpStatus = EXCEPTION_TO_STATUS_MAPPING.getOrDefault(exception.getClass(), INTERNAL_SERVER_ERROR);
         return new ApiErrorResponse(httpStatus,
-                                    replaceCodeWithConfiguredOverrideIfPresent(exception.getClass().getName()),
+                                    getErrorCode(exception),
                                     exception.getMessage());
     }
-
-    private String replaceCodeWithConfiguredOverrideIfPresent(String code) {
-        return properties.getCodes().getOrDefault(code, code);
-    }
-
 }

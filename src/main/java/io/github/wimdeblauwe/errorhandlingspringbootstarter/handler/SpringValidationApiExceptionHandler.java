@@ -1,17 +1,18 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiFieldError;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiGlobalError;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
-public class SpringValidationApiExceptionHandler implements ApiExceptionHandler {
-
-    private final ErrorHandlingProperties properties;
+public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHandler {
 
     public SpringValidationApiExceptionHandler(ErrorHandlingProperties properties) {
-        this.properties = properties;
+        super(properties);
     }
 
     @Override
@@ -26,7 +27,7 @@ public class SpringValidationApiExceptionHandler implements ApiExceptionHandler 
         ApiErrorResponse response;
         if (exception instanceof MethodArgumentNotValidException) {
             response = new ApiErrorResponse(HttpStatus.BAD_REQUEST,
-                                            replaceCodeWithConfiguredOverrideIfPresent(exception.getClass().getName()),
+                                            getErrorCode(exception),
                                             getMessage((MethodArgumentNotValidException) exception));
             BindingResult bindingResult = ((MethodArgumentNotValidException) exception).getBindingResult();
             if (bindingResult.hasFieldErrors()) {
@@ -58,9 +59,5 @@ public class SpringValidationApiExceptionHandler implements ApiExceptionHandler 
 
     private String getMessage(MethodArgumentNotValidException exception) {
         return "Validation failed for object='" + exception.getBindingResult().getObjectName() + "'. Error count: " + exception.getBindingResult().getErrorCount();
-    }
-
-    private String replaceCodeWithConfiguredOverrideIfPresent(String code) {
-        return properties.getCodes().getOrDefault(code, code);
     }
 }
