@@ -505,7 +505,7 @@ The resulting response:
 |error.handling.exception-logging
 |Allows to set how the exception should be logged. One of: `NO_LOGGING`, `MESSAGE_ONLY`,
 `WITH_STACKTRACE`
-|WITH_STACKTRACE
+|MESSAGE_ONLY
 
 |error.handling.codes
 |Allows to set the code that should be used for the full qualified name of an `Exception`
