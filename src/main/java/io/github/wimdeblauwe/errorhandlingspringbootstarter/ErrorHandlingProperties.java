@@ -11,9 +11,9 @@ import java.util.Map;
 public class ErrorHandlingProperties {
     private boolean enabled = true;
 
-    private ExceptionLogging exceptionLogging = ExceptionLogging.WITH_STACKTRACE;
+    private ExceptionLogging exceptionLogging = ExceptionLogging.MESSAGE_ONLY;
 
-    private Map<String,String> codes = new HashMap<>();
+    private Map<String, String> codes = new HashMap<>();
 
     public boolean isEnabled() {
         return enabled;
