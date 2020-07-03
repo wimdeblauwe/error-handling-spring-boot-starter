@@ -1,6 +1,8 @@
 = Error Handling Spring Boot Starter
 :toc: macro
 
+image:https://maven-badges.herokuapp.com/maven-central/io.github.wimdeblauwe/error-handling-spring-boot-starter/badge.svg["Maven Central",link="https://search.maven.org/search?q=a:error-handling-spring-boot-starter"]
+
 toc::[]
 
 == Goal
@@ -9,7 +11,8 @@ The goal of the project is to make it easy to have proper error responses for RE
 
 == Usage
 
-Add the dependency to your project. For Maven:
+Add the dependency to your project.
+For Maven:
 
 [source,xml]
 ----
