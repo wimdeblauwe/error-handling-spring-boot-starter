@@ -7,6 +7,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingPropert
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHandler {
@@ -32,7 +33,7 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
             BindingResult bindingResult = ((MethodArgumentNotValidException) exception).getBindingResult();
             if (bindingResult.hasFieldErrors()) {
                 bindingResult.getFieldErrors().stream()
-                             .map(fieldError -> new ApiFieldError(replaceCodeWithConfiguredOverrideIfPresent(fieldError.getCode()),
+                             .map(fieldError -> new ApiFieldError(getCode(fieldError),
                                                                   fieldError.getField(),
                                                                   fieldError.getDefaultMessage(),
                                                                   fieldError.getRejectedValue()))
@@ -55,6 +56,14 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
         }
 
         return response;
+    }
+
+    private String getCode(FieldError fieldError) {
+        String fieldSpecificCode = fieldError.getField() + "." + fieldError.getCode();
+        if (hasConfiguredOverrideForCode(fieldSpecificCode)) {
+            return replaceCodeWithConfiguredOverrideIfPresent(fieldSpecificCode);
+        }
+        return replaceCodeWithConfiguredOverrideIfPresent(fieldError.getCode());
     }
 
     private String getMessage(MethodArgumentNotValidException exception) {

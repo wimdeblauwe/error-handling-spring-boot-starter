@@ -128,16 +128,112 @@ Using `error-handling-spring-boot-starter`, this becomes:
   "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
   "fieldErrors": [
     {
-      "code": "Size",
+      "code": "INVALID_SIZE",
       "property": "name",
       "message": "size must be between 10 and 2147483647",
       "rejectedValue": ""
     },
     {
-      "code": "NotBlank",
+      "code": "REQUIRED_NOT_BLANK",
       "property": "favoriteMovie",
       "message": "must not be blank",
       "rejectedValue": null
+    }
+  ]
+}
+----
+
+==== Override the error code per validation annotation
+
+It is possible to override the default codes that are used for each field error.
+
+You need to use the following:
+
+[source,properties]
+----
+error.handling.codes.Size=SIZE_REQUIREMENT_NOT_MET
+----
+
+So you start with `error.handling.codes` and suffix with the name of the validation annotation used (`@Size` in this example)
+
+[source,json]
+----
+{
+  "code": "VALIDATION_FAILED",
+  "message": "Validation failed for object='exampleRequestBody'. Error count: 2",
+  "fieldErrors": [
+    {
+      "code": "SIZE_REQUIREMENT_NOT_MET", //<.>
+      "property": "name",
+      "message": "size must be between 10 and 2147483647",
+      "rejectedValue": ""
+    },
+    {
+      "code": "REQUIRED_NOT_BLANK",
+      "property": "favoriteMovie",
+      "message": "must not be blank",
+      "rejectedValue": null
+    }
+  ]
+}
+----
+<.> Custom code used for the field error
+
+==== Override the error code for a specific field
+
+It is possible to configure a specific error code that only will be used for a combination of a field with a validation annotation.
+
+Suppose you add a regex to validate password rules:
+
+[source,java]
+----
+public class CreateUserRequestBody {
+    @Pattern(".*{8}")
+    private String password;
+
+    // getters and setters
+}
+----
+
+By default, this error is in the response:
+
+[source,json]
+----
+{
+  "code": "VALIDATION_FAILED",
+  "message": "Validation failed for object='createUserRequestBody'. Error count: 1",
+  "fieldErrors": [
+    {
+      "code": "REGEX_PATTERN_VALIDATION_FAILED",
+      "property": "password",
+      "message": "must match \".*{8}\"",
+      "rejectedValue": ""
+    }
+  ]
+}
+----
+
+If we would use `error.handling.codes.Pattern` for the override, then all `@Pattern` annotations in the whole application would use a different code.
+If we want to only override this for fields that are named `password`, we can use:
+
+[source,properties]
+----
+error.handling.codes.password.Pattern=PASSWORD_COMPLEXITY_REQUIREMENTS_NOT_MET
+----
+
+This results in:
+
+[source,json]
+----
+{
+  "code": "VALIDATION_FAILED",
+  "message": "Validation failed for object='createUserRequestBody'. Error count: 1",
+  "fieldErrors": [
+    {
+      "code": "PASSWORD_COMPLEXITY_REQUIREMENTS_NOT_MET",
+      "property": "password",
+      "message": "must match \".*{8}\"",
+      "rejectedValue": ""
     }
   ]
 }
