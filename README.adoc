@@ -239,6 +239,96 @@ This results in:
 }
 ----
 
+==== Override the error message per validation annotation
+
+It is possible to override the default messages that are used for each field error.
+
+You need to use the following:
+
+[source,properties]
+----
+error.handling.messages.NotBlank=The property should not be blank
+----
+
+So you start with `error.handling.messages` and suffix with the name of the validation annotation used (`@NotBlank` in this example)
+
+[source,json]
+----
+{
+  "code": "VALIDATION_FAILED",
+  "message": "Validation failed for object='exampleRequestBody'. Error count: 1",
+  "fieldErrors": [
+    {
+      "code": "REQUIRED_NOT_BLANK",
+      "property": "name",
+      "message": "The property should not be blank",//<.>
+      "rejectedValue": ""
+    }
+  ]
+}
+----
+<.> Custom message used for the field error
+
+==== Override the error message for a specific field
+
+It is possible to configure a specific error message that only will be used for a combination of a field with a validation annotation.
+
+Suppose you add a regex to validate password rules:
+
+[source,java]
+----
+public class CreateUserRequestBody {
+    @Pattern(".*{8}")
+    private String password;
+
+    // getters and setters
+}
+----
+
+By default, this error is in the response:
+
+[source,json]
+----
+{
+  "code": "VALIDATION_FAILED",
+  "message": "Validation failed for object='createUserRequestBody'. Error count: 1",
+  "fieldErrors": [
+    {
+      "code": "REGEX_PATTERN_VALIDATION_FAILED",
+      "property": "password",
+      "message": "must match \".*{8}\"",
+      "rejectedValue": ""
+    }
+  ]
+}
+----
+
+If we would use `error.handling.messages.Pattern` for the override, then all `@Pattern` annotations in the whole application would use a different message.
+If we want to only override this for fields that are named `password`, we can use:
+
+[source,properties]
+----
+error.handling.messages.password.Pattern=The password complexity rules are not met. A password must be 8 characters minimum.
+----
+
+This results in:
+
+[source,json]
+----
+{
+  "code": "VALIDATION_FAILED",
+  "message": "Validation failed for object='createUserRequestBody'. Error count: 1",
+  "fieldErrors": [
+    {
+      "code": "REGEX_PATTERN_VALIDATION_FAILED",
+      "property": "password",
+      "message": "The password complexity rules are not met. A password must be 8 characters minimum.",
+      "rejectedValue": ""
+    }
+  ]
+}
+----
+
 ==== Global errors
 
 If there would be global errors next to the field related errors, they would appear under the `globalErrors` property:

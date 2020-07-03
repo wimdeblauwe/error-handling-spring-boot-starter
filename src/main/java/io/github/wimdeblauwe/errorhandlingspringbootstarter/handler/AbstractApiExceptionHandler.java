@@ -21,4 +21,12 @@ public abstract class AbstractApiExceptionHandler implements ApiExceptionHandler
     protected boolean hasConfiguredOverrideForCode(String code) {
         return properties.getCodes().containsKey(code);
     }
+
+    protected boolean hasConfiguredOverrideForMessage(String key) {
+        return properties.getMessages().containsKey(key);
+    }
+
+    protected String getOverrideMessage(String key) {
+        return properties.getMessages().get(key);
+    }
 }

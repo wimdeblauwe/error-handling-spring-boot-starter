@@ -15,6 +15,8 @@ public class ErrorHandlingProperties {
 
     private Map<String, String> codes = new HashMap<>();
 
+    private Map<String, String> messages = new HashMap<>();
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -37,6 +39,14 @@ public class ErrorHandlingProperties {
 
     public void setCodes(Map<String, String> codes) {
         this.codes = codes;
+    }
+
+    public Map<String, String> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(Map<String, String> messages) {
+        this.messages = messages;
     }
 
     enum ExceptionLogging {

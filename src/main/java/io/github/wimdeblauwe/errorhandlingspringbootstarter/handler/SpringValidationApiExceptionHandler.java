@@ -35,7 +35,7 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
                 bindingResult.getFieldErrors().stream()
                              .map(fieldError -> new ApiFieldError(getCode(fieldError),
                                                                   fieldError.getField(),
-                                                                  fieldError.getDefaultMessage(),
+                                                                  getMessage(fieldError),
                                                                   fieldError.getRejectedValue()))
                              .forEach(response::addFieldError);
             }
@@ -64,6 +64,17 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
             return replaceCodeWithConfiguredOverrideIfPresent(fieldSpecificCode);
         }
         return replaceCodeWithConfiguredOverrideIfPresent(fieldError.getCode());
+    }
+
+    private String getMessage(FieldError fieldError) {
+        String fieldSpecificKey = fieldError.getField() + "." + fieldError.getCode();
+        if (hasConfiguredOverrideForMessage(fieldSpecificKey)) {
+            return getOverrideMessage(fieldSpecificKey);
+        }
+        if (hasConfiguredOverrideForMessage(fieldError.getCode())) {
+            return getOverrideMessage(fieldError.getCode());
+        }
+        return fieldError.getDefaultMessage();
     }
 
     private String getMessage(MethodArgumentNotValidException exception) {
