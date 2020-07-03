@@ -1,2 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingConfiguration
+org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc=\
+  io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingConfiguration
