@@ -1,5 +1,14 @@
 = Error Handling Spring Boot Starter
 :toc: macro
+:toclevels: 3
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 image:https://travis-ci.org/wimdeblauwe/error-handling-spring-boot-starter.svg?branch=master["Build Status",link="https://travis-ci.org/wimdeblauwe/error-handling-spring-boot-starter"]
 
