@@ -1,5 +1,6 @@
 = Error Handling Spring Boot Starter
 :toc: macro
+:toclevels: 3
 
 ifdef::env-github[]
 :tip-caption: :bulb:
