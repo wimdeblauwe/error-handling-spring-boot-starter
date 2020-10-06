@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHandler {
@@ -43,7 +44,7 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
             if (bindingResult.hasGlobalErrors()) {
                 bindingResult.getGlobalErrors().stream()
                              .map(globalError -> new ApiGlobalError(replaceCodeWithConfiguredOverrideIfPresent(globalError.getCode()),
-                                                                    globalError.getDefaultMessage()))
+                                                                    getMessage(globalError)))
                              .forEach(response::addGlobalError);
             }
         } else if (exception instanceof HttpMessageNotReadableException) {
@@ -75,6 +76,13 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
             return getOverrideMessage(fieldError.getCode());
         }
         return fieldError.getDefaultMessage();
+    }
+
+    private String getMessage(ObjectError objectError) {
+        if (hasConfiguredOverrideForMessage(objectError.getCode())) {
+            return getOverrideMessage(objectError.getCode());
+        }
+        return objectError.getDefaultMessage();
     }
 
     private String getMessage(MethodArgumentNotValidException exception) {
