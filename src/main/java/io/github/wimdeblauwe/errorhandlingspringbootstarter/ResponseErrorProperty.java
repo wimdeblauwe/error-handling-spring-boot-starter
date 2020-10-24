@@ -9,4 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ResponseErrorProperty {
     String value() default "";
+
+    boolean includeIfNull() default false;
 }

@@ -678,6 +678,7 @@ public class UserNotFoundException extends RuntimeException {
 
 
 The resulting response:
+
 [source,json]
 ----
 {
@@ -687,8 +688,44 @@ The resulting response:
 }
 ----
 
-== Properties
+==== Null handling
 
+If a property or method that is annotated with `@ResponseErrorProperty` returns `null`, then the JSON output will not contain the property by default.
+If this is desirable, then use the `includeIfNull` property on the annotation to change this behaviour:
+
+[source,java]
+----
+@ResponseStatus(HttpStatus.NOT_FOUND)
+@ResponseErrorCode("USER_NOT_FOUND")
+public class UserNotFoundException extends RuntimeException {
+
+    private final UserId userId;
+
+    public UserNotFoundException(UserId userId) {
+        super(String.format("Could not find user with id %s", userId));
+        this.userId = userId;
+    }
+
+    @ResponseErrorProperty(includeIfNull=true) // <.>
+    public String getUserId() {
+        return userId.asString();
+    }
+}
+----
+<.> Set the `includeIfNull` setting to `true`
+
+The resulting response assuming the passed in `userId` is `null`:
+
+[source,json]
+----
+{
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id UserId{id=8c7fb13c-0924-47d4-821a-36f73558c898}",
+  "userId": null
+}
+----
+
+== Properties
 
 |===
 |Property |Description|Default

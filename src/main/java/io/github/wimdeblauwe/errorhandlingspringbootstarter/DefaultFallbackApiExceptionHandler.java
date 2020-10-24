@@ -49,7 +49,10 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
             if (field.isAnnotationPresent(ResponseErrorProperty.class)) {
                 try {
                     field.setAccessible(true);
-                    result.put(getPropertyName(field), field.get(exception));
+                    Object value = field.get(exception);
+                    if (value != null || field.getAnnotation(ResponseErrorProperty.class).includeIfNull()) {
+                        result.put(getPropertyName(field), value);
+                    }
                 } catch (IllegalAccessException e) {
                     LOGGER.error(String.format("Unable to use field result of field %s.%s", exception.getClass().getName(), field.getName()));
                 }
@@ -68,8 +71,11 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
                 try {
                     method.setAccessible(true);
 
-                    result.put(getPropertyName(exceptionClass, method),
-                               method.invoke(exception));
+                    Object value = method.invoke(exception);
+                    if (value != null || method.getAnnotation(ResponseErrorProperty.class).includeIfNull()) {
+                        result.put(getPropertyName(exceptionClass, method),
+                                   value);
+                    }
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     LOGGER.error(String.format("Unable to use method result of method %s.%s", exceptionClass.getName(), method.getName()));
                 }
