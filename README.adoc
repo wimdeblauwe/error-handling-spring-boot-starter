@@ -735,13 +735,31 @@ The resulting response assuming the passed in `userId` is `null`:
 |true
 
 |error.handling.exception-logging
-|Allows to set how the exception should be logged. One of: `NO_LOGGING`, `MESSAGE_ONLY`,
+|Allows to set how the exception should be logged.
+One of: `NO_LOGGING`, `MESSAGE_ONLY`,
 `WITH_STACKTRACE`
 |MESSAGE_ONLY
 
 |error.handling.codes
 |Allows to set the code that should be used for the full qualified name of an `Exception`
 |
+
+|error.handling.json-field-names.code
+|The field name that is used to serialize the `code` to JSON.
+|`code`
+
+|error.handling.json-field-names.message
+|The field name that is used to serialize the `message` to JSON.
+|`message`
+
+|error.handling.json-field-names.fieldErrors
+|The field name that is used to serialize the `fieldErrors` to JSON.
+|`fieldErrors`
+
+|error.handling.json-field-names.globalErrors
+|The field name that is used to serialize the `globalErrors` to JSON.
+|`globalErrors`
+
 |===
 
 == Release
