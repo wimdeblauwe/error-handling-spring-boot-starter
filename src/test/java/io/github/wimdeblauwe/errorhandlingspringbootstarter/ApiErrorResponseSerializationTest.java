@@ -1,19 +1,30 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.json.JsonTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
-
+@JsonTest
+@Import(ErrorHandlingProperties.class)
 class ApiErrorResponseSerializationTest {
+
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private ErrorHandlingProperties properties;
 
     @Test
     void testSerialization() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message"));
         assertThatJson(json).and(
                 jsonAssert -> jsonAssert.node("code").isEqualTo("TEST_CODE"),
@@ -25,7 +36,6 @@ class ApiErrorResponseSerializationTest {
 
     @Test
     void testSerializationWithFieldError() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
         response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", "bad"));
         String json = objectMapper.writeValueAsString(response);
@@ -42,7 +52,6 @@ class ApiErrorResponseSerializationTest {
 
     @Test
     void testSerializationWithFieldErrorWithNullRejectedValue() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
         response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", null));
         String json = objectMapper.writeValueAsString(response);
@@ -59,7 +68,6 @@ class ApiErrorResponseSerializationTest {
 
     @Test
     void testSerializationWithGlobalError() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
         response.addGlobalError(new ApiGlobalError("GLOBAL_ERROR_CODE", "Test Global Message"));
         String json = objectMapper.writeValueAsString(response);
@@ -74,7 +82,6 @@ class ApiErrorResponseSerializationTest {
 
     @Test
     void testSerializationWithErrorProperty() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
         response.addErrorProperty("property1", "stringValue");
         response.addErrorProperty("property2", 15);
@@ -90,7 +97,6 @@ class ApiErrorResponseSerializationTest {
 
     @Test
     void testSerializationWithErrorPropertyThatIsNull() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
         response.addErrorProperty("property1", null);
         String json = objectMapper.writeValueAsString(response);
@@ -100,5 +106,66 @@ class ApiErrorResponseSerializationTest {
                 jsonAssert -> jsonAssert.node("httpStatus").isAbsent(),
                 jsonAssert -> jsonAssert.node("property1").isNull()
         );
+    }
+
+    @Nested
+    class CustomFieldNamesTests {
+        @BeforeEach
+        void setCustomName() {
+            properties.getJsonFieldNames().setMessage("description");
+            properties.getJsonFieldNames().setCode("errorCode");
+            properties.getJsonFieldNames().setFieldErrors("fieldFailures");
+            properties.getJsonFieldNames().setGlobalErrors("globalFailures");
+        }
+
+        @AfterEach
+        void resetCustomName() {
+            properties.getJsonFieldNames().setMessage("message");
+            properties.getJsonFieldNames().setCode("code");
+            properties.getJsonFieldNames().setFieldErrors("fieldErrors");
+            properties.getJsonFieldNames().setGlobalErrors("globalErrors");
+        }
+
+        @Test
+        void testSerializationWithCustomMessageFieldName() throws IOException {
+            String json = objectMapper.writeValueAsString(new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message"));
+            assertThatJson(json).and(
+                    jsonAssert -> jsonAssert.node("errorCode").isEqualTo("TEST_CODE"),
+                    jsonAssert -> jsonAssert.node("description").isEqualTo("Test message"),
+                    jsonAssert -> jsonAssert.node("httpStatus").isAbsent()
+
+            );
+        }
+
+        @Test
+        void testSerializationWithFieldError() throws IOException {
+            ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
+            response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", "bad"));
+            String json = objectMapper.writeValueAsString(response);
+            assertThatJson(json).and(
+                    jsonAssert -> jsonAssert.node("errorCode").isEqualTo("TEST_CODE"),
+                    jsonAssert -> jsonAssert.node("description").isEqualTo("Test message"),
+                    jsonAssert -> jsonAssert.node("httpStatus").isAbsent(),
+                    jsonAssert -> jsonAssert.node("fieldFailures[0].errorCode").isEqualTo("FIELD_ERROR_CODE"),
+                    jsonAssert -> jsonAssert.node("fieldFailures[0].property").isEqualTo("testField"),
+                    jsonAssert -> jsonAssert.node("fieldFailures[0].description").isEqualTo("Test Field Message"),
+                    jsonAssert -> jsonAssert.node("fieldFailures[0].rejectedValue").isEqualTo("bad")
+            );
+        }
+
+        @Test
+        void testSerializationWithGlobalError() throws IOException {
+            ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
+            response.addGlobalError(new ApiGlobalError("GLOBAL_ERROR_CODE", "Test Global Message"));
+            String json = objectMapper.writeValueAsString(response);
+            assertThatJson(json).and(
+                    jsonAssert -> jsonAssert.node("errorCode").isEqualTo("TEST_CODE"),
+                    jsonAssert -> jsonAssert.node("description").isEqualTo("Test message"),
+                    jsonAssert -> jsonAssert.node("httpStatus").isAbsent(),
+                    jsonAssert -> jsonAssert.node("globalFailures[0].errorCode").isEqualTo("GLOBAL_ERROR_CODE"),
+                    jsonAssert -> jsonAssert.node("globalFailures[0].description").isEqualTo("Test Global Message")
+            );
+        }
+
     }
 }

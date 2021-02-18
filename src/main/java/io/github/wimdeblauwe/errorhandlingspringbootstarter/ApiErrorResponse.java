@@ -3,6 +3,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+//@JsonSerialize(using = ApiErrorResponseSerializer.class)
 public class ApiErrorResponse {
     private final HttpStatus httpStatus;
     private final String code;

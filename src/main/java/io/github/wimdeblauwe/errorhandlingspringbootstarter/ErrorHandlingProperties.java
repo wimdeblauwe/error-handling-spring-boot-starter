@@ -11,6 +11,8 @@ import java.util.Map;
 public class ErrorHandlingProperties {
     private boolean enabled = true;
 
+    private JsonFieldNames jsonFieldNames = new JsonFieldNames();
+
     private ExceptionLogging exceptionLogging = ExceptionLogging.MESSAGE_ONLY;
 
     private Map<String, String> codes = new HashMap<>();
@@ -23,6 +25,14 @@ public class ErrorHandlingProperties {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public JsonFieldNames getJsonFieldNames() {
+        return jsonFieldNames;
+    }
+
+    public void setJsonFieldNames(JsonFieldNames jsonFieldNames) {
+        this.jsonFieldNames = jsonFieldNames;
     }
 
     public ExceptionLogging getExceptionLogging() {
@@ -53,5 +63,44 @@ public class ErrorHandlingProperties {
         NO_LOGGING,
         MESSAGE_ONLY,
         WITH_STACKTRACE
+    }
+
+    public static class JsonFieldNames {
+        private String code = "code";
+        private String message = "message";
+        private String fieldErrors = "fieldErrors";
+        private String globalErrors = "globalErrors";
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public String getFieldErrors() {
+            return fieldErrors;
+        }
+
+        public void setFieldErrors(String fieldErrors) {
+            this.fieldErrors = fieldErrors;
+        }
+
+        public String getGlobalErrors() {
+            return globalErrors;
+        }
+
+        public void setGlobalErrors(String globalErrors) {
+            this.globalErrors = globalErrors;
+        }
     }
 }

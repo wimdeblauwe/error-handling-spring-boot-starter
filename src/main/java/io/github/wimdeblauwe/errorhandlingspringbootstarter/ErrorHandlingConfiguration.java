@@ -55,4 +55,9 @@ public class ErrorHandlingConfiguration {
     public ObjectOptimisticLockingFailureApiExceptionHandler objectOptimisticLockingFailureApiExceptionHandler(ErrorHandlingProperties properties) {
         return new ObjectOptimisticLockingFailureApiExceptionHandler(properties);
     }
+
+    @Bean
+    public ApiErrorResponseSerializer apiErrorResponseSerializer(ErrorHandlingProperties properties) {
+        return new ApiErrorResponseSerializer(properties);
+    }
 }
