@@ -2,13 +2,57 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import org.assertj.core.api.HamcrestCondition;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 class DefaultFallbackApiExceptionHandlerTest {
+
+    @Nested
+    class CodeTests {
+        @Test
+        void codeUsesResponseErrorCodeAnnotation() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorCode());
+            assertThat(response.getCode()).isEqualTo("MY_ERROR_CODE");
+        }
+
+        @Test
+        void codeUsesFqnWhenNoResponseErrorCodeAnnotation() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new MyEntityNotFoundException());
+            assertThat(response.getCode()).isEqualTo("io.github.wimdeblauwe.errorhandlingspringbootstarter.DefaultFallbackApiExceptionHandlerTest$MyEntityNotFoundException");
+        }
+
+        @Test
+        void codeUsesAllCapsWhenConfigured() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            properties.setDefaultErrorCodeStrategy(ErrorHandlingProperties.DefaultErrorCodeStrategy.ALL_CAPS_CONVERSION);
+            DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new MyEntityNotFoundException());
+            assertThat(response.getCode()).isEqualTo("MY_ENTITY_NOT_FOUND");
+        }
+
+        @Test
+        void codeUsesOverrideAlways() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            properties.setDefaultErrorCodeStrategy(ErrorHandlingProperties.DefaultErrorCodeStrategy.ALL_CAPS_CONVERSION);
+            Map<String, String> codes = new HashMap<>();
+            codes.put("io.github.wimdeblauwe.errorhandlingspringbootstarter.DefaultFallbackApiExceptionHandlerTest$MyEntityNotFoundException", "MY_CUSTOM_ERROR_CODE");
+            properties.setCodes(codes);
+            DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new MyEntityNotFoundException());
+            assertThat(response.getCode()).isEqualTo("MY_CUSTOM_ERROR_CODE");
+        }
+    }
 
     @Test
     void testResponseErrorPropertyOnField() {
@@ -98,6 +142,15 @@ class DefaultFallbackApiExceptionHandlerTest {
         assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.nullValue()));
     }
 
+
+    static class MyEntityNotFoundException extends RuntimeException {
+
+    }
+
+    @ResponseErrorCode("MY_ERROR_CODE")
+    static class ExceptionWithResponseErrorCode extends RuntimeException {
+
+    }
 
     static class ExceptionWithResponseErrorPropertyOnField extends RuntimeException {
         @ResponseErrorProperty
