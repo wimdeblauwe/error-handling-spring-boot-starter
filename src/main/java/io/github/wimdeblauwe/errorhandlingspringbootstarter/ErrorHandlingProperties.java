@@ -15,6 +15,8 @@ public class ErrorHandlingProperties {
 
     private ExceptionLogging exceptionLogging = ExceptionLogging.MESSAGE_ONLY;
 
+    private DefaultErrorCodeStrategy defaultErrorCodeStrategy = DefaultErrorCodeStrategy.FULL_QUALIFIED_NAME;
+
     private Map<String, String> codes = new HashMap<>();
 
     private Map<String, String> messages = new HashMap<>();
@@ -43,6 +45,14 @@ public class ErrorHandlingProperties {
         this.exceptionLogging = exceptionLogging;
     }
 
+    public DefaultErrorCodeStrategy getDefaultErrorCodeStrategy() {
+        return defaultErrorCodeStrategy;
+    }
+
+    public void setDefaultErrorCodeStrategy(DefaultErrorCodeStrategy defaultErrorCodeStrategy) {
+        this.defaultErrorCodeStrategy = defaultErrorCodeStrategy;
+    }
+
     public Map<String, String> getCodes() {
         return codes;
     }
@@ -63,6 +73,11 @@ public class ErrorHandlingProperties {
         NO_LOGGING,
         MESSAGE_ONLY,
         WITH_STACKTRACE
+    }
+
+    enum DefaultErrorCodeStrategy {
+        FULL_QUALIFIED_NAME,
+        ALL_CAPS_CONVERSION
     }
 
     public static class JsonFieldNames {

@@ -561,14 +561,15 @@ Using `error-handling-spring-boot-starter`, this becomes:
 [source,json]
 ----
 {
-  "code": "be.privatedrivers.backend.user.UserNotFoundException",
+  "code": "com.application.backend.user.UserNotFoundException",
   "message": "Could not find user with id UserId{id=a6cd68f2-b305-4b2d-8442-ee1696e6eb8f}"
 }
 ----
 
-We can now further enhance the response in 2 ways:
+We can now further enhance the response in several ways:
 
 * Set the code to use instead of the full qualified name of the Exception class
+* Change the default strategy to convert the name of the Exception to a `code`
 * Add additional fields to enrich the error response
 
 ==== Setting the error code
@@ -588,6 +589,7 @@ public class UserNotFoundException extends RuntimeException {
 <.> Set the error code that should be used in the response when this Exception is thrown from a `@RestController` method.
 
 The resulting response:
+
 [source,json]
 ----
 {
@@ -595,6 +597,38 @@ The resulting response:
   "message": "Could not find user with id UserId{id=8c7fb13c-0924-47d4-821a-36f73558c898}"
 }
 ----
+
+==== Change the default strategy to determine the error code
+
+Set the `error.handling.default-error-code-strategy` property to change how the library generates the code automatically.
+By default, the `FULL_QUALIFIED_NAME` strategy is used, which gives:
+
+[source,json]
+----
+{
+  "code": "com.application.backend.user.UserNotFoundException",
+  "message": "Could not find user with id UserId{id=a6cd68f2-b305-4b2d-8442-ee1696e6eb8f}"
+}
+----
+
+By changing this to use `ALL_CAPS_CONVERSION` like this:
+
+[source,properties]
+----
+error.handling.default-error-code-strategy=ALL_CAPS_CONVERSION
+----
+
+We get:
+
+[source,json]
+----
+{
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id UserId{id=a6cd68f2-b305-4b2d-8442-ee1696e6eb8f}"
+}
+----
+
+NOTE: The `Exception` part at the end of the class name is removed to build the code.
 
 ==== Setting the error code via properties
 
@@ -737,8 +771,13 @@ The resulting response assuming the passed in `userId` is `null`:
 |error.handling.exception-logging
 |Allows to set how the exception should be logged.
 One of: `NO_LOGGING`, `MESSAGE_ONLY`,
-`WITH_STACKTRACE`
+`WITH_STACKTRACE`.
 |MESSAGE_ONLY
+
+|error.handling.default-error-code-strategy
+|Determines how an Exception is converted into a `code` in case there is no `@ResponseErrorCode` present on the class.
+One of `FULL_QUALIFIED_NAME`, `ALL_CAPS_CONVERSION`.
+|`FULL_QUALIFIED_NAME`
 
 |error.handling.codes
 |Allows to set the code that should be used for the full qualified name of an `Exception`

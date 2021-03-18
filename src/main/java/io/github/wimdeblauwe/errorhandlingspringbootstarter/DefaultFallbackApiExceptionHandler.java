@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -127,10 +128,30 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
         if (errorCodeAnnotation != null) {
             code = errorCodeAnnotation.value();
         } else {
-            code = exception.getClass().getName();
+            String exceptionClassName = exception.getClass().getName();
+            if (properties.getCodes().containsKey(exceptionClassName)) {
+                code = replaceCodeWithConfiguredOverrideIfPresent(exceptionClassName);
+            } else {
+                switch (properties.getDefaultErrorCodeStrategy()) {
+                    case FULL_QUALIFIED_NAME:
+                        code = exception.getClass().getName();
+                        break;
+                    case ALL_CAPS_CONVERSION:
+                        code = convertToAllCaps(exception.getClass().getSimpleName());
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unknown default error code strategy: " + properties.getDefaultErrorCodeStrategy());
+                }
+            }
         }
 
-        return replaceCodeWithConfiguredOverrideIfPresent(code);
+        return code;
+    }
+
+    private String convertToAllCaps(String exceptionClassName) {
+        String result = exceptionClassName.replaceFirst("Exception$", "");
+        result = result.replaceAll("([a-z])([A-Z]+)", "$1_$2").toUpperCase(Locale.ENGLISH);
+        return result;
     }
 
     private String replaceCodeWithConfiguredOverrideIfPresent(String code) {
