@@ -5,6 +5,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +14,36 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 class DefaultFallbackApiExceptionHandlerTest {
+
+    @Nested
+    class HttpStatusTests {
+        @Test
+        void defaultHttpStatus() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new MyEntityNotFoundException());
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        @Test
+        void overrideViaAnnotation() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new ExceptionWithBadRequestStatus());
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        void overrideViaProperties() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            MyEntityNotFoundException exception = new MyEntityNotFoundException();
+            properties.getHttpStatuses().put(exception.getClass().getName(), HttpStatus.BAD_REQUEST);
+            DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+    }
 
     @Nested
     class CodeTests {
@@ -144,6 +175,11 @@ class DefaultFallbackApiExceptionHandlerTest {
 
 
     static class MyEntityNotFoundException extends RuntimeException {
+
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    static class ExceptionWithBadRequestStatus extends RuntimeException {
 
     }
 

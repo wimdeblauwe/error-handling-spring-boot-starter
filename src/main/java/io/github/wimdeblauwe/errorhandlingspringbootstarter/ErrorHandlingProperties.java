@@ -1,6 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -16,6 +17,8 @@ public class ErrorHandlingProperties {
     private ExceptionLogging exceptionLogging = ExceptionLogging.MESSAGE_ONLY;
 
     private DefaultErrorCodeStrategy defaultErrorCodeStrategy = DefaultErrorCodeStrategy.FULL_QUALIFIED_NAME;
+
+    private Map<String, HttpStatus> httpStatuses = new HashMap<>();
 
     private Map<String, String> codes = new HashMap<>();
 
@@ -51,6 +54,14 @@ public class ErrorHandlingProperties {
 
     public void setDefaultErrorCodeStrategy(DefaultErrorCodeStrategy defaultErrorCodeStrategy) {
         this.defaultErrorCodeStrategy = defaultErrorCodeStrategy;
+    }
+
+    public Map<String, HttpStatus> getHttpStatuses() {
+        return httpStatuses;
+    }
+
+    public void setHttpStatuses(Map<String, HttpStatus> httpStatuses) {
+        this.httpStatuses = httpStatuses;
     }
 
     public Map<String, String> getCodes() {
