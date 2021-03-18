@@ -568,9 +568,27 @@ Using `error-handling-spring-boot-starter`, this becomes:
 
 We can now further enhance the response in several ways:
 
+* Override the HTTP response status
 * Set the code to use instead of the full qualified name of the Exception class
 * Change the default strategy to convert the name of the Exception to a `code`
 * Add additional fields to enrich the error response
+
+==== Override the HTTP response status
+
+By default, all custom exceptions will use the _500 INTERNAL SERVER ERROR_ response code.
+
+To override this, you can use `@ResponseStatus(HttpStatus.NOT_FOUND)` for Exception types that you control.
+
+For Exception types outside of your control, you can configure this through the `error.handling.http-statuses` property:
+
+[source,properties]
+----
+error.handling.http-statuses.java.lang.IllegalArgumentException=BAD_REQUEST
+----
+
+Anytime an `IllegalArgumentException` is thrown the _400 BAD REQUEST_ response code is used instead of the default _500 INTERNAL SERVER ERROR_.
+
+The possible values are any of the https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/http/HttpStatus.html[org.springframework.http.HttpStatus] enum values.
 
 ==== Setting the error code
 
@@ -778,6 +796,10 @@ One of: `NO_LOGGING`, `MESSAGE_ONLY`,
 |Determines how an Exception is converted into a `code` in case there is no `@ResponseErrorCode` present on the class.
 One of `FULL_QUALIFIED_NAME`, `ALL_CAPS_CONVERSION`.
 |`FULL_QUALIFIED_NAME`
+
+|error.handling.http-statuses
+|Allows to set the HttpStatus response code to use for the full qualified name of an `Exception`
+| `HttpStatus.INTERNAL_SERVER_ERROR` is used for custom exceptions have no specific response status set here.
 
 |error.handling.codes
 |Allows to set the code that should be used for the full qualified name of an `Exception`

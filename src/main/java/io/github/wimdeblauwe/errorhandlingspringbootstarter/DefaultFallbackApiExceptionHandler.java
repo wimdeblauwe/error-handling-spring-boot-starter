@@ -119,7 +119,11 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
 
     private HttpStatus getHttpStatus(Throwable exception) {
         ResponseStatus responseStatus = AnnotationUtils.getAnnotation(exception.getClass(), ResponseStatus.class);
-        return responseStatus != null ? responseStatus.value() : HttpStatus.INTERNAL_SERVER_ERROR;
+        if (responseStatus != null) {
+            return responseStatus.value();
+        }
+
+        return properties.getHttpStatuses().getOrDefault(exception.getClass().getName(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private String getErrorCode(Throwable exception) {
