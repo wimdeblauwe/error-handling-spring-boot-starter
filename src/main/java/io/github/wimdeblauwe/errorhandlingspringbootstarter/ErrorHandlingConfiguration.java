@@ -20,6 +20,7 @@ import java.util.List;
 @ConditionalOnProperty(value = "error.handling.enabled", matchIfMissing = true)
 @PropertySource("classpath:/error-handling-defaults.properties")
 public class ErrorHandlingConfiguration {
+
     @Bean
     public ErrorHandlingControllerAdvice errorHandlingControllerAdvice(ErrorHandlingProperties properties,
                                                                        List<ApiExceptionHandler> handlers,

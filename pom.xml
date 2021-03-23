@@ -97,6 +97,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>net.javacrumbs.json-unit</groupId>
             <artifactId>json-unit</artifactId>
             <version>${json-unit.version}</version>
@@ -142,6 +147,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <printSummary>true</printSummary>
                     <!-- to get jacoco report we need to set argLine in surefire, without this snippet the jacoco argLine is lost -->
                     <argLine>${surefireArgLine}</argLine>
                 </configuration>

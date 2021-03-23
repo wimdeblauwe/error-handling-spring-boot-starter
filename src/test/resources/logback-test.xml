@@ -1,0 +1,19 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{YYYY-MM-dd HH:mm:ss} %level [%thread] %logger{0} - %msg%n%ex</pattern>
+        </encoder>
+    </appender>
+
+    <root level="WARN">
+        <appender-ref ref="STDOUT"/>
+    </root>
+    <logger name="io.github.wimdeblauwe.errorhandlingspringbootstarter">
+        <level value="DEBUG"/>
+    </logger>
+
+    <logger name="org.springframework">
+        <level value="INFO"/>
+    </logger>
+
+</configuration>
