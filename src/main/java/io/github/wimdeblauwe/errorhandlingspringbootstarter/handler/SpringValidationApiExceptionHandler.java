@@ -11,6 +11,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.util.Set;
+
 public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHandler {
 
     public SpringValidationApiExceptionHandler(ErrorHandlingProperties properties) {
@@ -20,7 +24,8 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
     @Override
     public boolean canHandle(Throwable exception) {
         return exception instanceof MethodArgumentNotValidException
-                || exception instanceof HttpMessageNotReadableException;
+                || exception instanceof HttpMessageNotReadableException
+                || exception instanceof ConstraintViolationException;
     }
 
     @Override
@@ -28,10 +33,11 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
 
         ApiErrorResponse response;
         if (exception instanceof MethodArgumentNotValidException) {
+            MethodArgumentNotValidException ex = (MethodArgumentNotValidException) exception;
             response = new ApiErrorResponse(HttpStatus.BAD_REQUEST,
                                             getErrorCode(exception),
-                                            getMessage((MethodArgumentNotValidException) exception));
-            BindingResult bindingResult = ((MethodArgumentNotValidException) exception).getBindingResult();
+                                            getMessage(ex));
+            BindingResult bindingResult = ex.getBindingResult();
             if (bindingResult.hasFieldErrors()) {
                 bindingResult.getFieldErrors().stream()
                              .map(fieldError -> new ApiFieldError(getCode(fieldError),
@@ -52,6 +58,22 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
                                             replaceCodeWithConfiguredOverrideIfPresent(exception.getClass().getName()),
                                             exception.getMessage());
 
+        } else if (exception instanceof ConstraintViolationException) {
+            ConstraintViolationException ex = (ConstraintViolationException) exception;
+            response = new ApiErrorResponse(HttpStatus.BAD_REQUEST,
+                                            getErrorCode(exception),
+                                            getMessage(ex));
+            Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
+            violations.stream()
+                      .map(constraintViolation -> new ApiFieldError(getCode(constraintViolation),
+                                                                    constraintViolation.getPropertyPath().toString(),
+                                                                    getMessage(constraintViolation),
+                                                                    constraintViolation.getInvalidValue()))
+                      .forEach(response::addFieldError);
+
+            // TODO global errors?
+            // TODO test if getMessage works
+            // TODO test if getCode works
         } else {
             throw new IllegalStateException("canHandle() and handle() methods are not in sync!");
         }
@@ -87,5 +109,22 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
 
     private String getMessage(MethodArgumentNotValidException exception) {
         return "Validation failed for object='" + exception.getBindingResult().getObjectName() + "'. Error count: " + exception.getBindingResult().getErrorCount();
+    }
+
+    private String getCode(ConstraintViolation<?> constraintViolation) {
+        String code = constraintViolation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
+        return replaceCodeWithConfiguredOverrideIfPresent(code);
+    }
+
+    private String getMessage(ConstraintViolation<?> constraintViolation) {
+        String code = constraintViolation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
+        if (hasConfiguredOverrideForMessage(code)) {
+            return getOverrideMessage(code);
+        }
+        return constraintViolation.getMessage();
+    }
+
+    private String getMessage(ConstraintViolationException exception) {
+        return "Validation failed. Error count: " + exception.getConstraintViolations().size();
     }
 }

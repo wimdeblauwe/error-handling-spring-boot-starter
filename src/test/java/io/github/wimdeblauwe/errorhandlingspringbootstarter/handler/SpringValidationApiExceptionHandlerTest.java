@@ -6,10 +6,13 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest
 @ContextConfiguration(classes = {ErrorHandlingConfiguration.class,
         SpringValidationApiExceptionHandlerTest.TestController.class})
+@Import(SpringValidationApiExceptionHandlerTest.TestService.class)
 class SpringValidationApiExceptionHandlerTest {
 
     @Autowired
@@ -64,12 +68,46 @@ class SpringValidationApiExceptionHandlerTest {
         ;
     }
 
+    @Test
+    @WithMockUser
+    void testConstraintViolationException() throws Exception {
+        mockMvc.perform(post("/test/validation/no")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"value2\": \"\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 2"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
+               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
+        ;
+    }
+
+
     @RestController
     @RequestMapping("/test/validation")
     public static class TestController {
+        @Autowired
+        private TestService service;
 
         @PostMapping
         public void doPost(@Valid @RequestBody TestRequestBody requestBody) {
+
+        }
+
+        @PostMapping("/no")
+        public void doPostWithoutValidation(@RequestBody TestRequestBody requestBody) {
+            service.doSomething(requestBody);
+        }
+    }
+
+    @Service
+    @Validated
+    public static class TestService {
+        void doSomething(@Valid TestRequestBody requestBody) {
 
         }
     }
