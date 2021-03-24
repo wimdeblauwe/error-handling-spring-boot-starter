@@ -1,9 +1,6 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.ObjectOptimisticLockingFailureApiExceptionHandler;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.SpringSecurityApiExceptionHandler;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.SpringValidationApiExceptionHandler;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.TypeMismatchApiExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -41,8 +38,18 @@ public class ErrorHandlingConfiguration {
     }
 
     @Bean
-    public SpringValidationApiExceptionHandler springValidationApiExceptionHandler(ErrorHandlingProperties properties) {
-        return new SpringValidationApiExceptionHandler(properties);
+    public ConstraintViolationApiExceptionHandler constraintViolationApiExceptionHandler(ErrorHandlingProperties properties) {
+        return new ConstraintViolationApiExceptionHandler(properties);
+    }
+
+    @Bean
+    public HttpMessageNotReadableApiExceptionHandler httpMessageNotReadableApiExceptionHandler(ErrorHandlingProperties properties) {
+        return new HttpMessageNotReadableApiExceptionHandler(properties);
+    }
+
+    @Bean
+    public MethodArgumentNotValidApiExceptionHandler methodArgumentNotValidApiExceptionHandler(ErrorHandlingProperties properties) {
+        return new MethodArgumentNotValidApiExceptionHandler(properties);
     }
 
     @Bean

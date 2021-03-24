@@ -35,46 +35,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest
 @ContextConfiguration(classes = {ErrorHandlingConfiguration.class,
-        SpringValidationApiExceptionHandlerTest.TestController.class})
-@Import(SpringValidationApiExceptionHandlerTest.TestService.class)
-class SpringValidationApiExceptionHandlerTest {
+        ConstraintViolationApiExceptionHandlerTest.TestController.class})
+@Import(ConstraintViolationApiExceptionHandlerTest.TestService.class)
+class ConstraintViolationApiExceptionHandlerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Test
-    @WithMockUser
-    void testMethodArgumentNotValidException() throws Exception {
-        mockMvc.perform(post("/test/validation")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"value2\": \"\"}")
-                                .with(csrf()))
-               .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
-               .andExpect(jsonPath("message").value("Validation failed for object='testRequestBody'. Error count: 3"))
-               .andExpect(jsonPath("fieldErrors", hasSize(2)))
-               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
-               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
-               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
-               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
-               .andExpect(jsonPath("globalErrors", hasSize(1)))
-               .andExpect(jsonPath("globalErrors..code", allOf(hasItem("ValuesEqual"))))
-               .andExpect(jsonPath("globalErrors..message", allOf(hasItem("Values not equal"))))
-        ;
-    }
-
-    @Test
-    @WithMockUser
-    void testHttpMessageNotReadableException() throws Exception {
-        mockMvc.perform(post("/test/validation")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("{invalidjsonhere}")
-                                .with(csrf()))
-               .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("code").value("MESSAGE_NOT_READABLE"))
-               .andExpect(jsonPath("message", Matchers.startsWith("JSON parse error: Unexpected character ('i' (code 105))")))
-        ;
-    }
 
     @Test
     @WithMockUser
