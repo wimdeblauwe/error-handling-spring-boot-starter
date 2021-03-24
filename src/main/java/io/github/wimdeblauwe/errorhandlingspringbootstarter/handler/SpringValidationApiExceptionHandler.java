@@ -4,6 +4,8 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiFieldError;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiGlobalError;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
@@ -13,9 +15,13 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.validation.ElementKind;
+import javax.validation.Path;
+import java.util.Iterator;
 import java.util.Set;
 
 public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpringValidationApiExceptionHandler.class);
 
     public SpringValidationApiExceptionHandler(ErrorHandlingProperties properties) {
         super(properties);
@@ -65,13 +71,29 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
                                             getMessage(ex));
             Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
             violations.stream()
-                      .map(constraintViolation -> new ApiFieldError(getCode(constraintViolation),
-                                                                    constraintViolation.getPropertyPath().toString(),
-                                                                    getMessage(constraintViolation),
-                                                                    constraintViolation.getInvalidValue()))
-                      .forEach(response::addFieldError);
+                      .map(constraintViolation -> {
+                          ElementKind elementKind = getElementKindOfLastNode(constraintViolation.getPropertyPath());
+                          if (elementKind == ElementKind.PROPERTY) {
+                              return new ApiFieldError(getCode(constraintViolation),
+                                                       constraintViolation.getPropertyPath().toString(),
+                                                       getMessage(constraintViolation),
+                                                       constraintViolation.getInvalidValue());
+                          } else if (elementKind == ElementKind.BEAN) {
+                              return new ApiGlobalError(getCode(constraintViolation),
+                                                        getMessage(constraintViolation));
+                          } else {
+                              LOGGER.warn("Unable to convert constraint violation with element kind {}: {}", elementKind, constraintViolation);
+                              return null;
+                          }
+                      })
+                      .forEach(error -> {
+                          if (error instanceof ApiFieldError) {
+                              response.addFieldError((ApiFieldError) error);
+                          } else if (error instanceof ApiGlobalError) {
+                              response.addGlobalError((ApiGlobalError) error);
+                          }
+                      });
 
-            // TODO global errors?
             // TODO test if getMessage works
             // TODO test if getCode works
         } else {
@@ -79,6 +101,15 @@ public class SpringValidationApiExceptionHandler extends AbstractApiExceptionHan
         }
 
         return response;
+    }
+
+    private ElementKind getElementKindOfLastNode(Path path) {
+        ElementKind result = null;
+        for (Path.Node node : path) {
+            result = node.getKind();
+        }
+
+        return result;
     }
 
     private String getCode(FieldError fieldError) {
