@@ -65,9 +65,6 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
                       }
                   });
 
-        // TODO test if getMessage works
-        // TODO test if getCode works
-
         return response;
     }
 
@@ -82,11 +79,20 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
 
     private String getCode(ConstraintViolation<?> constraintViolation) {
         String code = constraintViolation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
+        String fieldSpecificCode = constraintViolation.getPropertyPath().toString() + "." + code;
+        if (hasConfiguredOverrideForCode(fieldSpecificCode)) {
+            return replaceCodeWithConfiguredOverrideIfPresent(fieldSpecificCode);
+        }
         return replaceCodeWithConfiguredOverrideIfPresent(code);
     }
 
     private String getMessage(ConstraintViolation<?> constraintViolation) {
         String code = constraintViolation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
+        String fieldSpecificCode = constraintViolation.getPropertyPath().toString() + "." + code;
+        if (hasConfiguredOverrideForMessage(fieldSpecificCode)) {
+            return getOverrideMessage(fieldSpecificCode);
+        }
+
         if (hasConfiguredOverrideForMessage(code)) {
             return getOverrideMessage(code);
         }

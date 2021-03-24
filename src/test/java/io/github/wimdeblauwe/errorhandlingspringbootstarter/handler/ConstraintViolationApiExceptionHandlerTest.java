@@ -2,6 +2,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingConfiguration;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.stereotype.Service;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {ErrorHandlingConfiguration.class,
         ConstraintViolationApiExceptionHandlerTest.TestController.class})
 @Import(ConstraintViolationApiExceptionHandlerTest.TestService.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ConstraintViolationApiExceptionHandlerTest {
 
     @Autowired
@@ -45,7 +48,7 @@ class ConstraintViolationApiExceptionHandlerTest {
     @Test
     @WithMockUser
     void testConstraintViolationException() throws Exception {
-        mockMvc.perform(post("/test/validation/no")
+        mockMvc.perform(post("/test/validation")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"value2\": \"\"}")
                                 .with(csrf()))
@@ -63,6 +66,159 @@ class ConstraintViolationApiExceptionHandlerTest {
         ;
     }
 
+    @Test
+    @WithMockUser
+    void testErrorCodeOverride(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.getCodes().put("javax.validation.ConstraintViolationException", "VIOLATION_EXCEPTION");
+        mockMvc.perform(post("/test/validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"value2\": \"\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VIOLATION_EXCEPTION"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
+               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
+               .andExpect(jsonPath("globalErrors", hasSize(1)))
+               .andExpect(jsonPath("globalErrors..code", allOf(hasItem("ValuesEqual"))))
+               .andExpect(jsonPath("globalErrors..message", allOf(hasItem("Values not equal"))))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testFieldErrorCodeOverride(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.getCodes().put("NotNull", "NOT_NULL");
+        mockMvc.perform(post("/test/validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"value2\": \"\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("NOT_NULL"), hasItem("INVALID_SIZE"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
+               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
+               .andExpect(jsonPath("globalErrors", hasSize(1)))
+               .andExpect(jsonPath("globalErrors..code", allOf(hasItem("ValuesEqual"))))
+               .andExpect(jsonPath("globalErrors..message", allOf(hasItem("Values not equal"))))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testFieldErrorCodeOverrideForSpecificField(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.getCodes().put("doSomething.requestBody.value.NotNull", "VALUE_NOT_NULL");
+        mockMvc.perform(post("/test/validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"value2\": \"\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("VALUE_NOT_NULL"), hasItem("INVALID_SIZE"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
+               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
+               .andExpect(jsonPath("globalErrors", hasSize(1)))
+               .andExpect(jsonPath("globalErrors..code", allOf(hasItem("ValuesEqual"))))
+               .andExpect(jsonPath("globalErrors..message", allOf(hasItem("Values not equal"))))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testFieldErrorMessageOverride(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.getMessages().put("NotNull", "required not to be null");
+        mockMvc.perform(post("/test/validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"value2\": \"\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("required not to be null"), hasItem("size must be between 1 and 255"))))
+               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
+               .andExpect(jsonPath("globalErrors", hasSize(1)))
+               .andExpect(jsonPath("globalErrors..code", allOf(hasItem("ValuesEqual"))))
+               .andExpect(jsonPath("globalErrors..message", allOf(hasItem("Values not equal"))))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testFieldErrorMessageOverrideForSpecificField(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.getMessages().put("doSomething.requestBody.value.NotNull", "value required not to be null");
+        mockMvc.perform(post("/test/validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"value2\": \"\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("value required not to be null"), hasItem("size must be between 1 and 255"))))
+               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
+               .andExpect(jsonPath("globalErrors", hasSize(1)))
+               .andExpect(jsonPath("globalErrors..code", allOf(hasItem("ValuesEqual"))))
+               .andExpect(jsonPath("globalErrors..message", allOf(hasItem("Values not equal"))))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testGlobalErrorCodeOverride(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.getCodes().put("ValuesEqual", "VALUES_EQUAL");
+        mockMvc.perform(post("/test/validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"value2\": \"\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
+               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
+               .andExpect(jsonPath("globalErrors", hasSize(1)))
+               .andExpect(jsonPath("globalErrors..code", allOf(hasItem("VALUES_EQUAL"))))
+               .andExpect(jsonPath("globalErrors..message", allOf(hasItem("Values not equal"))))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testGlobalErrorMessageOverride(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.getMessages().put("ValuesEqual", "The values are unfortunately not equal.");
+        mockMvc.perform(post("/test/validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"value2\": \"\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
+               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
+               .andExpect(jsonPath("globalErrors", hasSize(1)))
+               .andExpect(jsonPath("globalErrors..code", allOf(hasItem("ValuesEqual"))))
+               .andExpect(jsonPath("globalErrors..message", allOf(hasItem("The values are unfortunately not equal."))))
+        ;
+    }
 
     @RestController
     @RequestMapping("/test/validation")
@@ -71,11 +227,6 @@ class ConstraintViolationApiExceptionHandlerTest {
         private TestService service;
 
         @PostMapping
-        public void doPost(@Valid @RequestBody TestRequestBody requestBody) {
-
-        }
-
-        @PostMapping("/no")
         public void doPostWithoutValidation(@RequestBody TestRequestBody requestBody) {
             service.doSomething(requestBody);
         }
