@@ -6,18 +6,26 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import javax.validation.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Objects;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -27,29 +35,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest
 @ContextConfiguration(classes = {ErrorHandlingConfiguration.class,
-        SpringValidationApiExceptionHandlerTest.TestController.class})
-class SpringValidationApiExceptionHandlerTest {
+        HttpMessageNotReadableApiExceptionHandlerTest.TestController.class})
+class HttpMessageNotReadableApiExceptionHandlerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Test
-    @WithMockUser
-    void testMethodArgumentNotValidException() throws Exception {
-        mockMvc.perform(post("/test/validation")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"value2\": \"\"}")
-                                .with(csrf()))
-               .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
-               .andExpect(jsonPath("message").value("Validation failed for object='testRequestBody'. Error count: 2"))
-               .andExpect(jsonPath("fieldErrors", hasSize(2)))
-               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
-               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
-               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
-               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
-        ;
-    }
 
     @Test
     @WithMockUser
@@ -67,11 +57,11 @@ class SpringValidationApiExceptionHandlerTest {
     @RestController
     @RequestMapping("/test/validation")
     public static class TestController {
-
         @PostMapping
         public void doPost(@Valid @RequestBody TestRequestBody requestBody) {
 
         }
+
     }
 
     public static class TestRequestBody {
@@ -98,4 +88,6 @@ class SpringValidationApiExceptionHandlerTest {
             this.value2 = value2;
         }
     }
+
+
 }
