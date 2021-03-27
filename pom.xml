@@ -29,6 +29,8 @@
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+        <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
+        <spring-asciidoctor-backends.version>0.0.1-M1</spring-asciidoctor-backends.version>
     </properties>
     <licenses>
         <license>
@@ -210,6 +212,33 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
+                <version>${asciidoctor-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-html-documentation</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                        <configuration>
+                            <backend>spring-html</backend>
+                            <attributes>
+                                <project-version>${project.version}</project-version>
+                            </attributes>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.spring.asciidoctor.backends</groupId>
+                        <artifactId>spring-asciidoctor-backends</artifactId>
+                        <version>${spring-asciidoctor-backends.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>${maven-release-plugin.version}</version>
@@ -223,6 +252,14 @@
             </plugin>
         </plugins>
     </build>
+    <!-- Should be removed once spring-asciidoctor-backends is in Maven Central -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-milestone</id>
+            <name>Spring Milestone Repository</name>
+            <url>https://repo.spring.io/milestone</url>
+        </pluginRepository>
+    </pluginRepositories>
     <profiles>
         <profile>
             <id>release</id>
