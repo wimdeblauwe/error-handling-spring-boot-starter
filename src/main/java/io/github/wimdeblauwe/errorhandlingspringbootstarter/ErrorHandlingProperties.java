@@ -4,7 +4,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @ConfigurationProperties("error.handling")
@@ -15,6 +17,8 @@ public class ErrorHandlingProperties {
     private JsonFieldNames jsonFieldNames = new JsonFieldNames();
 
     private ExceptionLogging exceptionLogging = ExceptionLogging.MESSAGE_ONLY;
+
+    private List<Class<? extends Throwable>> fullStacktraceClasses = new ArrayList<>();
 
     private DefaultErrorCodeStrategy defaultErrorCodeStrategy = DefaultErrorCodeStrategy.FULL_QUALIFIED_NAME;
 
@@ -46,6 +50,14 @@ public class ErrorHandlingProperties {
 
     public void setExceptionLogging(ExceptionLogging exceptionLogging) {
         this.exceptionLogging = exceptionLogging;
+    }
+
+    public List<Class<? extends Throwable>> getFullStacktraceClasses() {
+        return fullStacktraceClasses;
+    }
+
+    public void setFullStacktraceClasses(List<Class<? extends Throwable>> fullStacktraceClasses) {
+        this.fullStacktraceClasses = fullStacktraceClasses;
     }
 
     public DefaultErrorCodeStrategy getDefaultErrorCodeStrategy() {

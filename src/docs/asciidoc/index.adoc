@@ -907,6 +907,24 @@ With these settings, a response will look similar to this:
 }
 ----
 
+=== Logging
+
+The library will log a single line to the configured logging output for each Exception that is handled.
+This behaviour can be changed to log either nothing at all (`NO_LOGGING`), or to log full stack traces (`WITH_STACKTRACE`) via the `error.handling.exception-logging` property.
+
+If you want to keep logging minimal, but still have a full stacktrace for some exceptions, then you can use the `error.handling.full-stacktrace-classes` property like this:
+
+[source,properties]
+----
+error.handling.exception-logging=MESSAGE_ONLY
+error.handling.full-stacktrace-classes[0]=java.lang.NullPointerException
+error.handling.full-stacktrace-classes[1]=org.springframework.http.converter.HttpMessageNotReadableException
+----
+
+With this configuration, all exceptions will have a single log line in the logging output, but `NullPointerException` and `HttpMessageNotReadableException` will have full stack traces printed.
+
+NOTE: Only the exact matches of the listed classes are used, not the subclasses of the specified classes.
+
 == Properties
 
 |===

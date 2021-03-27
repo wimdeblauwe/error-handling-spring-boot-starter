@@ -55,13 +55,17 @@ public class ErrorHandlingControllerAdvice {
     }
 
     private void logException(Throwable exception) {
-        switch (properties.getExceptionLogging()) {
-            case WITH_STACKTRACE:
-                LOGGER.error(exception.getMessage(), exception);
-                break;
-            case MESSAGE_ONLY:
-                LOGGER.error(exception.getMessage());
-                break;
+        if (properties.getFullStacktraceClasses().contains(exception.getClass())) {
+            LOGGER.error(exception.getMessage(), exception);
+        } else {
+            switch (properties.getExceptionLogging()) {
+                case WITH_STACKTRACE:
+                    LOGGER.error(exception.getMessage(), exception);
+                    break;
+                case MESSAGE_ONLY:
+                    LOGGER.error(exception.getMessage());
+                    break;
+            }
         }
     }
 }
