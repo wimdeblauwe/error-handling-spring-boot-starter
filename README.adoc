@@ -22,7 +22,7 @@ The goal of the project is to make it easy to have proper and consistent error r
 
 == Documentation
 
-See TODO for the extensive documentation.
+See https://wimdeblauwe.github.io/error-handling-spring-boot-starter for the extensive documentation.
 
 NOTE: Documentation is very important to us, so if you find something missing from the docs, please create an issue about it.
 
