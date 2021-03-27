@@ -35,7 +35,7 @@ jobs:
 
       - name: GitHub Pages action
         if: |
-          github.ref == 'refs/heads/develop' &&
+          github.ref == 'refs/heads/master' &&
            matrix.java == 8
         uses: peaceiris/actions-gh-pages@v3.7.3
         with:
