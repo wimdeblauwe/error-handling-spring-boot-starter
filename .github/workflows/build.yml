@@ -32,3 +32,10 @@ jobs:
 
       - name: Build with Maven
         run: ./mvnw clean verify
+
+      - name: GitHub Pages action
+        uses: peaceiris/actions-gh-pages@v3.7.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/generated-docs
+          exclude_assets: 'img/banner-logo.svg,img/doc-background.svg,img/doc-background-dark.svg'
