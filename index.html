@@ -94,7 +94,8 @@
 <li><a href="#logging">3.7. Logging</a></li>
 </ul>
 </li>
-<li><a href="#properties">4. Properties</a></li>
+<li><a href="#custom-exception-handler">4. Custom exception handler</a></li>
+<li><a href="#properties">5. Properties</a></li>
 </ul>
 </div>
 </div>
@@ -102,7 +103,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 1.4.0-SNAPSHOT.</p>
+<p>This documentation is for version 1.4.0.</p>
 </div>
 </div>
 </div>
@@ -1283,7 +1284,141 @@ Only the exact matches of the listed classes are used, not the subclasses of the
 </div>
 </div>
 <div class="sect1">
-<h2 id="properties"><a class="anchor" href="#properties"></a>4. Properties</h2>
+<h2 id="custom-exception-handler"><a class="anchor" href="#custom-exception-handler"></a>4. Custom exception handler</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If the <a href="#configuration">extensive customization options</a> are not enough, you can write your own <code>ApiExceptionHandler</code> implementation.</p>
+</div>
+<div class="paragraph">
+<p>The contract that you need to implement is defined in the <code>io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler</code> interface:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">package io.github.wimdeblauwe.errorhandlingspringbootstarter;
+
+public interface ApiExceptionHandler {
+    /**
+     * Determine if this {@link ApiExceptionHandler} can handle the given {@link Throwable}.
+     * It is guaranteed that this method is called first, and the {@link #handle(Throwable)} method
+     * will only be called if this method returns &lt;code&gt;true&lt;/code&gt;.
+     *
+     * @param exception the Throwable that needs to be handled
+     * @return true if this handler can handle the Throwable, false otherwise.
+     */
+    boolean canHandle(Throwable exception);
+
+    /**
+     * Handle the given {@link Throwable} and return an {@link ApiErrorResponse} instance
+     * that will be serialized to JSON and returned from the controller method that has
+     * thrown the Throwable.
+     *
+     * @param exception the Throwable that needs to be handled
+     * @return the non-null ApiErrorResponse
+     */
+    ApiErrorResponse handle(Throwable exception);
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+There is also the <code>io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.AbstractApiExceptionHandler</code> implementation that you can use as a base class.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>As an example, imagine you want to add the first-level cause of an Exception.</p>
+</div>
+<div class="paragraph">
+<p>The implementation could look something like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="fold-block">package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
+
+</span><span class="fold-block hide-when-folded">import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
+
+</span><span class="fold-block">@Component <i class="conum" data-value="1"></i><b>(1)</b>
+public class CustomExceptionApiExceptionHandler implements ApiExceptionHandler { <i class="conum" data-value="2"></i><b>(2)</b>
+    @Override
+    public boolean canHandle(Throwable exception) {
+        return exception instanceof CustomException; <i class="conum" data-value="3"></i><b>(3)</b>
+    }
+
+    @Override
+    public ApiErrorResponse handle(Throwable exception) {
+        CustomException customException = (CustomException) exception;
+
+        ApiErrorResponse response = new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, <i class="conum" data-value="4"></i><b>(4)</b>
+                                                         "MY_CUSTOM_EXCEPTION",
+                                                         exception.getMessage());
+        Throwable cause = customException.getCause();
+        Map&lt;String, Object&gt; nestedCause = new HashMap&lt;&gt;();
+        nestedCause.put("code", "CAUSE");
+        nestedCause.put("message", cause.getMessage());
+        response.addErrorProperty("cause", nestedCause); <i class="conum" data-value="5"></i><b>(5)</b>
+
+        return response;
+    }
+}
+</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Ensure your custom handler is added to the Spring context.
+Easiest is just add the <code>@Component</code> annotation.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Implement the <code>ApiExceptionHandler</code> interface.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Check the exception type.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Create the <code>ApiErrorResponse</code> instance.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Use <code>addErrorProperty</code> to add custom fields to the response.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This will result in this JSON response:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "code": "MY_CUSTOM_EXCEPTION",
+  "message": "parent exception message",
+  "cause": {
+    "code": "CAUSE",
+    "message": "child IOException message"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="properties"><a class="anchor" href="#properties"></a>5. Properties</h2>
 <div class="sectionbody">
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1359,7 +1494,7 @@ One of <code>FULL_QUALIFIED_NAME</code>, <code>ALL_CAPS_CONVERSION</code>.</p></
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-03-27 17:31:01 UTC
+Last updated 2021-03-28 13:43:23 UTC
 </div>
 </div>
 </div>
