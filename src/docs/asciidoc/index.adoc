@@ -12,6 +12,9 @@ Wim Deblauwe
 :hide-uri-scheme:
 :docinfo: shared,private
 
+:include: ../../main/java/io/github/wimdeblauwe/errorhandlingspringbootstarter
+:include-test: ../../test/java/io/github/wimdeblauwe/errorhandlingspringbootstarter
+
 This documentation is for version {project-version}.
 
 == Goal
@@ -924,6 +927,48 @@ error.handling.full-stacktrace-classes[1]=org.springframework.http.converter.Htt
 With this configuration, all exceptions will have a single log line in the logging output, but `NullPointerException` and `HttpMessageNotReadableException` will have full stack traces printed.
 
 NOTE: Only the exact matches of the listed classes are used, not the subclasses of the specified classes.
+
+== Custom exception handler
+
+If the <<Configuration,extensive customization options>> are not enough, you can write your own `ApiExceptionHandler` implementation.
+
+The contract that you need to implement is defined in the `io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler` interface:
+
+[source,java]
+----
+include::{include}/ApiExceptionHandler.java[]
+----
+
+NOTE: There is also the `io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.AbstractApiExceptionHandler` implementation that you can use as a base class.
+
+As an example, imagine you want to add the first-level cause of an Exception.
+
+The implementation could look something like this:
+
+[source,java]
+----
+include::{include-test}/handler/CustomExceptionApiExceptionHandler.java[]
+----
+<.> Ensure your custom handler is added to the Spring context.
+Easiest is just add the `@Component` annotation.
+<.> Implement the `ApiExceptionHandler` interface.
+<.> Check the exception type.
+<.> Create the `ApiErrorResponse` instance.
+<.> Use `addErrorProperty` to add custom fields to the response.
+
+This will result in this JSON response:
+
+[source,json]
+----
+{
+  "code": "MY_CUSTOM_EXCEPTION",
+  "message": "parent exception message",
+  "cause": {
+    "code": "CAUSE",
+    "message": "child IOException message"
+  }
+}
+----
 
 == Properties
 
