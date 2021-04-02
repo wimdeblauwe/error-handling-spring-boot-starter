@@ -211,6 +211,22 @@ error.handling.http-statuses.java.lang.IllegalArgumentException=bad_request
 By setting this, any `IllegalArgumentException` that happens will have a _400 Bad Request_ response code.
 The values are the enum values from https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/http/HttpStatus.html[`org.springframework.http.HttpStatus`].
 
+==== Use `ResponseStatusException`
+
+When the exception class is `org.springframework.web.server.ResponseStatusException` (or one of the sub-classes), then the response status is taken from the status set on the Exception itself.
+
+As an example, when a `MethodNotAllowedException` is thrown, this is the resulting JSON:
+
+[source,json]
+----
+{
+  "code": "org.springframework.web.server.MethodNotAllowedException",
+  "message": "405 METHOD_NOT_ALLOWED \"Request method 'OPTIONS' not supported\""
+}
+----
+
+and the response code will be _405 Method Not Allowed_.
+
 === Error codes
 
 ==== Error code style

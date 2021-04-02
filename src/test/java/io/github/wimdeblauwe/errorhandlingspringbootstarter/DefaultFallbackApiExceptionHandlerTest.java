@@ -1,11 +1,15 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import org.assertj.core.api.HamcrestCondition;
+import org.assertj.core.util.Lists;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.MethodNotAllowedException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -173,6 +177,25 @@ class DefaultFallbackApiExceptionHandlerTest {
         assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.nullValue()));
     }
 
+    @Test
+    void testResponseStatusForResponseStatusException() {
+        ErrorHandlingProperties properties = new ErrorHandlingProperties();
+        DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+        ApiErrorResponse response = handler.handle(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "Test of a response status exception message"));
+        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.I_AM_A_TEAPOT);
+        assertThat(response.getCode()).isEqualTo(ResponseStatusException.class.getName());
+        assertThat(response.getMessage()).isEqualTo("418 I_AM_A_TEAPOT \"Test of a response status exception message\"");
+    }
+
+    @Test
+    void testResponseStatusForMethodNotAllowedException() {
+        ErrorHandlingProperties properties = new ErrorHandlingProperties();
+        DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+        ApiErrorResponse response = handler.handle(new MethodNotAllowedException(HttpMethod.OPTIONS, Lists.newArrayList(HttpMethod.GET, HttpMethod.POST)));
+        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
+        assertThat(response.getCode()).isEqualTo(MethodNotAllowedException.class.getName());
+        assertThat(response.getMessage()).isEqualTo("405 METHOD_NOT_ALLOWED \"Request method 'OPTIONS' not supported\"");
+    }
 
     static class MyEntityNotFoundException extends RuntimeException {
 
