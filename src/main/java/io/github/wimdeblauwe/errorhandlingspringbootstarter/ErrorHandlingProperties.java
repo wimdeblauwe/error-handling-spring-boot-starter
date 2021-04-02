@@ -22,6 +22,8 @@ public class ErrorHandlingProperties {
 
     private DefaultErrorCodeStrategy defaultErrorCodeStrategy = DefaultErrorCodeStrategy.FULL_QUALIFIED_NAME;
 
+    private boolean httpStatusInJsonResponse = false;
+
     private Map<String, HttpStatus> httpStatuses = new HashMap<>();
 
     private Map<String, String> codes = new HashMap<>();
@@ -66,6 +68,14 @@ public class ErrorHandlingProperties {
 
     public void setDefaultErrorCodeStrategy(DefaultErrorCodeStrategy defaultErrorCodeStrategy) {
         this.defaultErrorCodeStrategy = defaultErrorCodeStrategy;
+    }
+
+    public boolean isHttpStatusInJsonResponse() {
+        return httpStatusInJsonResponse;
+    }
+
+    public void setHttpStatusInJsonResponse(boolean httpStatusInJsonResponse) {
+        this.httpStatusInJsonResponse = httpStatusInJsonResponse;
     }
 
     public Map<String, HttpStatus> getHttpStatuses() {

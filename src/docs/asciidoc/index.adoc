@@ -227,6 +227,28 @@ As an example, when a `MethodNotAllowedException` is thrown, this is the resulti
 
 and the response code will be _405 Method Not Allowed_.
 
+==== Add HTTP response status in JSON response
+
+It is possible to add the HTTP response status in the JSON response payload itself as well.
+This is not the case by default.
+To enable this, set the following property:
+
+[source,properties]
+----
+error.handling.http-status-in-json-response=true
+----
+
+The resulting JSON response will now be:
+
+[source,json]
+----
+{
+  "status": 404,
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id 123"
+}
+----
+
 === Error codes
 
 ==== Error code style
@@ -988,23 +1010,28 @@ This will result in this JSON response:
 
 == Properties
 
+[cols="m,a,a"]
 |===
 |Property |Description|Default
 
 |error.handling.enabled
 |Allows to enable or disable the error handling
-|true
+|`true`
 
 |error.handling.exception-logging
 |Allows to set how the exception should be logged.
 One of: `NO_LOGGING`, `MESSAGE_ONLY`,
 `WITH_STACKTRACE`.
-|MESSAGE_ONLY
+|`MESSAGE_ONLY`
 
 |error.handling.default-error-code-strategy
 |Determines how an Exception is converted into a `code` in case there is no `@ResponseErrorCode` present on the class.
 One of `FULL_QUALIFIED_NAME`, `ALL_CAPS_CONVERSION`.
 |`FULL_QUALIFIED_NAME`
+
+|error.handling.http-status-in-json-response
+|Boolean that allows to add a `status` field with the HTTP response code in the response JSON body.
+|`false`
 
 |error.handling.http-statuses
 |Allows to set the HttpStatus response code to use for the full qualified name of an `Exception`

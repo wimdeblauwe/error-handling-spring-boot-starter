@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.IOException;
 
@@ -105,6 +106,28 @@ class ApiErrorResponseSerializationTest {
                 jsonAssert -> jsonAssert.node("message").isEqualTo("Test message"),
                 jsonAssert -> jsonAssert.node("httpStatus").isAbsent(),
                 jsonAssert -> jsonAssert.node("property1").isNull()
+        );
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    void testHttpStatusInJsonResponse() throws IOException {
+        properties.setHttpStatusInJsonResponse(true);
+        ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_REQUEST, "TEST_CODE", "Test message");
+
+        String json = objectMapper.writeValueAsString(response);
+        assertThatJson(json).and(
+                jsonAssert -> jsonAssert.node("status").isEqualTo(400)
+        );
+    }
+
+    @Test
+    void testHttpStatusInJsonResponseDisabledByDefault() throws IOException {
+        ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_REQUEST, "TEST_CODE", "Test message");
+
+        String json = objectMapper.writeValueAsString(response);
+        assertThatJson(json).and(
+                jsonAssert -> jsonAssert.node("status").isAbsent()
         );
     }
 
