@@ -55,6 +55,8 @@
 <ul class="sectlevel3">
 <li><a href="#set-http-response-status-via-responsestatus">3.1.1. Set HTTP response status via <code>@ResponseStatus</code></a></li>
 <li><a href="#set-http-response-status-via-properties">3.1.2. Set HTTP response status via properties</a></li>
+<li><a href="#use-responsestatusexception">3.1.3. Use <code>ResponseStatusException</code></a></li>
+<li><a href="#add-http-response-status-in-json-response">3.1.4. Add HTTP response status in JSON response</a></li>
 </ul>
 </li>
 <li><a href="#error-codes">3.2. Error codes</a>
@@ -103,7 +105,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 1.4.0.</p>
+<p>This documentation is for version 1.5.0.</p>
 </div>
 </div>
 </div>
@@ -182,7 +184,7 @@ public class UserNotFoundException extends RuntimeException {
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-json" data-lang="json">{
-  "code": "com.company.application.user.UserNotFoundException",
+  "code": "USER_NOT_FOUND",
   "message": "Could not find user with id 123"
 }</code></pre>
 </div>
@@ -365,30 +367,85 @@ This is mostly useful if you don&#8217;t control the sources of the Exception.</
 The values are the enum values from <a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/http/HttpStatus.html"><code>org.springframework.http.HttpStatus</code></a>.</p>
 </div>
 </div>
+<div class="sect3">
+<h4 id="use-responsestatusexception"><a class="anchor" href="#use-responsestatusexception"></a>3.1.3. Use <code>ResponseStatusException</code></h4>
+<div class="paragraph">
+<p>When the exception class is <code>org.springframework.web.server.ResponseStatusException</code> (or one of the sub-classes), then the response status is taken from the status set on the Exception itself.</p>
+</div>
+<div class="paragraph">
+<p>As an example, when a <code>MethodNotAllowedException</code> is thrown, this is the resulting JSON:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "code": "METHOD_NOT_ALLOWED",
+  "message": "405 METHOD_NOT_ALLOWED \"Request method 'OPTIONS' not supported\""
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and the response code will be <em>405 Method Not Allowed</em>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="add-http-response-status-in-json-response"><a class="anchor" href="#add-http-response-status-in-json-response"></a>3.1.4. Add HTTP response status in JSON response</h4>
+<div class="paragraph">
+<p>It is possible to add the HTTP response status in the JSON response payload itself as well.
+This is not the case by default.
+To enable this, set the following property:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.http-status-in-json-response=true</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The resulting JSON response will now be:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "status": 404,
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id 123"
+}</code></pre>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="error-codes"><a class="anchor" href="#error-codes"></a>3.2. Error codes</h3>
 <div class="sect3">
 <h4 id="error-code-style"><a class="anchor" href="#error-code-style"></a>3.2.1. Error code style</h4>
 <div class="paragraph">
-<p>By default, the full qualified name of the <code>Exception</code> class is used as the <code>code</code> in the response.
-If you like to use ALL_CAPS style for the codes, then specify this property:</p>
+<p>By default, the full qualified name of the <code>Exception</code> class is converted to ALL_CAPS to be used as the <code>code</code> in the response.</p>
+</div>
+<div class="paragraph">
+<p>If you like to use the plain full qualified name style for the codes, then specify this property:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.default-error-code-strategy=all_caps_conversion</code></pre>
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.default-error-code-strategy=FULL_QUALIFIED_NAME</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>This style will truncate <code>Exception</code> from the class name and convert the camel case into upper case snake case.</p>
-</div>
-<div class="paragraph">
-<p>For a class called <code>UserNotFoundException</code>, this will result in the following JSON:</p>
+<p>For a class called <code>UserNotFoundException</code>, this default style (<code>ALL_CAPS</code>) will result in the following JSON:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-json" data-lang="json">{
   "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id 123"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Using <code>FULL_QUALIFIED_NAME</code>, the result will be:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "code": "com.company.application.user.UserNotFoundException",
   "message": "Could not find user with id 123"
 }</code></pre>
 </div>
@@ -591,7 +648,7 @@ public class UserNotFoundException extends RuntimeException {
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-json" data-lang="json">{
-  "code": "com.company.application.user.UserNotFoundException",
+  "code": "USER_NOT_FOUND",
   "message": "Could not find user with id 123" <i class="conum" data-value="1"></i><b>(1)</b>
 }</code></pre>
 </div>
@@ -1435,57 +1492,110 @@ Easiest is just add the <code>@Component</code> annotation.</td>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">error.handling.enabled</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Allows to enable or disable the error handling</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Allows to enable or disable the error handling</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>true</code></p>
+</div></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">error.handling.exception-logging</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Allows to set how the exception should be logged.
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.exception-logging</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Allows to set how the exception should be logged.
 One of: <code>NO_LOGGING</code>, <code>MESSAGE_ONLY</code>,
-<code>WITH_STACKTRACE</code>.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">MESSAGE_ONLY</p></td>
+<code>WITH_STACKTRACE</code>.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>MESSAGE_ONLY</code></p>
+</div></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">error.handling.default-error-code-strategy</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Determines how an Exception is converted into a <code>code</code> in case there is no <code>@ResponseErrorCode</code> present on the class.
-One of <code>FULL_QUALIFIED_NAME</code>, <code>ALL_CAPS_CONVERSION</code>.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>FULL_QUALIFIED_NAME</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.full-stacktrace-classes</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Allows to specify a list of full qualified names of Exception classes that will always print a stack trace in the logging, regardless of the <code>error.handling.exception-logging</code> setting.
+See <a href="#logging">Logging</a> for more info.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">error.handling.http-statuses</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Allows to set the HttpStatus response code to use for the full qualified name of an <code>Exception</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>HttpStatus.INTERNAL_SERVER_ERROR</code> is used for custom exceptions have no specific response status set here.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.default-error-code-strategy</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Determines how an Exception is converted into a <code>code</code> in case there is no <code>@ResponseErrorCode</code> present on the class.
+One of <code>FULL_QUALIFIED_NAME</code>, <code>ALL_CAPS</code>.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>ALL_CAPS</code></p>
+</div></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">error.handling.codes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Allows to set the code that should be used for the full qualified name of an <code>Exception</code> or the name of a validation annotation.</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.http-status-in-json-response</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Boolean that allows to add a <code>status</code> field with the HTTP response code in the response JSON body.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>false</code></p>
+</div></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">error.handling.messages</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Allows to set the message that should be used for the full qualified name of an <code>Exception</code> or the name of a validation annotation.</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.http-statuses</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Allows to set the HttpStatus response code to use for the full qualified name of an <code>Exception</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>HttpStatus.INTERNAL_SERVER_ERROR</code> is used for custom exceptions have no specific response status set here.</p>
+</div></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">error.handling.json-field-names.code</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The field name that is used to serialize the <code>code</code> to JSON.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>code</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.codes</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Allows to set the code that should be used for the full qualified name of an <code>Exception</code> or the name of a validation annotation.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">error.handling.json-field-names.message</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The field name that is used to serialize the <code>message</code> to JSON.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>message</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.messages</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Allows to set the message that should be used for the full qualified name of an <code>Exception</code> or the name of a validation annotation.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">error.handling.json-field-names.fieldErrors</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The field name that is used to serialize the <code>fieldErrors</code> to JSON.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>fieldErrors</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.json-field-names.code</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The field name that is used to serialize the <code>code</code> to JSON.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>code</code></p>
+</div></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">error.handling.json-field-names.globalErrors</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The field name that is used to serialize the <code>globalErrors</code> to JSON.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>globalErrors</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.json-field-names.message</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The field name that is used to serialize the <code>message</code> to JSON.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>message</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.json-field-names.fieldErrors</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The field name that is used to serialize the <code>fieldErrors</code> to JSON.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>fieldErrors</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.json-field-names.globalErrors</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The field name that is used to serialize the <code>globalErrors</code> to JSON.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>globalErrors</code></p>
+</div></div></td>
 </tr>
 </tbody>
 </table>
@@ -1494,7 +1604,7 @@ One of <code>FULL_QUALIFIED_NAME</code>, <code>ALL_CAPS_CONVERSION</code>.</p></
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-03-28 13:49:20 UTC
+Last updated 2021-04-02 13:59:53 UTC
 </div>
 </div>
 </div>
