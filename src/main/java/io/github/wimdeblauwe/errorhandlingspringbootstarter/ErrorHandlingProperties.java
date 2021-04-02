@@ -20,7 +20,9 @@ public class ErrorHandlingProperties {
 
     private List<Class<? extends Throwable>> fullStacktraceClasses = new ArrayList<>();
 
-    private DefaultErrorCodeStrategy defaultErrorCodeStrategy = DefaultErrorCodeStrategy.FULL_QUALIFIED_NAME;
+    private DefaultErrorCodeStrategy defaultErrorCodeStrategy = DefaultErrorCodeStrategy.ALL_CAPS;
+
+    private boolean httpStatusInJsonResponse = false;
 
     private Map<String, HttpStatus> httpStatuses = new HashMap<>();
 
@@ -68,6 +70,14 @@ public class ErrorHandlingProperties {
         this.defaultErrorCodeStrategy = defaultErrorCodeStrategy;
     }
 
+    public boolean isHttpStatusInJsonResponse() {
+        return httpStatusInJsonResponse;
+    }
+
+    public void setHttpStatusInJsonResponse(boolean httpStatusInJsonResponse) {
+        this.httpStatusInJsonResponse = httpStatusInJsonResponse;
+    }
+
     public Map<String, HttpStatus> getHttpStatuses() {
         return httpStatuses;
     }
@@ -100,7 +110,7 @@ public class ErrorHandlingProperties {
 
     enum DefaultErrorCodeStrategy {
         FULL_QUALIFIED_NAME,
-        ALL_CAPS_CONVERSION
+        ALL_CAPS
     }
 
     public static class JsonFieldNames {

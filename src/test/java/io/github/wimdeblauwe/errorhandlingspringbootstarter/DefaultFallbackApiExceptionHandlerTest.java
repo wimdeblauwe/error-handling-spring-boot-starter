@@ -1,11 +1,15 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import org.assertj.core.api.HamcrestCondition;
+import org.assertj.core.util.Lists;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.MethodNotAllowedException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,17 +60,17 @@ class DefaultFallbackApiExceptionHandlerTest {
         }
 
         @Test
-        void codeUsesFqnWhenNoResponseErrorCodeAnnotation() {
+        void codeUsesDefaultWhenNoResponseErrorCodeAnnotation() {
             ErrorHandlingProperties properties = new ErrorHandlingProperties();
             DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
             ApiErrorResponse response = handler.handle(new MyEntityNotFoundException());
-            assertThat(response.getCode()).isEqualTo("io.github.wimdeblauwe.errorhandlingspringbootstarter.DefaultFallbackApiExceptionHandlerTest$MyEntityNotFoundException");
+            assertThat(response.getCode()).isEqualTo("MY_ENTITY_NOT_FOUND");
         }
 
         @Test
         void codeUsesAllCapsWhenConfigured() {
             ErrorHandlingProperties properties = new ErrorHandlingProperties();
-            properties.setDefaultErrorCodeStrategy(ErrorHandlingProperties.DefaultErrorCodeStrategy.ALL_CAPS_CONVERSION);
+            properties.setDefaultErrorCodeStrategy(ErrorHandlingProperties.DefaultErrorCodeStrategy.ALL_CAPS);
             DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
             ApiErrorResponse response = handler.handle(new MyEntityNotFoundException());
             assertThat(response.getCode()).isEqualTo("MY_ENTITY_NOT_FOUND");
@@ -75,7 +79,7 @@ class DefaultFallbackApiExceptionHandlerTest {
         @Test
         void codeUsesOverrideAlways() {
             ErrorHandlingProperties properties = new ErrorHandlingProperties();
-            properties.setDefaultErrorCodeStrategy(ErrorHandlingProperties.DefaultErrorCodeStrategy.ALL_CAPS_CONVERSION);
+            properties.setDefaultErrorCodeStrategy(ErrorHandlingProperties.DefaultErrorCodeStrategy.ALL_CAPS);
             Map<String, String> codes = new HashMap<>();
             codes.put("io.github.wimdeblauwe.errorhandlingspringbootstarter.DefaultFallbackApiExceptionHandlerTest$MyEntityNotFoundException", "MY_CUSTOM_ERROR_CODE");
             properties.setCodes(codes);
@@ -91,7 +95,7 @@ class DefaultFallbackApiExceptionHandlerTest {
         DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
         ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnField("myValue"));
         assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo(ExceptionWithResponseErrorPropertyOnField.class.getName());
+        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD");
         assertThat(response.getMessage()).isNull();
         assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
     }
@@ -102,7 +106,7 @@ class DefaultFallbackApiExceptionHandlerTest {
         DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
         ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnField("This is an exceptional case.", "myValue"));
         assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo(ExceptionWithResponseErrorPropertyOnField.class.getName());
+        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD");
         assertThat(response.getMessage()).isEqualTo("This is an exceptional case.");
         assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
     }
@@ -113,7 +117,7 @@ class DefaultFallbackApiExceptionHandlerTest {
         DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
         ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnField(null));
         assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo(ExceptionWithResponseErrorPropertyOnField.class.getName());
+        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD");
         assertThat(response.getMessage()).isNull();
         assertThat(response.getProperties()).doesNotContainKey("myProperty");
     }
@@ -124,7 +128,7 @@ class DefaultFallbackApiExceptionHandlerTest {
         DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
         ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnFieldWithIncludeIfNull(null));
         assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo(ExceptionWithResponseErrorPropertyOnFieldWithIncludeIfNull.class.getName());
+        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD_WITH_INCLUDE_IF_NULL");
         assertThat(response.getMessage()).isNull();
         assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.nullValue()));
     }
@@ -135,7 +139,7 @@ class DefaultFallbackApiExceptionHandlerTest {
         DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
         ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethod("myValue"));
         assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo(ExceptionWithResponseErrorPropertyOnMethod.class.getName());
+        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD");
         assertThat(response.getMessage()).isNull();
         assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
     }
@@ -146,7 +150,7 @@ class DefaultFallbackApiExceptionHandlerTest {
         DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
         ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethod("This is an exceptional case.", "myValue"));
         assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo(ExceptionWithResponseErrorPropertyOnMethod.class.getName());
+        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD");
         assertThat(response.getMessage()).isEqualTo("This is an exceptional case.");
         assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
     }
@@ -157,7 +161,7 @@ class DefaultFallbackApiExceptionHandlerTest {
         DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
         ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethod(null));
         assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo(ExceptionWithResponseErrorPropertyOnMethod.class.getName());
+        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD");
         assertThat(response.getMessage()).isNull();
         assertThat(response.getProperties()).doesNotContainKey("myProperty");
     }
@@ -168,11 +172,30 @@ class DefaultFallbackApiExceptionHandlerTest {
         DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
         ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethodWithIncludeIfNull(null));
         assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo(ExceptionWithResponseErrorPropertyOnMethodWithIncludeIfNull.class.getName());
+        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD_WITH_INCLUDE_IF_NULL");
         assertThat(response.getMessage()).isNull();
         assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.nullValue()));
     }
 
+    @Test
+    void testResponseStatusForResponseStatusException() {
+        ErrorHandlingProperties properties = new ErrorHandlingProperties();
+        DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+        ApiErrorResponse response = handler.handle(new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "Test of a response status exception message"));
+        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.I_AM_A_TEAPOT);
+        assertThat(response.getCode()).isEqualTo("RESPONSE_STATUS");
+        assertThat(response.getMessage()).isEqualTo("418 I_AM_A_TEAPOT \"Test of a response status exception message\"");
+    }
+
+    @Test
+    void testResponseStatusForMethodNotAllowedException() {
+        ErrorHandlingProperties properties = new ErrorHandlingProperties();
+        DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+        ApiErrorResponse response = handler.handle(new MethodNotAllowedException(HttpMethod.OPTIONS, Lists.newArrayList(HttpMethod.GET, HttpMethod.POST)));
+        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
+        assertThat(response.getCode()).isEqualTo("METHOD_NOT_ALLOWED");
+        assertThat(response.getMessage()).isEqualTo("405 METHOD_NOT_ALLOWED \"Request method 'OPTIONS' not supported\"");
+    }
 
     static class MyEntityNotFoundException extends RuntimeException {
 

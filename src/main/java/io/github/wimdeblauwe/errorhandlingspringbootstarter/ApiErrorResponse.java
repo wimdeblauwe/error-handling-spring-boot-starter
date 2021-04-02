@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-//@JsonSerialize(using = ApiErrorResponseSerializer.class)
 public class ApiErrorResponse {
     private final HttpStatus httpStatus;
     private final String code;

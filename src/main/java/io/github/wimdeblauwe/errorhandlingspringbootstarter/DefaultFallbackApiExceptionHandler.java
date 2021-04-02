@@ -6,6 +6,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -123,6 +124,10 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
             return responseStatus.value();
         }
 
+        if (exception instanceof ResponseStatusException) {
+            return ((ResponseStatusException) exception).getStatus();
+        }
+
         return properties.getHttpStatuses().getOrDefault(exception.getClass().getName(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -140,7 +145,7 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
                     case FULL_QUALIFIED_NAME:
                         code = exception.getClass().getName();
                         break;
-                    case ALL_CAPS_CONVERSION:
+                    case ALL_CAPS:
                         code = convertToAllCaps(exception.getClass().getSimpleName());
                         break;
                     default:

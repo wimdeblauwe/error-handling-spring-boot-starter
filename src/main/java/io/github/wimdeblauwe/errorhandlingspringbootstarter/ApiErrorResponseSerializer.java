@@ -23,6 +23,9 @@ public class ApiErrorResponseSerializer extends JsonSerializer<ApiErrorResponse>
                           JsonGenerator jsonGenerator,
                           SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeStartObject();
+        if (properties.isHttpStatusInJsonResponse()) {
+            jsonGenerator.writeNumberField("status", errorResponse.getHttpStatus().value());
+        }
         ErrorHandlingProperties.JsonFieldNames fieldNames = properties.getJsonFieldNames();
         jsonGenerator.writeStringField(fieldNames.getCode(), errorResponse.getCode());
         jsonGenerator.writeStringField(fieldNames.getMessage(), errorResponse.getMessage());
