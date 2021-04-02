@@ -27,7 +27,7 @@ class ErrorHandlingPropertiesTest {
         assertThat(properties.getJsonFieldNames().getFieldErrors()).isEqualTo("veldFouten");
         assertThat(properties.getJsonFieldNames().getGlobalErrors()).isEqualTo("globaleFouten");
         assertThat(properties.getExceptionLogging()).isEqualTo(ErrorHandlingProperties.ExceptionLogging.WITH_STACKTRACE);
-        assertThat(properties.getDefaultErrorCodeStrategy()).isEqualTo(ErrorHandlingProperties.DefaultErrorCodeStrategy.ALL_CAPS_CONVERSION);
+        assertThat(properties.getDefaultErrorCodeStrategy()).isEqualTo(ErrorHandlingProperties.DefaultErrorCodeStrategy.ALL_CAPS);
         assertThat(properties.getHttpStatuses())
                 .hasSize(1)
                 .hasEntrySatisfying("java.lang.IllegalArgumentException", httpStatus -> assertThat(httpStatus).isEqualTo(HttpStatus.BAD_REQUEST));

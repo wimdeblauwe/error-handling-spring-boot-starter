@@ -145,7 +145,7 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
                     case FULL_QUALIFIED_NAME:
                         code = exception.getClass().getName();
                         break;
-                    case ALL_CAPS_CONVERSION:
+                    case ALL_CAPS:
                         code = convertToAllCaps(exception.getClass().getSimpleName());
                         break;
                     default:
