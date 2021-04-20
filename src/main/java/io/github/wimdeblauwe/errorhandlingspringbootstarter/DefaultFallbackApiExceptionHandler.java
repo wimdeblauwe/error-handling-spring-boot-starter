@@ -128,7 +128,24 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
             return ((ResponseStatusException) exception).getStatus();
         }
 
-        return properties.getHttpStatuses().getOrDefault(exception.getClass().getName(), HttpStatus.INTERNAL_SERVER_ERROR);
+        // Find the first existing HttpStatus code throw the class hierarchy.
+        HttpStatus status = getHttpStatus(exception.getClass());
+        if (status != null) {
+            return status;
+        }
+        // If not found return default
+        return HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+
+    private HttpStatus getHttpStatus(Class<?> exceptionClass) {
+        if (exceptionClass == null) {
+            return null;
+        }
+        String className = exceptionClass.getName();
+        if (properties.getHttpStatuses().containsKey(className)) {
+            return properties.getHttpStatuses().get(className);
+        }
+        return getHttpStatus(exceptionClass.getSuperclass());
     }
 
     private String getErrorCode(Throwable exception) {
