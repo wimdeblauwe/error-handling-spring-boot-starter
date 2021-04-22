@@ -119,21 +119,18 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
     }
 
     private HttpStatus getHttpStatus(Throwable exception) {
-        ResponseStatus responseStatus = AnnotationUtils.getAnnotation(exception.getClass(), ResponseStatus.class);
-        if (responseStatus != null) {
-            return responseStatus.value();
-        }
-
-        if (exception instanceof ResponseStatusException) {
-            return ((ResponseStatusException) exception).getStatus();
-        }
-
-        // Find the first existing HttpStatus code throw the class hierarchy.
+        // Find the first existing HttpStatus override throw the class hierarchy
         HttpStatus status = getHttpStatus(exception.getClass());
         if (status != null) {
             return status;
         }
-        // If not found return default
+
+        // If not, found check if the exception includes the HttpStatus
+        if (exception instanceof ResponseStatusException) {
+            return ((ResponseStatusException) exception).getStatus();
+        }
+
+        // If not, return default
         return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
@@ -141,44 +138,52 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
         if (exceptionClass == null) {
             return null;
         }
+        // Check if a property overriding exists
         String className = exceptionClass.getName();
         if (properties.getHttpStatuses().containsKey(className)) {
             return properties.getHttpStatuses().get(className);
         }
+        // If not, check if an annotation exists
+        ResponseStatus responseStatus = AnnotationUtils.getAnnotation(exceptionClass, ResponseStatus.class);
+        if (responseStatus != null) {
+            return responseStatus.value();
+        }
+        // If not, check ancestor
         return getHttpStatus(exceptionClass.getSuperclass());
     }
 
     private String getErrorCode(Throwable exception) {
+         // Find the first existing error code override throw the class hierarchy
         String code = getErrorCode(exception.getClass());
-        if (code == null) {
-            switch (properties.getDefaultErrorCodeStrategy()) {
-                case FULL_QUALIFIED_NAME:
-                    code = exception.getClass().getName();
-                    break;
-                case ALL_CAPS:
-                    code = convertToAllCaps(exception.getClass().getSimpleName());
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown default error code strategy: " + properties.getDefaultErrorCodeStrategy());
-            }
+        if (code != null) {
+            return code;
         }
-
-        return code;
+        // If not found return default using configured CodeStrategy
+        switch (properties.getDefaultErrorCodeStrategy()) {
+            case FULL_QUALIFIED_NAME:
+                return exception.getClass().getName();
+            case ALL_CAPS:
+                return convertToAllCaps(exception.getClass().getSimpleName());
+            default:
+                throw new IllegalArgumentException("Unknown default error code strategy: " + properties.getDefaultErrorCodeStrategy());
+        }
     }
 
     private String getErrorCode(Class<?> exceptionClass) {
         if (exceptionClass == null) {
             return null;
         }
+        // Check if a property overriding exisits
         String exceptionClassName = exceptionClass.getName();
         if (properties.getCodes().containsKey(exceptionClassName)) {
             return properties.getCodes().get(exceptionClassName);
         }
+        // If not, check if an annotation exists
         ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exceptionClass, ResponseErrorCode.class);
         if (errorCodeAnnotation != null) {
             return errorCodeAnnotation.value();
         }
-
+        // If not, check ancestor
         return getErrorCode(exceptionClass.getSuperclass());
     }
 
