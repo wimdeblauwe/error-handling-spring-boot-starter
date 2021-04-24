@@ -19,6 +19,7 @@ public class ApiErrorResponse {
     private final Map<String, Object> properties;
     private final List<ApiFieldError> fieldErrors;
     private final List<ApiGlobalError> globalErrors;
+    private final List<ApiParameterError> parameterErrors;
 
     public ApiErrorResponse(HttpStatus httpStatus, String code, String message) {
         this.httpStatus = httpStatus;
@@ -27,6 +28,7 @@ public class ApiErrorResponse {
         this.properties = new HashMap<>();
         this.fieldErrors = new ArrayList<>();
         this.globalErrors = new ArrayList<>();
+        this.parameterErrors = new ArrayList<>();
     }
 
     @JsonIgnore
@@ -55,6 +57,10 @@ public class ApiErrorResponse {
         return globalErrors;
     }
 
+    public List<ApiParameterError> getParameterErrors() {
+        return parameterErrors;
+    }
+
     public void addErrorProperties(Map<String, Object> errorProperties) {
         properties.putAll(errorProperties);
     }
@@ -69,5 +75,9 @@ public class ApiErrorResponse {
 
     public void addGlobalError(ApiGlobalError globalError) {
         globalErrors.add(globalError);
+    }
+
+    public void addParameterError(ApiParameterError parameterError) {
+        parameterErrors.add(parameterError);
     }
 }

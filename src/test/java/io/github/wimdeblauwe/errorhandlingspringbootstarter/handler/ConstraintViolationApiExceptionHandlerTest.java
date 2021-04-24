@@ -15,12 +15,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.*;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.lang.annotation.ElementType;
@@ -31,13 +29,16 @@ import java.util.Objects;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
 @ContextConfiguration(classes = {ErrorHandlingConfiguration.class,
-        ConstraintViolationApiExceptionHandlerTest.TestController.class})
+        ConstraintViolationApiExceptionHandlerTest.TestController.class,
+        ConstraintViolationApiExceptionHandlerTest.TestParameterValidationController.class})
 @Import(ConstraintViolationApiExceptionHandlerTest.TestService.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ConstraintViolationApiExceptionHandlerTest {
@@ -57,12 +58,31 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
                .andExpect(jsonPath("fieldErrors", hasSize(2)))
                .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
-               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
                .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
                .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
                .andExpect(jsonPath("globalErrors", hasSize(1)))
                .andExpect(jsonPath("globalErrors..code", allOf(hasItem("ValuesEqual"))))
                .andExpect(jsonPath("globalErrors..message", allOf(hasItem("Values not equal"))))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testConstraintViolationExceptionForParameter() throws Exception {
+        mockMvc.perform(get("/test/validation/parameter-validation")
+                                .param("page", "-1")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andDo(print())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 1"))
+               .andExpect(jsonPath("fieldErrors").doesNotExist())
+               .andExpect(jsonPath("globalErrors").doesNotExist())
+               .andExpect(jsonPath("parameterErrors[0].code").value("VALUE_LESS_THAN_MIN"))
+               .andExpect(jsonPath("parameterErrors[0].parameter").value("page"))
+               .andExpect(jsonPath("parameterErrors[0].message").value("must be greater than or equal to 0"))
+               .andExpect(jsonPath("parameterErrors[0].rejectedValue").value(-1))
         ;
     }
 
@@ -79,7 +99,7 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
                .andExpect(jsonPath("fieldErrors", hasSize(2)))
                .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
-               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
                .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
                .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
                .andExpect(jsonPath("globalErrors", hasSize(1)))
@@ -101,7 +121,7 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
                .andExpect(jsonPath("fieldErrors", hasSize(2)))
                .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("NOT_NULL"), hasItem("INVALID_SIZE"))))
-               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
                .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
                .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
                .andExpect(jsonPath("globalErrors", hasSize(1)))
@@ -123,7 +143,7 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
                .andExpect(jsonPath("fieldErrors", hasSize(2)))
                .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("VALUE_NOT_NULL"), hasItem("INVALID_SIZE"))))
-               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
                .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
                .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
                .andExpect(jsonPath("globalErrors", hasSize(1)))
@@ -145,7 +165,7 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
                .andExpect(jsonPath("fieldErrors", hasSize(2)))
                .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
-               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
                .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("required not to be null"), hasItem("size must be between 1 and 255"))))
                .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
                .andExpect(jsonPath("globalErrors", hasSize(1)))
@@ -167,7 +187,7 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
                .andExpect(jsonPath("fieldErrors", hasSize(2)))
                .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
-               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
                .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("value required not to be null"), hasItem("size must be between 1 and 255"))))
                .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
                .andExpect(jsonPath("globalErrors", hasSize(1)))
@@ -189,7 +209,7 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
                .andExpect(jsonPath("fieldErrors", hasSize(2)))
                .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
-               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
                .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
                .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
                .andExpect(jsonPath("globalErrors", hasSize(1)))
@@ -211,7 +231,7 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("message").value("Validation failed. Error count: 3"))
                .andExpect(jsonPath("fieldErrors", hasSize(2)))
                .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
-               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("doSomething.requestBody.value"), hasItem("doSomething.requestBody.value2"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
                .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
                .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
                .andExpect(jsonPath("globalErrors", hasSize(1)))
@@ -221,14 +241,25 @@ class ConstraintViolationApiExceptionHandlerTest {
     }
 
     @RestController
-    @RequestMapping("/test/validation")
+    @RequestMapping
     public static class TestController {
         @Autowired
         private TestService service;
 
-        @PostMapping
+        @PostMapping("/test/validation")
         public void doPostWithoutValidation(@RequestBody TestRequestBody requestBody) {
             service.doSomething(requestBody);
+        }
+    }
+
+    @RestController
+    @RequestMapping
+    @Validated
+    public static class TestParameterValidationController {
+
+        @GetMapping("/test/validation/parameter-validation")
+        public void someGetMethod(@RequestParam("page") @Min(value = 0) int page) {
+
         }
     }
 
