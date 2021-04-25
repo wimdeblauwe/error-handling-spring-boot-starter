@@ -119,6 +119,11 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
     }
 
     private HttpStatus getHttpStatus(Throwable exception) {
+        String exceptionClassName = exception.getClass().getName();
+        if (properties.getHttpStatuses().containsKey(exceptionClassName)) {
+            return properties.getHttpStatuses().get(exceptionClassName);
+        }
+
         ResponseStatus responseStatus = AnnotationUtils.getAnnotation(exception.getClass(), ResponseStatus.class);
         if (responseStatus != null) {
             return responseStatus.value();
@@ -128,7 +133,7 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
             return ((ResponseStatusException) exception).getStatus();
         }
 
-        return properties.getHttpStatuses().getOrDefault(exception.getClass().getName(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
     private String getErrorCode(Throwable exception) {

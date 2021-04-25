@@ -47,6 +47,15 @@ class DefaultFallbackApiExceptionHandlerTest {
             assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
         }
 
+        @Test
+        void propertiesHavePrecedenceOnAnnotation() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+            ExceptionWithBadRequestStatus exception = new ExceptionWithBadRequestStatus();
+            properties.getHttpStatuses().put(exception.getClass().getName(), HttpStatus.I_AM_A_TEAPOT);
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.I_AM_A_TEAPOT);
+        }
     }
 
     @Nested
