@@ -56,6 +56,20 @@ public class ApiErrorResponseSerializer extends JsonSerializer<ApiErrorResponse>
             jsonGenerator.writeEndArray();
         }
 
+        List<ApiParameterError> parameterErrors = errorResponse.getParameterErrors();
+        if (!parameterErrors.isEmpty()) {
+            jsonGenerator.writeArrayFieldStart(fieldNames.getParameterErrors());
+            for (ApiParameterError parameterError : parameterErrors) {
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeStringField(fieldNames.getCode(), parameterError.getCode());
+                jsonGenerator.writeStringField(fieldNames.getMessage(), parameterError.getMessage());
+                jsonGenerator.writeStringField("parameter", parameterError.getParameter());
+                jsonGenerator.writeObjectField("rejectedValue", parameterError.getRejectedValue());
+                jsonGenerator.writeEndObject();
+            }
+            jsonGenerator.writeEndArray();
+        }
+
         Map<String, Object> properties = errorResponse.getProperties();
         for (String property : properties.keySet()) {
             jsonGenerator.writeObjectField(property, properties.get(property));
