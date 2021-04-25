@@ -14,7 +14,7 @@ public class ObjectOptimisticLockingFailureApiExceptionHandler extends AbstractA
                                                              HttpStatusMapper httpStatusMapper,
                                                              ErrorCodeMapper errorCodeMapper,
                                                              ErrorMessageMapper errorMessageMapper) {
-        super(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Override

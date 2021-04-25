@@ -36,7 +36,7 @@ public class SpringSecurityApiExceptionHandler extends AbstractApiExceptionHandl
                                              HttpStatusMapper httpStatusMapper,
                                              ErrorCodeMapper errorCodeMapper,
                                              ErrorMessageMapper errorMessageMapper) {
-        super(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Override

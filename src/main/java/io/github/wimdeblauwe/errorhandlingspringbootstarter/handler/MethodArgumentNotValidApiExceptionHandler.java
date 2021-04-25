@@ -23,7 +23,7 @@ public class MethodArgumentNotValidApiExceptionHandler extends AbstractApiExcept
                                                      HttpStatusMapper httpStatusMapper,
                                                      ErrorCodeMapper errorCodeMapper,
                                                      ErrorMessageMapper errorMessageMapper) {
-        super(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Override

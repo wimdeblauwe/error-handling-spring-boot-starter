@@ -30,7 +30,7 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
                                                   HttpStatusMapper httpStatusMapper,
                                                   ErrorCodeMapper errorCodeMapper,
                                                   ErrorMessageMapper errorMessageMapper) {
-        super(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Override
