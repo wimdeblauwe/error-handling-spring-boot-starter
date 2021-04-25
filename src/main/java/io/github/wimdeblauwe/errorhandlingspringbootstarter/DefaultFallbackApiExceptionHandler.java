@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -16,7 +14,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 
@@ -24,17 +21,24 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFallbackApiExceptionHandler.class);
 
     private final ErrorHandlingProperties properties;
+    private final HttpStatusMapper httpStatusMapper;
+    private final ErrorCodeMapper errorCodeMapper;
 
-    public DefaultFallbackApiExceptionHandler(ErrorHandlingProperties properties) {
+    public DefaultFallbackApiExceptionHandler(ErrorHandlingProperties properties,
+                                              HttpStatusMapper httpStatusMapper,
+                                              ErrorCodeMapper errorCodeMapper) {
         this.properties = properties;
+        this.httpStatusMapper = httpStatusMapper;
+        this.errorCodeMapper = errorCodeMapper;
     }
 
     @Override
     public ApiErrorResponse handle(Throwable exception) {
-        HttpStatus statusCode = getHttpStatus(exception);
-        String errorCode = getErrorCode(exception);
+        HttpStatus statusCode = httpStatusMapper.getHttpStatus(exception);
+        String errorCode = errorCodeMapper.getErrorCode(exception);
+        String errorMessage = getErrorMessage(exception);
 
-        ApiErrorResponse response = new ApiErrorResponse(statusCode, errorCode, getErrorMessage(exception));
+        ApiErrorResponse response = new ApiErrorResponse(statusCode, errorCode, errorMessage);
         response.addErrorProperties(getMethodResponseErrorProperties(exception));
         response.addErrorProperties(getFieldResponseErrorProperties(exception));
 
@@ -116,50 +120,5 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
         }
 
         return method.getName();
-    }
-
-    private HttpStatus getHttpStatus(Throwable exception) {
-        String exceptionClassName = exception.getClass().getName();
-        if (properties.getHttpStatuses().containsKey(exceptionClassName)) {
-            return properties.getHttpStatuses().get(exceptionClassName);
-        }
-
-        ResponseStatus responseStatus = AnnotationUtils.getAnnotation(exception.getClass(), ResponseStatus.class);
-        if (responseStatus != null) {
-            return responseStatus.value();
-        }
-
-        if (exception instanceof ResponseStatusException) {
-            return ((ResponseStatusException) exception).getStatus();
-        }
-
-        return HttpStatus.INTERNAL_SERVER_ERROR;
-    }
-
-    private String getErrorCode(Throwable exception) {
-        String exceptionClassName = exception.getClass().getName();
-        if (properties.getCodes().containsKey(exceptionClassName)) {
-            return properties.getCodes().get(exceptionClassName);
-        }
-
-        ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exception.getClass(), ResponseErrorCode.class);
-        if (errorCodeAnnotation != null) {
-            return errorCodeAnnotation.value();
-        }
-
-        switch (properties.getDefaultErrorCodeStrategy()) {
-            case FULL_QUALIFIED_NAME:
-                return exception.getClass().getName();
-            case ALL_CAPS:
-                return convertToAllCaps(exception.getClass().getSimpleName());
-            default:
-                throw new IllegalArgumentException("Unknown default error code strategy: " + properties.getDefaultErrorCodeStrategy());
-        }
-    }
-
-    private String convertToAllCaps(String exceptionClassName) {
-        String result = exceptionClassName.replaceFirst("Exception$", "");
-        result = result.replaceAll("([a-z])([A-Z]+)", "$1_$2").toUpperCase(Locale.ENGLISH);
-        return result;
     }
 }

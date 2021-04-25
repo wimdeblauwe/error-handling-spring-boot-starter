@@ -28,8 +28,22 @@ public class ErrorHandlingConfiguration {
     }
 
     @Bean
-    public FallbackApiExceptionHandler defaultHandler(ErrorHandlingProperties properties) {
-        return new DefaultFallbackApiExceptionHandler(properties);
+    public HttpStatusMapper httpStatusMapper(ErrorHandlingProperties properties) {
+        return new HttpStatusMapper(properties);
+    }
+
+    @Bean
+    public ErrorCodeMapper errorCodeMapper(ErrorHandlingProperties properties) {
+        return new ErrorCodeMapper(properties);
+    }
+
+    @Bean
+    public FallbackApiExceptionHandler defaultHandler(ErrorHandlingProperties properties,
+                                                      HttpStatusMapper httpStatusMapper,
+                                                      ErrorCodeMapper errorCodeMapper) {
+        return new DefaultFallbackApiExceptionHandler(properties,
+                                                      httpStatusMapper,
+                                                      errorCodeMapper);
     }
 
     @Bean
