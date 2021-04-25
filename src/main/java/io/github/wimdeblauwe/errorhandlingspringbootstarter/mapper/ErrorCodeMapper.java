@@ -38,6 +38,22 @@ public class ErrorCodeMapper {
         }
     }
 
+    public String getErrorCode(String fieldSpecificErrorCode, String errorCode) {
+        if (properties.getCodes().containsKey(fieldSpecificErrorCode)) {
+            return properties.getCodes().get(fieldSpecificErrorCode);
+        }
+
+        return getErrorCode(errorCode);
+    }
+
+    public String getErrorCode(String errorCode) {
+        if (properties.getCodes().containsKey(errorCode)) {
+            return properties.getCodes().get(errorCode);
+        }
+
+        return errorCode;
+    }
+
     private String convertToAllCaps(String exceptionClassName) {
         String result = exceptionClassName.replaceFirst("Exception$", "");
         result = result.replaceAll("([a-z])([A-Z]+)", "$1_$2").toUpperCase(Locale.ENGLISH);

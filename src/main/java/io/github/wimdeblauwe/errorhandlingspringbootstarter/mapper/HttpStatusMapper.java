@@ -17,6 +17,10 @@ public class HttpStatusMapper {
     }
 
     public HttpStatus getHttpStatus(Throwable exception) {
+        return getHttpStatus(exception, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public HttpStatus getHttpStatus(Throwable exception, HttpStatus defaultHttpStatus) {
         String exceptionClassName = exception.getClass().getName();
         if (properties.getHttpStatuses().containsKey(exceptionClassName)) {
             return properties.getHttpStatuses().get(exceptionClassName);
@@ -31,7 +35,7 @@ public class HttpStatusMapper {
             return ((ResponseStatusException) exception).getStatus();
         }
 
-        return HttpStatus.INTERNAL_SERVER_ERROR;
+        return defaultHttpStatus;
     }
 
 }

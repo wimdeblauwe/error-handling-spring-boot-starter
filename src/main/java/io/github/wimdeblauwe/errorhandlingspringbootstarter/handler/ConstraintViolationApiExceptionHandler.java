@@ -1,6 +1,9 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,8 +26,11 @@ import java.util.stream.StreamSupport;
 public class ConstraintViolationApiExceptionHandler extends AbstractApiExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConstraintViolationApiExceptionHandler.class);
 
-    public ConstraintViolationApiExceptionHandler(ErrorHandlingProperties properties) {
-        super(properties);
+    public ConstraintViolationApiExceptionHandler(ErrorHandlingProperties properties,
+                                                  HttpStatusMapper httpStatusMapper,
+                                                  ErrorCodeMapper errorCodeMapper,
+                                                  ErrorMessageMapper errorMessageMapper) {
+        super(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Override
@@ -88,23 +94,13 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
     private String getCode(ConstraintViolation<?> constraintViolation) {
         String code = constraintViolation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
         String fieldSpecificCode = constraintViolation.getPropertyPath().toString() + "." + code;
-        if (hasConfiguredOverrideForCode(fieldSpecificCode)) {
-            return replaceCodeWithConfiguredOverrideIfPresent(fieldSpecificCode);
-        }
-        return replaceCodeWithConfiguredOverrideIfPresent(code);
+        return errorCodeMapper.getErrorCode(fieldSpecificCode, code);
     }
 
     private String getMessage(ConstraintViolation<?> constraintViolation) {
         String code = constraintViolation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
         String fieldSpecificCode = constraintViolation.getPropertyPath().toString() + "." + code;
-        if (hasConfiguredOverrideForMessage(fieldSpecificCode)) {
-            return getOverrideMessage(fieldSpecificCode);
-        }
-
-        if (hasConfiguredOverrideForMessage(code)) {
-            return getOverrideMessage(code);
-        }
-        return constraintViolation.getMessage();
+        return errorMessageMapper.getErrorMessage(fieldSpecificCode, code, constraintViolation.getMessage());
     }
 
     private String getMessage(ConstraintViolationException exception) {

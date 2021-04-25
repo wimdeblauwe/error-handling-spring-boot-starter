@@ -20,4 +20,20 @@ public class ErrorMessageMapper {
 
         return throwable.getMessage();
     }
+
+    public String getErrorMessage(String fieldSpecificCode, String code, String defaultMessage) {
+        if (properties.getMessages().containsKey(fieldSpecificCode)) {
+            return properties.getMessages().get(fieldSpecificCode);
+        }
+
+        return getErrorMessage(code, defaultMessage);
+    }
+
+    public String getErrorMessage(String code, String defaultMessage) {
+        if (properties.getMessages().containsKey(code)) {
+            return properties.getMessages().get(code);
+        }
+
+        return defaultMessage;
+    }
 }

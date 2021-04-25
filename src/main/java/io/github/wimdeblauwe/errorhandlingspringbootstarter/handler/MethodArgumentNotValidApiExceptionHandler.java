@@ -4,10 +4,12 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiFieldError;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiGlobalError;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 /**
@@ -17,8 +19,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
  */
 public class MethodArgumentNotValidApiExceptionHandler extends AbstractApiExceptionHandler {
 
-    public MethodArgumentNotValidApiExceptionHandler(ErrorHandlingProperties properties) {
-        super(properties);
+    public MethodArgumentNotValidApiExceptionHandler(ErrorHandlingProperties properties,
+                                                     HttpStatusMapper httpStatusMapper,
+                                                     ErrorCodeMapper errorCodeMapper,
+                                                     ErrorMessageMapper errorMessageMapper) {
+        super(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Override
@@ -30,7 +35,7 @@ public class MethodArgumentNotValidApiExceptionHandler extends AbstractApiExcept
     public ApiErrorResponse handle(Throwable exception) {
 
         MethodArgumentNotValidException ex = (MethodArgumentNotValidException) exception;
-        ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_REQUEST,
+        ApiErrorResponse response = new ApiErrorResponse(getHttpStatus(exception, HttpStatus.BAD_REQUEST),
                                                          getErrorCode(exception),
                                                          getMessage(ex));
         BindingResult bindingResult = ex.getBindingResult();
@@ -45,8 +50,8 @@ public class MethodArgumentNotValidApiExceptionHandler extends AbstractApiExcept
 
         if (bindingResult.hasGlobalErrors()) {
             bindingResult.getGlobalErrors().stream()
-                         .map(globalError -> new ApiGlobalError(replaceCodeWithConfiguredOverrideIfPresent(globalError.getCode()),
-                                                                getMessage(globalError)))
+                         .map(globalError -> new ApiGlobalError(errorCodeMapper.getErrorCode(globalError.getCode()),
+                                                                errorMessageMapper.getErrorMessage(globalError.getCode(), globalError.getDefaultMessage())))
                          .forEach(response::addGlobalError);
         }
 
@@ -54,29 +59,15 @@ public class MethodArgumentNotValidApiExceptionHandler extends AbstractApiExcept
     }
 
     private String getCode(FieldError fieldError) {
-        String fieldSpecificCode = fieldError.getField() + "." + fieldError.getCode();
-        if (hasConfiguredOverrideForCode(fieldSpecificCode)) {
-            return replaceCodeWithConfiguredOverrideIfPresent(fieldSpecificCode);
-        }
-        return replaceCodeWithConfiguredOverrideIfPresent(fieldError.getCode());
+        String code = fieldError.getCode();
+        String fieldSpecificCode = fieldError.getField() + "." + code;
+        return errorCodeMapper.getErrorCode(fieldSpecificCode, code);
     }
 
     private String getMessage(FieldError fieldError) {
-        String fieldSpecificKey = fieldError.getField() + "." + fieldError.getCode();
-        if (hasConfiguredOverrideForMessage(fieldSpecificKey)) {
-            return getOverrideMessage(fieldSpecificKey);
-        }
-        if (hasConfiguredOverrideForMessage(fieldError.getCode())) {
-            return getOverrideMessage(fieldError.getCode());
-        }
-        return fieldError.getDefaultMessage();
-    }
-
-    private String getMessage(ObjectError objectError) {
-        if (hasConfiguredOverrideForMessage(objectError.getCode())) {
-            return getOverrideMessage(objectError.getCode());
-        }
-        return objectError.getDefaultMessage();
+        String code = fieldError.getCode();
+        String fieldSpecificCode = fieldError.getField() + "." + code;
+        return errorMessageMapper.getErrorMessage(fieldSpecificCode, code, fieldError.getDefaultMessage());
     }
 
     private String getMessage(MethodArgumentNotValidException exception) {
