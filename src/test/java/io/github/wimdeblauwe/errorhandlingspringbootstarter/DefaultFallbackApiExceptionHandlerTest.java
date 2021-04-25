@@ -96,6 +96,16 @@ class DefaultFallbackApiExceptionHandlerTest {
             ApiErrorResponse response = handler.handle(new MyEntityNotFoundException());
             assertThat(response.getCode()).isEqualTo("MY_CUSTOM_ERROR_CODE");
         }
+
+        @Test
+        void propertiesHavePrecedenceOnAnnotation() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = new DefaultFallbackApiExceptionHandler(properties);
+            ExceptionWithResponseErrorCode exception = new ExceptionWithResponseErrorCode();
+            properties.getCodes().put(exception.getClass().getName(), "CODE_VIA_PROPERTIES");
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getCode()).isEqualTo("CODE_VIA_PROPERTIES");
+        }
     }
 
     @Test

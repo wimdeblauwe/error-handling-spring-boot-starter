@@ -137,29 +137,24 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
     }
 
     private String getErrorCode(Throwable exception) {
-        ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exception.getClass(), ResponseErrorCode.class);
-        String code;
-        if (errorCodeAnnotation != null) {
-            code = errorCodeAnnotation.value();
-        } else {
-            String exceptionClassName = exception.getClass().getName();
-            if (properties.getCodes().containsKey(exceptionClassName)) {
-                code = replaceCodeWithConfiguredOverrideIfPresent(exceptionClassName);
-            } else {
-                switch (properties.getDefaultErrorCodeStrategy()) {
-                    case FULL_QUALIFIED_NAME:
-                        code = exception.getClass().getName();
-                        break;
-                    case ALL_CAPS:
-                        code = convertToAllCaps(exception.getClass().getSimpleName());
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown default error code strategy: " + properties.getDefaultErrorCodeStrategy());
-                }
-            }
+        String exceptionClassName = exception.getClass().getName();
+        if (properties.getCodes().containsKey(exceptionClassName)) {
+            return properties.getCodes().get(exceptionClassName);
         }
 
-        return code;
+        ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exception.getClass(), ResponseErrorCode.class);
+        if (errorCodeAnnotation != null) {
+            return errorCodeAnnotation.value();
+        }
+
+        switch (properties.getDefaultErrorCodeStrategy()) {
+            case FULL_QUALIFIED_NAME:
+                return exception.getClass().getName();
+            case ALL_CAPS:
+                return convertToAllCaps(exception.getClass().getSimpleName());
+            default:
+                throw new IllegalArgumentException("Unknown default error code strategy: " + properties.getDefaultErrorCodeStrategy());
+        }
     }
 
     private String convertToAllCaps(String exceptionClassName) {
@@ -167,9 +162,4 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
         result = result.replaceAll("([a-z])([A-Z]+)", "$1_$2").toUpperCase(Locale.ENGLISH);
         return result;
     }
-
-    private String replaceCodeWithConfiguredOverrideIfPresent(String code) {
-        return properties.getCodes().getOrDefault(code, code);
-    }
-
 }
