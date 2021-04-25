@@ -1,6 +1,9 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.*;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -38,12 +41,17 @@ public class ErrorHandlingConfiguration {
     }
 
     @Bean
-    public FallbackApiExceptionHandler defaultHandler(ErrorHandlingProperties properties,
-                                                      HttpStatusMapper httpStatusMapper,
-                                                      ErrorCodeMapper errorCodeMapper) {
-        return new DefaultFallbackApiExceptionHandler(properties,
-                                                      httpStatusMapper,
-                                                      errorCodeMapper);
+    public ErrorMessageMapper errorMessageMapper(ErrorHandlingProperties properties) {
+        return new ErrorMessageMapper(properties);
+    }
+
+    @Bean
+    public FallbackApiExceptionHandler defaultHandler(HttpStatusMapper httpStatusMapper,
+                                                      ErrorCodeMapper errorCodeMapper,
+                                                      ErrorMessageMapper errorMessageMapper) {
+        return new DefaultFallbackApiExceptionHandler(httpStatusMapper,
+                                                      errorCodeMapper,
+                                                      errorMessageMapper);
     }
 
     @Bean

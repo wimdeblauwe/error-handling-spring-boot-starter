@@ -1,5 +1,8 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -20,33 +23,29 @@ import java.util.Map;
 public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFallbackApiExceptionHandler.class);
 
-    private final ErrorHandlingProperties properties;
     private final HttpStatusMapper httpStatusMapper;
     private final ErrorCodeMapper errorCodeMapper;
+    private final ErrorMessageMapper errorMessageMapper;
 
-    public DefaultFallbackApiExceptionHandler(ErrorHandlingProperties properties,
-                                              HttpStatusMapper httpStatusMapper,
-                                              ErrorCodeMapper errorCodeMapper) {
-        this.properties = properties;
+    public DefaultFallbackApiExceptionHandler(HttpStatusMapper httpStatusMapper,
+                                              ErrorCodeMapper errorCodeMapper,
+                                              ErrorMessageMapper errorMessageMapper) {
         this.httpStatusMapper = httpStatusMapper;
         this.errorCodeMapper = errorCodeMapper;
+        this.errorMessageMapper = errorMessageMapper;
     }
 
     @Override
     public ApiErrorResponse handle(Throwable exception) {
         HttpStatus statusCode = httpStatusMapper.getHttpStatus(exception);
         String errorCode = errorCodeMapper.getErrorCode(exception);
-        String errorMessage = getErrorMessage(exception);
+        String errorMessage = errorMessageMapper.getErrorMessage(exception);
 
         ApiErrorResponse response = new ApiErrorResponse(statusCode, errorCode, errorMessage);
         response.addErrorProperties(getMethodResponseErrorProperties(exception));
         response.addErrorProperties(getFieldResponseErrorProperties(exception));
 
         return response;
-    }
-
-    private String getErrorMessage(Throwable exception) {
-        return exception.getMessage();
     }
 
     private Map<String, Object> getFieldResponseErrorProperties(Throwable exception) {

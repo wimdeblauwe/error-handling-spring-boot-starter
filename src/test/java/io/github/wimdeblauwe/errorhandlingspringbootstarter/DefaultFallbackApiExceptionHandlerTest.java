@@ -1,5 +1,8 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.assertj.core.api.HamcrestCondition;
 import org.assertj.core.util.Lists;
 import org.hamcrest.Matchers;
@@ -108,92 +111,119 @@ class DefaultFallbackApiExceptionHandlerTest {
         }
     }
 
-    @Test
-    void testResponseErrorPropertyOnField() {
-        ErrorHandlingProperties properties = new ErrorHandlingProperties();
-        DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
-        ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnField("myValue"));
-        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD");
-        assertThat(response.getMessage()).isNull();
-        assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
+    @Nested
+    class MessageTests {
+        @Test
+        void messageUsesExceptionMessage() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new RuntimeException("This is the exception message"));
+            assertThat(response.getMessage()).isEqualTo("This is the exception message");
+        }
+
+        @Test
+        void propertiesHavePrecedenceOnExceptionMessage() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            RuntimeException exception = new RuntimeException("This is the exception message");
+            properties.getMessages().put(exception.getClass().getName(), "This is the exception message via properties");
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getMessage()).isEqualTo("This is the exception message via properties");
+        }
     }
 
-    @Test
-    void testResponseErrorPropertyOnFieldWithMessage() {
-        ErrorHandlingProperties properties = new ErrorHandlingProperties();
-        DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
-        ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnField("This is an exceptional case.", "myValue"));
-        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD");
-        assertThat(response.getMessage()).isEqualTo("This is an exceptional case.");
-        assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
+    @Nested
+    class ResponseErrorPropertyOnFieldTests {
+        @Test
+        void testResponseErrorPropertyOnField() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnField("myValue"));
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD");
+            assertThat(response.getMessage()).isNull();
+            assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
+        }
+
+        @Test
+        void testResponseErrorPropertyOnFieldWithMessage() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnField("This is an exceptional case.", "myValue"));
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD");
+            assertThat(response.getMessage()).isEqualTo("This is an exceptional case.");
+            assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
+        }
+
+        @Test
+        void testResponseErrorPropertyOnFieldWithNullValue() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnField(null));
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD");
+            assertThat(response.getMessage()).isNull();
+            assertThat(response.getProperties()).doesNotContainKey("myProperty");
+        }
+
+        @Test
+        void testResponseErrorPropertyOnFieldWithNullValueIncluded() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnFieldWithIncludeIfNull(null));
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD_WITH_INCLUDE_IF_NULL");
+            assertThat(response.getMessage()).isNull();
+            assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.nullValue()));
+        }
     }
 
-    @Test
-    void testResponseErrorPropertyOnFieldWithNullValue() {
-        ErrorHandlingProperties properties = new ErrorHandlingProperties();
-        DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
-        ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnField(null));
-        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD");
-        assertThat(response.getMessage()).isNull();
-        assertThat(response.getProperties()).doesNotContainKey("myProperty");
-    }
+    @Nested
+    class ResponseErrorPropertyOnMethodTests {
+        @Test
+        void testResponseErrorPropertyOnMethod() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethod("myValue"));
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD");
+            assertThat(response.getMessage()).isNull();
+            assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
+        }
 
-    @Test
-    void testResponseErrorPropertyOnFieldWithNullValueIncluded() {
-        ErrorHandlingProperties properties = new ErrorHandlingProperties();
-        DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
-        ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnFieldWithIncludeIfNull(null));
-        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD_WITH_INCLUDE_IF_NULL");
-        assertThat(response.getMessage()).isNull();
-        assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.nullValue()));
-    }
+        @Test
+        void testResponseErrorPropertyOnMethodWithMessage() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethod("This is an exceptional case.", "myValue"));
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD");
+            assertThat(response.getMessage()).isEqualTo("This is an exceptional case.");
+            assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
+        }
 
-    @Test
-    void testResponseErrorPropertyOnMethod() {
-        ErrorHandlingProperties properties = new ErrorHandlingProperties();
-        DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
-        ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethod("myValue"));
-        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD");
-        assertThat(response.getMessage()).isNull();
-        assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
-    }
+        @Test
+        void testResponseErrorPropertyOnMethodWithNullValue() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethod(null));
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD");
+            assertThat(response.getMessage()).isNull();
+            assertThat(response.getProperties()).doesNotContainKey("myProperty");
+        }
 
-    @Test
-    void testResponseErrorPropertyOnMethodWithMessage() {
-        ErrorHandlingProperties properties = new ErrorHandlingProperties();
-        DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
-        ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethod("This is an exceptional case.", "myValue"));
-        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD");
-        assertThat(response.getMessage()).isEqualTo("This is an exceptional case.");
-        assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
-    }
-
-    @Test
-    void testResponseErrorPropertyOnMethodWithNullValue() {
-        ErrorHandlingProperties properties = new ErrorHandlingProperties();
-        DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
-        ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethod(null));
-        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD");
-        assertThat(response.getMessage()).isNull();
-        assertThat(response.getProperties()).doesNotContainKey("myProperty");
-    }
-
-    @Test
-    void testResponseErrorPropertyOnMethodWithNullValueIncluded() {
-        ErrorHandlingProperties properties = new ErrorHandlingProperties();
-        DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
-        ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethodWithIncludeIfNull(null));
-        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD_WITH_INCLUDE_IF_NULL");
-        assertThat(response.getMessage()).isNull();
-        assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.nullValue()));
+        @Test
+        void testResponseErrorPropertyOnMethodWithNullValueIncluded() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new ExceptionWithResponseErrorPropertyOnMethodWithIncludeIfNull(null));
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD_WITH_INCLUDE_IF_NULL");
+            assertThat(response.getMessage()).isNull();
+            assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.nullValue()));
+        }
     }
 
     @Test
@@ -217,9 +247,9 @@ class DefaultFallbackApiExceptionHandlerTest {
     }
 
     private DefaultFallbackApiExceptionHandler createDefaultFallbackApiExceptionHandler(ErrorHandlingProperties properties) {
-        return new DefaultFallbackApiExceptionHandler(properties,
-                                                      new HttpStatusMapper(properties),
-                                                      new ErrorCodeMapper(properties));
+        return new DefaultFallbackApiExceptionHandler(new HttpStatusMapper(properties),
+                                                      new ErrorCodeMapper(properties),
+                                                      new ErrorMessageMapper(properties));
     }
 
     static class MyEntityNotFoundException extends RuntimeException {

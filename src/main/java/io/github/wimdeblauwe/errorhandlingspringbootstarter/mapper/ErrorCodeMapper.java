@@ -1,9 +1,14 @@
-package io.github.wimdeblauwe.errorhandlingspringbootstarter;
+package io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper;
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.util.Locale;
 
+/**
+ * This class contains the logic for getting the matching error code for the given {@link Throwable}.
+ */
 public class ErrorCodeMapper {
 
     private final ErrorHandlingProperties properties;
