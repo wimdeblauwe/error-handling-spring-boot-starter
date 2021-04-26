@@ -18,12 +18,10 @@ public class ErrorCodeMapper {
     }
 
     public String getErrorCode(Throwable exception) {
-         // Find the first existing error code override throw the class hierarchy
-         String code = getErrorCode(exception.getClass());
+         String code = getErrorCodeFromPropertiesOrAnnotation(exception.getClass());
         if (code != null) {
             return code;
         }
-        // If not found return default using configured CodeStrategy
         switch (properties.getDefaultErrorCodeStrategy()) {
             case FULL_QUALIFIED_NAME:
                 return exception.getClass().getName();
@@ -32,24 +30,6 @@ public class ErrorCodeMapper {
             default:
                 throw new IllegalArgumentException("Unknown default error code strategy: " + properties.getDefaultErrorCodeStrategy());
         }
-    }
-
-    private String getErrorCode(Class<?> exceptionClass) {
-        if (exceptionClass == null) {
-            return null;
-        }
-        // Check if a property overriding exisits
-        String exceptionClassName = exceptionClass.getName();
-        if (properties.getCodes().containsKey(exceptionClassName)) {
-            return properties.getCodes().get(exceptionClassName);
-        }
-        // If not, check if an annotation exists
-        ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exceptionClass, ResponseErrorCode.class);
-        if (errorCodeAnnotation != null) {
-            return errorCodeAnnotation.value();
-        }
-        // If not, check ancestor
-        return getErrorCode(exceptionClass.getSuperclass());
     }
 
     public String getErrorCode(String fieldSpecificErrorCode, String errorCode) {
@@ -73,4 +53,26 @@ public class ErrorCodeMapper {
         result = result.replaceAll("([a-z])([A-Z]+)", "$1_$2").toUpperCase(Locale.ENGLISH);
         return result;
     }
+
+    private String getErrorCodeFromPropertiesOrAnnotation(Class<? extends Throwable> exceptionClass) {
+        if (exceptionClass == null) {
+            return null;
+        }
+        String exceptionClassName = exceptionClass.getName();
+        if (properties.getCodes().containsKey(exceptionClassName)) {
+            return properties.getCodes().get(exceptionClassName);
+        }
+        ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exceptionClass, ResponseErrorCode.class);
+        if (errorCodeAnnotation != null) {
+            return errorCodeAnnotation.value();
+        }
+        Class<?> superClass = exceptionClass.getSuperclass();
+        if (Throwable.class.isAssignableFrom(superClass)) {
+            @SuppressWarnings("unchecked") Class<? extends Throwable> superThrowable = (Class<? extends Throwable>) superClass;
+            return getErrorCodeFromPropertiesOrAnnotation(superThrowable);
+        } else {
+            return null;
+        }
+    }
+
 }

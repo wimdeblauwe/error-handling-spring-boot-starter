@@ -21,22 +21,19 @@ public class HttpStatusMapper {
     }
 
     public HttpStatus getHttpStatus(Throwable exception, HttpStatus defaultHttpStatus) {
-        // Find the first existing HttpStatus override throw the class hierarchy
-        HttpStatus status = getHttpStatus(exception.getClass());
+        HttpStatus status = getHttpStatusFromPropertiesOrAnnotation(exception.getClass());
         if (status != null) {
             return status;
         }
 
-        // If not, found check if the exception includes the HttpStatus
         if (exception instanceof ResponseStatusException) {
             return ((ResponseStatusException) exception).getStatus();
         }
 
-        // If not, return default
         return defaultHttpStatus;
     }
 
-    private HttpStatus getHttpStatus(Class<?> exceptionClass) {
+    private HttpStatus getHttpStatusFromPropertiesOrAnnotation(Class<? extends Throwable> exceptionClass) {
         if (exceptionClass == null) {
             return null;
         }
@@ -50,7 +47,13 @@ public class HttpStatusMapper {
             return responseStatus.value();
         }
 
-        return getHttpStatus(exceptionClass.getSuperclass());
+        Class<?> superClass = exceptionClass.getSuperclass();
+        if (Throwable.class.isAssignableFrom(superClass)) {
+            @SuppressWarnings("unchecked") Class<? extends Throwable> superThrowable = (Class<? extends Throwable>) superClass;
+            return getHttpStatusFromPropertiesOrAnnotation(superThrowable);
+        } else {
+            return null;
+        }
     }
 
 }
