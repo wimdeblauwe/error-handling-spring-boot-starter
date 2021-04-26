@@ -2,6 +2,9 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 
@@ -11,8 +14,11 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
  * decode the incoming request to JSON.
  */
 public class HttpMessageNotReadableApiExceptionHandler extends AbstractApiExceptionHandler {
-    public HttpMessageNotReadableApiExceptionHandler(ErrorHandlingProperties properties) {
-        super(properties);
+    public HttpMessageNotReadableApiExceptionHandler(ErrorHandlingProperties properties,
+                                                     HttpStatusMapper httpStatusMapper,
+                                                     ErrorCodeMapper errorCodeMapper,
+                                                     ErrorMessageMapper errorMessageMapper) {
+        super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Override
@@ -22,9 +28,9 @@ public class HttpMessageNotReadableApiExceptionHandler extends AbstractApiExcept
 
     @Override
     public ApiErrorResponse handle(Throwable exception) {
-        return new ApiErrorResponse(HttpStatus.BAD_REQUEST,
-                                    replaceCodeWithConfiguredOverrideIfPresent(exception.getClass().getName()),
-                                    exception.getMessage());
+        return new ApiErrorResponse(getHttpStatus(exception, HttpStatus.BAD_REQUEST),
+                                    getErrorCode(exception),
+                                    getErrorMessage(exception));
     }
 
 }

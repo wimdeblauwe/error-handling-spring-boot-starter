@@ -108,7 +108,7 @@ public class ErrorHandlingProperties {
         WITH_STACKTRACE
     }
 
-    enum DefaultErrorCodeStrategy {
+    public enum DefaultErrorCodeStrategy {
         FULL_QUALIFIED_NAME,
         ALL_CAPS
     }
