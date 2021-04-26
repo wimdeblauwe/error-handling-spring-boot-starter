@@ -36,7 +36,7 @@ public class ErrorMessageMapper {
         return defaultMessage;
     }
 
-    private String getErrorMessageFromProperties(Class<? extends Throwable> exceptionClass) {
+    private String getErrorMessageFromProperties(Class<?> exceptionClass) {
         if (exceptionClass == null) {
             return null;
         }
@@ -44,12 +44,6 @@ public class ErrorMessageMapper {
         if (properties.getMessages().containsKey(exceptionClassName)) {
             return properties.getMessages().get(exceptionClassName);
         }
-        Class<?> superClass = exceptionClass.getSuperclass();
-        if (Throwable.class.isAssignableFrom(superClass)) {
-            @SuppressWarnings("unchecked") Class<? extends Throwable> superThrowable = (Class<? extends Throwable>) superClass;
-            return getErrorMessageFromProperties(superThrowable);
-        } else {
-            return null;
-        }
+        return getErrorMessageFromProperties(exceptionClass.getSuperclass());
     }
 }

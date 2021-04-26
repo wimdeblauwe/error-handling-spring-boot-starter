@@ -1,10 +1,11 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper;
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode;
+import java.util.Locale;
+
 import org.springframework.core.annotation.AnnotationUtils;
 
-import java.util.Locale;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode;
 
 /**
  * This class contains the logic for getting the matching error code for the given {@link Throwable}.
@@ -54,7 +55,7 @@ public class ErrorCodeMapper {
         return result;
     }
 
-    private String getErrorCodeFromPropertiesOrAnnotation(Class<? extends Throwable> exceptionClass) {
+    private String getErrorCodeFromPropertiesOrAnnotation(Class<?> exceptionClass) {
         if (exceptionClass == null) {
             return null;
         }
@@ -66,13 +67,7 @@ public class ErrorCodeMapper {
         if (errorCodeAnnotation != null) {
             return errorCodeAnnotation.value();
         }
-        Class<?> superClass = exceptionClass.getSuperclass();
-        if (Throwable.class.isAssignableFrom(superClass)) {
-            @SuppressWarnings("unchecked") Class<? extends Throwable> superThrowable = (Class<? extends Throwable>) superClass;
-            return getErrorCodeFromPropertiesOrAnnotation(superThrowable);
-        } else {
-            return null;
-        }
+        return getErrorCodeFromPropertiesOrAnnotation(exceptionClass.getSuperclass());
     }
 
 }
