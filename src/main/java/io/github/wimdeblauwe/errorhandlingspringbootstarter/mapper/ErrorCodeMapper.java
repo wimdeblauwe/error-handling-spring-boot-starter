@@ -18,16 +18,12 @@ public class ErrorCodeMapper {
     }
 
     public String getErrorCode(Throwable exception) {
-        String exceptionClassName = exception.getClass().getName();
-        if (properties.getCodes().containsKey(exceptionClassName)) {
-            return properties.getCodes().get(exceptionClassName);
+         // Find the first existing error code override throw the class hierarchy
+         String code = getErrorCode(exception.getClass());
+        if (code != null) {
+            return code;
         }
-
-        ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exception.getClass(), ResponseErrorCode.class);
-        if (errorCodeAnnotation != null) {
-            return errorCodeAnnotation.value();
-        }
-
+        // If not found return default using configured CodeStrategy
         switch (properties.getDefaultErrorCodeStrategy()) {
             case FULL_QUALIFIED_NAME:
                 return exception.getClass().getName();
@@ -36,6 +32,24 @@ public class ErrorCodeMapper {
             default:
                 throw new IllegalArgumentException("Unknown default error code strategy: " + properties.getDefaultErrorCodeStrategy());
         }
+    }
+
+    private String getErrorCode(Class<?> exceptionClass) {
+        if (exceptionClass == null) {
+            return null;
+        }
+        // Check if a property overriding exisits
+        String exceptionClassName = exceptionClass.getName();
+        if (properties.getCodes().containsKey(exceptionClassName)) {
+            return properties.getCodes().get(exceptionClassName);
+        }
+        // If not, check if an annotation exists
+        ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exceptionClass, ResponseErrorCode.class);
+        if (errorCodeAnnotation != null) {
+            return errorCodeAnnotation.value();
+        }
+        // If not, check ancestor
+        return getErrorCode(exceptionClass.getSuperclass());
     }
 
     public String getErrorCode(String fieldSpecificErrorCode, String errorCode) {

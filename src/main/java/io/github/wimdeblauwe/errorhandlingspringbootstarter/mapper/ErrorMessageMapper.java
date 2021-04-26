@@ -12,13 +12,27 @@ public class ErrorMessageMapper {
         this.properties = properties;
     }
 
-    public String getErrorMessage(Throwable throwable) {
-        String exceptionClassName = throwable.getClass().getName();
+    public String getErrorMessage(Throwable exception) {
+         // Find the first existing message override throw the class hierarchy
+         String code = getErrorMessage(exception.getClass());
+        if (code != null) {
+            return code;
+        }
+        // If not found return the exception mesage
+        return exception.getMessage();
+    }
+
+    public String getErrorMessage(Class<?> exceptionClass) {
+        if (exceptionClass == null) {
+            return null;
+        }
+        // Check if a property overriding exisits
+        String exceptionClassName = exceptionClass.getName();
         if (properties.getMessages().containsKey(exceptionClassName)) {
             return properties.getMessages().get(exceptionClassName);
         }
-
-        return throwable.getMessage();
+        // If not, check ancestor
+        return getErrorMessage(exceptionClass.getSuperclass());
     }
 
     public String getErrorMessage(String fieldSpecificCode, String code, String defaultMessage) {
