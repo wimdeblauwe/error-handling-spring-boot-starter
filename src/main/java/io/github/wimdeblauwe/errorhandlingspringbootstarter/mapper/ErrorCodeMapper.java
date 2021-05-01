@@ -1,11 +1,10 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper;
 
-import java.util.Locale;
-
-import org.springframework.core.annotation.AnnotationUtils;
-
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode;
+import org.springframework.core.annotation.AnnotationUtils;
+
+import java.util.Locale;
 
 /**
  * This class contains the logic for getting the matching error code for the given {@link Throwable}.
@@ -19,7 +18,7 @@ public class ErrorCodeMapper {
     }
 
     public String getErrorCode(Throwable exception) {
-         String code = getErrorCodeFromPropertiesOrAnnotation(exception.getClass());
+        String code = getErrorCodeFromPropertiesOrAnnotation(exception.getClass());
         if (code != null) {
             return code;
         }
@@ -67,7 +66,12 @@ public class ErrorCodeMapper {
         if (errorCodeAnnotation != null) {
             return errorCodeAnnotation.value();
         }
-        return getErrorCodeFromPropertiesOrAnnotation(exceptionClass.getSuperclass());
+
+        if (properties.isSearchSuperClassHierarchy()) {
+            return getErrorCodeFromPropertiesOrAnnotation(exceptionClass.getSuperclass());
+        } else {
+            return null;
+        }
     }
 
 }

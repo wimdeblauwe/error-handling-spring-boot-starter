@@ -59,6 +59,29 @@ class DefaultFallbackApiExceptionHandlerTest {
             ApiErrorResponse response = handler.handle(exception);
             assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.I_AM_A_TEAPOT);
         }
+
+        @Test
+        void propertiesConfigurationInSuperClass() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            properties.setSearchSuperClassHierarchy(true);
+            properties.getHttpStatuses().put(RuntimeException.class.getName(), HttpStatus.GONE);
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            MyEntityNotFoundException exception = new MyEntityNotFoundException();
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.GONE);
+        }
+
+        @Test
+        void propertiesConfigurationInSuperClassIfSearchDisabled() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            properties.setSearchSuperClassHierarchy(false);
+            properties.getHttpStatuses().put(RuntimeException.class.getName(), HttpStatus.ALREADY_REPORTED);
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            MyEntityNotFoundException exception = new MyEntityNotFoundException();
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 
     @Nested
@@ -109,6 +132,28 @@ class DefaultFallbackApiExceptionHandlerTest {
             ApiErrorResponse response = handler.handle(exception);
             assertThat(response.getCode()).isEqualTo("CODE_VIA_PROPERTIES");
         }
+
+        @Test
+        void propertiesConfigurationInSuperClass() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            properties.setSearchSuperClassHierarchy(true);
+            properties.getCodes().put(RuntimeException.class.getName(), "RUNTIME");
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            MyEntityNotFoundException exception = new MyEntityNotFoundException();
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getCode()).isEqualTo("RUNTIME");
+        }
+
+        @Test
+        void propertiesConfigurationInSuperClassIfSearchDisabled() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            properties.setSearchSuperClassHierarchy(false);
+            properties.getCodes().put(RuntimeException.class.getName(), "RUNTIME");
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            MyEntityNotFoundException exception = new MyEntityNotFoundException();
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getCode()).isEqualTo("MY_ENTITY_NOT_FOUND");
+        }
     }
 
     @Nested
@@ -129,6 +174,28 @@ class DefaultFallbackApiExceptionHandlerTest {
             properties.getMessages().put(exception.getClass().getName(), "This is the exception message via properties");
             ApiErrorResponse response = handler.handle(exception);
             assertThat(response.getMessage()).isEqualTo("This is the exception message via properties");
+        }
+
+        @Test
+        void propertiesConfigurationInSuperClass() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            properties.setSearchSuperClassHierarchy(true);
+            properties.getMessages().put(RuntimeException.class.getName(), "A runtime exception happened");
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            MyEntityNotFoundException exception = new MyEntityNotFoundException();
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getMessage()).isEqualTo("A runtime exception happened");
+        }
+
+        @Test
+        void propertiesConfigurationInSuperClassIfSearchDisabled() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            properties.setSearchSuperClassHierarchy(false);
+            properties.getMessages().put(RuntimeException.class.getName(), "A runtime exception happened");
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            MyEntityNotFoundException exception = new MyEntityNotFoundException();
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getMessage()).isNull();
         }
     }
 

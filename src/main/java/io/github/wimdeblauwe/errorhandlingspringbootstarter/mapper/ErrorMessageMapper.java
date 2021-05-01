@@ -13,7 +13,7 @@ public class ErrorMessageMapper {
     }
 
     public String getErrorMessage(Throwable exception) {
-         String code = getErrorMessageFromProperties(exception.getClass());
+        String code = getErrorMessageFromProperties(exception.getClass());
         if (code != null) {
             return code;
         }
@@ -44,6 +44,10 @@ public class ErrorMessageMapper {
         if (properties.getMessages().containsKey(exceptionClassName)) {
             return properties.getMessages().get(exceptionClassName);
         }
-        return getErrorMessageFromProperties(exceptionClass.getSuperclass());
+        if (properties.isSearchSuperClassHierarchy()) {
+            return getErrorMessageFromProperties(exceptionClass.getSuperclass());
+        } else {
+            return null;
+        }
     }
 }

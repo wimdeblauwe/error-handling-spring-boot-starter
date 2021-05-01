@@ -1,11 +1,10 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper;
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
-
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 
 /**
  * This class contains the logic for getting the matching HTTP Status for the given {@link Throwable}.
@@ -48,7 +47,11 @@ public class HttpStatusMapper {
             return responseStatus.value();
         }
 
-        return getHttpStatusFromPropertiesOrAnnotation(exceptionClass.getSuperclass());
+        if (properties.isSearchSuperClassHierarchy()) {
+            return getHttpStatusFromPropertiesOrAnnotation(exceptionClass.getSuperclass());
+        } else {
+            return null;
+        }
     }
 
 }

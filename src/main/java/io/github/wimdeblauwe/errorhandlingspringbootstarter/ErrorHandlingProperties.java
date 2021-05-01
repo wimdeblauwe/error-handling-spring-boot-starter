@@ -30,6 +30,8 @@ public class ErrorHandlingProperties {
 
     private Map<String, String> messages = new HashMap<>();
 
+    private boolean searchSuperClassHierarchy = false;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -100,6 +102,14 @@ public class ErrorHandlingProperties {
 
     public void setMessages(Map<String, String> messages) {
         this.messages = messages;
+    }
+
+    public boolean isSearchSuperClassHierarchy() {
+        return searchSuperClassHierarchy;
+    }
+
+    public void setSearchSuperClassHierarchy(boolean searchSuperClassHierarchy) {
+        this.searchSuperClassHierarchy = searchSuperClassHierarchy;
     }
 
     enum ExceptionLogging {
