@@ -1,9 +1,9 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiFieldError;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiGlobalError;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -12,7 +12,9 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ElementKind;
 import javax.validation.Path;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 /**
  * {@link io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler} for
@@ -24,8 +26,11 @@ import java.util.Set;
 public class ConstraintViolationApiExceptionHandler extends AbstractApiExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConstraintViolationApiExceptionHandler.class);
 
-    public ConstraintViolationApiExceptionHandler(ErrorHandlingProperties properties) {
-        super(properties);
+    public ConstraintViolationApiExceptionHandler(ErrorHandlingProperties properties,
+                                                  HttpStatusMapper httpStatusMapper,
+                                                  ErrorCodeMapper errorCodeMapper,
+                                                  ErrorMessageMapper errorMessageMapper) {
+        super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Override
@@ -43,17 +48,29 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
         Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
         violations.stream()
                   .map(constraintViolation -> {
-                      ElementKind elementKind = getElementKindOfLastNode(constraintViolation.getPropertyPath());
-                      if (elementKind == ElementKind.PROPERTY) {
-                          return new ApiFieldError(getCode(constraintViolation),
-                                                   constraintViolation.getPropertyPath().toString(),
-                                                   getMessage(constraintViolation),
-                                                   constraintViolation.getInvalidValue());
-                      } else if (elementKind == ElementKind.BEAN) {
-                          return new ApiGlobalError(getCode(constraintViolation),
-                                                    getMessage(constraintViolation));
+                      Optional<Path.Node> leafNode = getLeafNode(constraintViolation.getPropertyPath());
+                      if (leafNode.isPresent()) {
+                          Path.Node node = leafNode.get();
+                          ElementKind elementKind = node.getKind();
+                          if (elementKind == ElementKind.PROPERTY) {
+                              return new ApiFieldError(getCode(constraintViolation),
+                                                       node.toString(),
+                                                       getMessage(constraintViolation),
+                                                       constraintViolation.getInvalidValue());
+                          } else if (elementKind == ElementKind.BEAN) {
+                              return new ApiGlobalError(getCode(constraintViolation),
+                                                        getMessage(constraintViolation));
+                          } else if (elementKind == ElementKind.PARAMETER) {
+                              return new ApiParameterError(getCode(constraintViolation),
+                                                           node.toString(),
+                                                           getMessage(constraintViolation),
+                                                           constraintViolation.getInvalidValue());
+                          } else {
+                              LOGGER.warn("Unable to convert constraint violation with element kind {}: {}", elementKind, constraintViolation);
+                              return null;
+                          }
                       } else {
-                          LOGGER.warn("Unable to convert constraint violation with element kind {}: {}", elementKind, constraintViolation);
+                          LOGGER.warn("Unable to convert constraint violation: {}", constraintViolation);
                           return null;
                       }
                   })
@@ -62,41 +79,28 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
                           response.addFieldError((ApiFieldError) error);
                       } else if (error instanceof ApiGlobalError) {
                           response.addGlobalError((ApiGlobalError) error);
+                      } else if (error instanceof ApiParameterError) {
+                          response.addParameterError((ApiParameterError) error);
                       }
                   });
 
         return response;
     }
 
-    private ElementKind getElementKindOfLastNode(Path path) {
-        ElementKind result = null;
-        for (Path.Node node : path) {
-            result = node.getKind();
-        }
-
-        return result;
+    private Optional<Path.Node> getLeafNode(Path path) {
+        return StreamSupport.stream(path.spliterator(), false).reduce((a, b) -> b);
     }
 
     private String getCode(ConstraintViolation<?> constraintViolation) {
         String code = constraintViolation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
         String fieldSpecificCode = constraintViolation.getPropertyPath().toString() + "." + code;
-        if (hasConfiguredOverrideForCode(fieldSpecificCode)) {
-            return replaceCodeWithConfiguredOverrideIfPresent(fieldSpecificCode);
-        }
-        return replaceCodeWithConfiguredOverrideIfPresent(code);
+        return errorCodeMapper.getErrorCode(fieldSpecificCode, code);
     }
 
     private String getMessage(ConstraintViolation<?> constraintViolation) {
         String code = constraintViolation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
         String fieldSpecificCode = constraintViolation.getPropertyPath().toString() + "." + code;
-        if (hasConfiguredOverrideForMessage(fieldSpecificCode)) {
-            return getOverrideMessage(fieldSpecificCode);
-        }
-
-        if (hasConfiguredOverrideForMessage(code)) {
-            return getOverrideMessage(code);
-        }
-        return constraintViolation.getMessage();
+        return errorMessageMapper.getErrorMessage(fieldSpecificCode, code, constraintViolation.getMessage());
     }
 
     private String getMessage(ConstraintViolationException exception) {

@@ -30,6 +30,8 @@ public class ErrorHandlingProperties {
 
     private Map<String, String> messages = new HashMap<>();
 
+    private boolean searchSuperClassHierarchy = false;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -102,13 +104,21 @@ public class ErrorHandlingProperties {
         this.messages = messages;
     }
 
+    public boolean isSearchSuperClassHierarchy() {
+        return searchSuperClassHierarchy;
+    }
+
+    public void setSearchSuperClassHierarchy(boolean searchSuperClassHierarchy) {
+        this.searchSuperClassHierarchy = searchSuperClassHierarchy;
+    }
+
     enum ExceptionLogging {
         NO_LOGGING,
         MESSAGE_ONLY,
         WITH_STACKTRACE
     }
 
-    enum DefaultErrorCodeStrategy {
+    public enum DefaultErrorCodeStrategy {
         FULL_QUALIFIED_NAME,
         ALL_CAPS
     }
@@ -118,6 +128,7 @@ public class ErrorHandlingProperties {
         private String message = "message";
         private String fieldErrors = "fieldErrors";
         private String globalErrors = "globalErrors";
+        private String parameterErrors = "parameterErrors";
 
         public String getCode() {
             return code;
@@ -149,6 +160,14 @@ public class ErrorHandlingProperties {
 
         public void setGlobalErrors(String globalErrors) {
             this.globalErrors = globalErrors;
+        }
+
+        public String getParameterErrors() {
+            return parameterErrors;
+        }
+
+        public void setParameterErrors(String parameterErrors) {
+            this.parameterErrors = parameterErrors;
         }
     }
 }

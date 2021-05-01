@@ -1,12 +1,13 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -16,33 +17,35 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 
 public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFallbackApiExceptionHandler.class);
 
-    private final ErrorHandlingProperties properties;
+    private final HttpStatusMapper httpStatusMapper;
+    private final ErrorCodeMapper errorCodeMapper;
+    private final ErrorMessageMapper errorMessageMapper;
 
-    public DefaultFallbackApiExceptionHandler(ErrorHandlingProperties properties) {
-        this.properties = properties;
+    public DefaultFallbackApiExceptionHandler(HttpStatusMapper httpStatusMapper,
+                                              ErrorCodeMapper errorCodeMapper,
+                                              ErrorMessageMapper errorMessageMapper) {
+        this.httpStatusMapper = httpStatusMapper;
+        this.errorCodeMapper = errorCodeMapper;
+        this.errorMessageMapper = errorMessageMapper;
     }
 
     @Override
     public ApiErrorResponse handle(Throwable exception) {
-        HttpStatus statusCode = getHttpStatus(exception);
-        String errorCode = getErrorCode(exception);
+        HttpStatus statusCode = httpStatusMapper.getHttpStatus(exception);
+        String errorCode = errorCodeMapper.getErrorCode(exception);
+        String errorMessage = errorMessageMapper.getErrorMessage(exception);
 
-        ApiErrorResponse response = new ApiErrorResponse(statusCode, errorCode, getErrorMessage(exception));
+        ApiErrorResponse response = new ApiErrorResponse(statusCode, errorCode, errorMessage);
         response.addErrorProperties(getMethodResponseErrorProperties(exception));
         response.addErrorProperties(getFieldResponseErrorProperties(exception));
 
         return response;
-    }
-
-    private String getErrorMessage(Throwable exception) {
-        return exception.getMessage();
     }
 
     private Map<String, Object> getFieldResponseErrorProperties(Throwable exception) {
@@ -117,54 +120,4 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
 
         return method.getName();
     }
-
-    private HttpStatus getHttpStatus(Throwable exception) {
-        ResponseStatus responseStatus = AnnotationUtils.getAnnotation(exception.getClass(), ResponseStatus.class);
-        if (responseStatus != null) {
-            return responseStatus.value();
-        }
-
-        if (exception instanceof ResponseStatusException) {
-            return ((ResponseStatusException) exception).getStatus();
-        }
-
-        return properties.getHttpStatuses().getOrDefault(exception.getClass().getName(), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    private String getErrorCode(Throwable exception) {
-        ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exception.getClass(), ResponseErrorCode.class);
-        String code;
-        if (errorCodeAnnotation != null) {
-            code = errorCodeAnnotation.value();
-        } else {
-            String exceptionClassName = exception.getClass().getName();
-            if (properties.getCodes().containsKey(exceptionClassName)) {
-                code = replaceCodeWithConfiguredOverrideIfPresent(exceptionClassName);
-            } else {
-                switch (properties.getDefaultErrorCodeStrategy()) {
-                    case FULL_QUALIFIED_NAME:
-                        code = exception.getClass().getName();
-                        break;
-                    case ALL_CAPS:
-                        code = convertToAllCaps(exception.getClass().getSimpleName());
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown default error code strategy: " + properties.getDefaultErrorCodeStrategy());
-                }
-            }
-        }
-
-        return code;
-    }
-
-    private String convertToAllCaps(String exceptionClassName) {
-        String result = exceptionClassName.replaceFirst("Exception$", "");
-        result = result.replaceAll("([a-z])([A-Z]+)", "$1_$2").toUpperCase(Locale.ENGLISH);
-        return result;
-    }
-
-    private String replaceCodeWithConfiguredOverrideIfPresent(String code) {
-        return properties.getCodes().getOrDefault(code, code);
-    }
-
 }

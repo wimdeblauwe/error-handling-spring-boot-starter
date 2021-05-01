@@ -549,6 +549,43 @@ This results in:
 ----
 <.> Custom error message used in the response
 
+=== Super class hierarchy search
+
+By default, the library will only match <<HTTP response status>>, <<Error codes>> or <<Error messages>> settings in the properties when there is an exact match with the full qualified name of the `Exception`.
+
+If you want to define settings for a group of Exceptions that share a common superclass, then this is possible by enabling the `error.handling.search-super-class-hierarchy` setting:
+
+[source,properties]
+----
+error.handling.search-super-class-hierarchy=true
+----
+
+With this in place, we can for instance set the properties for any `RuntimeException` sub-class like this:
+
+[source,properties]
+----
+error.handling.http-statuses.java.lang.RuntimeException=bad_request
+error.handling.codes.java.lang.RuntimeException=RUNTIME_EXCEPTION
+error.handling.messages.java.lang.RuntimeException=A runtime exception has happened
+----
+
+Assume this exception is thrown:
+
+[source,java]
+----
+public class MyException extends RuntimeException {}
+----
+
+Then the response will be:
+
+[source,json]
+----
+{
+  "code": "RUNTIME_EXCEPTION",
+  "message": "A runtime exception has happened"
+}
+----
+
 === Exception handlers
 
 ==== Validation
@@ -628,6 +665,14 @@ In both cases, the response JSON will be similar to this:
       "code": "ValidCustomer",
       "message": "UserAlreadyExists"
     }
+  ],
+  "parameterErrors": [
+    {
+      "code": "REQUIRED_NOT_NULL",
+      "message": "must not be null",
+      "parameter": "extraArg",
+      "rejectedValue": null
+    }
   ]
 }
 ----
@@ -638,6 +683,8 @@ Breakdown:
 * The `message` indicates what object failed the validation and also indicates the amount of validation errors.
 * The `fieldErrors` array contains all field-level validation problems.
 It shows the name of the property that failed the validation and the value that was received in the request.
+* The `parameterErrors` array contains all the parameter-level validation problems.
+It shows the name of the parameter that failed the validation and the value that was received in the request.
 * The `globalErrors` array contains the class-level validation problems.
 +
 The `code` and `message` used for `globalErrors` is based on the annotation that was used for validation:
@@ -1059,6 +1106,11 @@ One of `FULL_QUALIFIED_NAME`, `ALL_CAPS`.
 |Allows to set the message that should be used for the full qualified name of an `Exception` or the name of a validation annotation.
 |
 
+|error.handling.search-super-class-hierarchy
+|By default, only the exact full qualified name of an `Exception` is searched for when setting `error.handling.http-statuses`, `error.handling.codes` or `error.handling.messages`.
+When this is set to `true`, you can use any superclass from your `Exception` type as well.
+|`false`
+
 |error.handling.json-field-names.code
 |The field name that is used to serialize the `code` to JSON.
 |`code`
@@ -1074,5 +1126,9 @@ One of `FULL_QUALIFIED_NAME`, `ALL_CAPS`.
 |error.handling.json-field-names.globalErrors
 |The field name that is used to serialize the `globalErrors` to JSON.
 |`globalErrors`
+
+|error.handling.json-field-names.parameterErrors
+|The field name that is used to serialize the `parameterErrors` to JSON.
+|`parameterErrors`
 
 |===

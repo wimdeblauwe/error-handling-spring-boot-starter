@@ -1,6 +1,9 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.*;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -28,40 +31,77 @@ public class ErrorHandlingConfiguration {
     }
 
     @Bean
-    public FallbackApiExceptionHandler defaultHandler(ErrorHandlingProperties properties) {
-        return new DefaultFallbackApiExceptionHandler(properties);
+    public HttpStatusMapper httpStatusMapper(ErrorHandlingProperties properties) {
+        return new HttpStatusMapper(properties);
     }
 
     @Bean
-    public TypeMismatchApiExceptionHandler typeMismatchApiExceptionHandler(ErrorHandlingProperties properties) {
-        return new TypeMismatchApiExceptionHandler(properties);
+    public ErrorCodeMapper errorCodeMapper(ErrorHandlingProperties properties) {
+        return new ErrorCodeMapper(properties);
     }
 
     @Bean
-    public ConstraintViolationApiExceptionHandler constraintViolationApiExceptionHandler(ErrorHandlingProperties properties) {
-        return new ConstraintViolationApiExceptionHandler(properties);
+    public ErrorMessageMapper errorMessageMapper(ErrorHandlingProperties properties) {
+        return new ErrorMessageMapper(properties);
     }
 
     @Bean
-    public HttpMessageNotReadableApiExceptionHandler httpMessageNotReadableApiExceptionHandler(ErrorHandlingProperties properties) {
-        return new HttpMessageNotReadableApiExceptionHandler(properties);
+    public FallbackApiExceptionHandler defaultHandler(HttpStatusMapper httpStatusMapper,
+                                                      ErrorCodeMapper errorCodeMapper,
+                                                      ErrorMessageMapper errorMessageMapper) {
+        return new DefaultFallbackApiExceptionHandler(httpStatusMapper,
+                                                      errorCodeMapper,
+                                                      errorMessageMapper);
     }
 
     @Bean
-    public MethodArgumentNotValidApiExceptionHandler methodArgumentNotValidApiExceptionHandler(ErrorHandlingProperties properties) {
-        return new MethodArgumentNotValidApiExceptionHandler(properties);
+    public TypeMismatchApiExceptionHandler typeMismatchApiExceptionHandler(ErrorHandlingProperties properties,
+                                                                           HttpStatusMapper httpStatusMapper,
+                                                                           ErrorCodeMapper errorCodeMapper,
+                                                                           ErrorMessageMapper errorMessageMapper) {
+        return new TypeMismatchApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+    }
+
+    @Bean
+    public ConstraintViolationApiExceptionHandler constraintViolationApiExceptionHandler(ErrorHandlingProperties properties,
+                                                                                         HttpStatusMapper httpStatusMapper,
+                                                                                         ErrorCodeMapper errorCodeMapper,
+                                                                                         ErrorMessageMapper errorMessageMapper) {
+        return new ConstraintViolationApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+    }
+
+    @Bean
+    public HttpMessageNotReadableApiExceptionHandler httpMessageNotReadableApiExceptionHandler(ErrorHandlingProperties properties,
+                                                                                               HttpStatusMapper httpStatusMapper,
+                                                                                               ErrorCodeMapper errorCodeMapper,
+                                                                                               ErrorMessageMapper errorMessageMapper) {
+        return new HttpMessageNotReadableApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+    }
+
+    @Bean
+    public MethodArgumentNotValidApiExceptionHandler methodArgumentNotValidApiExceptionHandler(ErrorHandlingProperties properties,
+                                                                                               HttpStatusMapper httpStatusMapper,
+                                                                                               ErrorCodeMapper errorCodeMapper,
+                                                                                               ErrorMessageMapper errorMessageMapper) {
+        return new MethodArgumentNotValidApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Bean
     @ConditionalOnClass(name = "org.springframework.security.access.AccessDeniedException")
-    public SpringSecurityApiExceptionHandler springSecurityApiExceptionHandler(ErrorHandlingProperties properties) {
-        return new SpringSecurityApiExceptionHandler(properties);
+    public SpringSecurityApiExceptionHandler springSecurityApiExceptionHandler(ErrorHandlingProperties properties,
+                                                                               HttpStatusMapper httpStatusMapper,
+                                                                               ErrorCodeMapper errorCodeMapper,
+                                                                               ErrorMessageMapper errorMessageMapper) {
+        return new SpringSecurityApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Bean
     @ConditionalOnClass(name = "org.springframework.orm.ObjectOptimisticLockingFailureException")
-    public ObjectOptimisticLockingFailureApiExceptionHandler objectOptimisticLockingFailureApiExceptionHandler(ErrorHandlingProperties properties) {
-        return new ObjectOptimisticLockingFailureApiExceptionHandler(properties);
+    public ObjectOptimisticLockingFailureApiExceptionHandler objectOptimisticLockingFailureApiExceptionHandler(ErrorHandlingProperties properties,
+                                                                                                               HttpStatusMapper httpStatusMapper,
+                                                                                                               ErrorCodeMapper errorCodeMapper,
+                                                                                                               ErrorMessageMapper errorMessageMapper) {
+        return new ObjectOptimisticLockingFailureApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Bean
