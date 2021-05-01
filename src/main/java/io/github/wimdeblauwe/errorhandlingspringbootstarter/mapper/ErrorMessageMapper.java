@@ -12,13 +12,12 @@ public class ErrorMessageMapper {
         this.properties = properties;
     }
 
-    public String getErrorMessage(Throwable throwable) {
-        String exceptionClassName = throwable.getClass().getName();
-        if (properties.getMessages().containsKey(exceptionClassName)) {
-            return properties.getMessages().get(exceptionClassName);
+    public String getErrorMessage(Throwable exception) {
+        String code = getErrorMessageFromProperties(exception.getClass());
+        if (code != null) {
+            return code;
         }
-
-        return throwable.getMessage();
+        return exception.getMessage();
     }
 
     public String getErrorMessage(String fieldSpecificCode, String code, String defaultMessage) {
@@ -35,5 +34,20 @@ public class ErrorMessageMapper {
         }
 
         return defaultMessage;
+    }
+
+    private String getErrorMessageFromProperties(Class<?> exceptionClass) {
+        if (exceptionClass == null) {
+            return null;
+        }
+        String exceptionClassName = exceptionClass.getName();
+        if (properties.getMessages().containsKey(exceptionClassName)) {
+            return properties.getMessages().get(exceptionClassName);
+        }
+        if (properties.isSearchSuperClassHierarchy()) {
+            return getErrorMessageFromProperties(exceptionClass.getSuperclass());
+        } else {
+            return null;
+        }
     }
 }

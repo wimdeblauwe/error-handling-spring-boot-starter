@@ -21,14 +21,9 @@ public class HttpStatusMapper {
     }
 
     public HttpStatus getHttpStatus(Throwable exception, HttpStatus defaultHttpStatus) {
-        String exceptionClassName = exception.getClass().getName();
-        if (properties.getHttpStatuses().containsKey(exceptionClassName)) {
-            return properties.getHttpStatuses().get(exceptionClassName);
-        }
-
-        ResponseStatus responseStatus = AnnotationUtils.getAnnotation(exception.getClass(), ResponseStatus.class);
-        if (responseStatus != null) {
-            return responseStatus.value();
+        HttpStatus status = getHttpStatusFromPropertiesOrAnnotation(exception.getClass());
+        if (status != null) {
+            return status;
         }
 
         if (exception instanceof ResponseStatusException) {
@@ -36,6 +31,27 @@ public class HttpStatusMapper {
         }
 
         return defaultHttpStatus;
+    }
+
+    private HttpStatus getHttpStatusFromPropertiesOrAnnotation(Class<?> exceptionClass) {
+        if (exceptionClass == null) {
+            return null;
+        }
+        String exceptionClassName = exceptionClass.getName();
+        if (properties.getHttpStatuses().containsKey(exceptionClassName)) {
+            return properties.getHttpStatuses().get(exceptionClassName);
+        }
+
+        ResponseStatus responseStatus = AnnotationUtils.getAnnotation(exceptionClass, ResponseStatus.class);
+        if (responseStatus != null) {
+            return responseStatus.value();
+        }
+
+        if (properties.isSearchSuperClassHierarchy()) {
+            return getHttpStatusFromPropertiesOrAnnotation(exceptionClass.getSuperclass());
+        } else {
+            return null;
+        }
     }
 
 }

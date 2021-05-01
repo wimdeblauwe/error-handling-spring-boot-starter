@@ -18,16 +18,10 @@ public class ErrorCodeMapper {
     }
 
     public String getErrorCode(Throwable exception) {
-        String exceptionClassName = exception.getClass().getName();
-        if (properties.getCodes().containsKey(exceptionClassName)) {
-            return properties.getCodes().get(exceptionClassName);
+        String code = getErrorCodeFromPropertiesOrAnnotation(exception.getClass());
+        if (code != null) {
+            return code;
         }
-
-        ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exception.getClass(), ResponseErrorCode.class);
-        if (errorCodeAnnotation != null) {
-            return errorCodeAnnotation.value();
-        }
-
         switch (properties.getDefaultErrorCodeStrategy()) {
             case FULL_QUALIFIED_NAME:
                 return exception.getClass().getName();
@@ -59,4 +53,25 @@ public class ErrorCodeMapper {
         result = result.replaceAll("([a-z])([A-Z]+)", "$1_$2").toUpperCase(Locale.ENGLISH);
         return result;
     }
+
+    private String getErrorCodeFromPropertiesOrAnnotation(Class<?> exceptionClass) {
+        if (exceptionClass == null) {
+            return null;
+        }
+        String exceptionClassName = exceptionClass.getName();
+        if (properties.getCodes().containsKey(exceptionClassName)) {
+            return properties.getCodes().get(exceptionClassName);
+        }
+        ResponseErrorCode errorCodeAnnotation = AnnotationUtils.getAnnotation(exceptionClass, ResponseErrorCode.class);
+        if (errorCodeAnnotation != null) {
+            return errorCodeAnnotation.value();
+        }
+
+        if (properties.isSearchSuperClassHierarchy()) {
+            return getErrorCodeFromPropertiesOrAnnotation(exceptionClass.getSuperclass());
+        } else {
+            return null;
+        }
+    }
+
 }
