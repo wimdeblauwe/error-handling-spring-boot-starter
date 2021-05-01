@@ -75,25 +75,26 @@
 <li><a href="#field-specific-override-of-error-messages">3.3.3. Field specific override of error messages</a></li>
 </ul>
 </li>
-<li><a href="#exception-handlers">3.4. Exception handlers</a>
+<li><a href="#super-class-hierarchy-search">3.4. Super class hierarchy search</a></li>
+<li><a href="#exception-handlers">3.5. Exception handlers</a>
 <ul class="sectlevel3">
-<li><a href="#validation">3.4.1. Validation</a></li>
-<li><a href="#unreadable-http-message">3.4.2. Unreadable HTTP message</a></li>
-<li><a href="#type-conversion-exceptions">3.4.3. Type conversion exceptions</a></li>
-<li><a href="#optimistic-locking-exceptions">3.4.4. Optimistic locking exceptions</a></li>
-<li><a href="#spring-security-exceptions">3.4.5. Spring Security exceptions</a></li>
+<li><a href="#validation">3.5.1. Validation</a></li>
+<li><a href="#unreadable-http-message">3.5.2. Unreadable HTTP message</a></li>
+<li><a href="#type-conversion-exceptions">3.5.3. Type conversion exceptions</a></li>
+<li><a href="#optimistic-locking-exceptions">3.5.4. Optimistic locking exceptions</a></li>
+<li><a href="#spring-security-exceptions">3.5.5. Spring Security exceptions</a></li>
 </ul>
 </li>
-<li><a href="#adding-extra-properties-in-the-response">3.5. Adding extra properties in the response</a>
+<li><a href="#adding-extra-properties-in-the-response">3.6. Adding extra properties in the response</a>
 <ul class="sectlevel3">
-<li><a href="#via-method-annotation">3.5.1. Via method annotation</a></li>
-<li><a href="#via-field-annotation">3.5.2. Via field annotation</a></li>
-<li><a href="#overriding-the-property-name">3.5.3. Overriding the property name</a></li>
-<li><a href="#null-handling">3.5.4. Null handling</a></li>
+<li><a href="#via-method-annotation">3.6.1. Via method annotation</a></li>
+<li><a href="#via-field-annotation">3.6.2. Via field annotation</a></li>
+<li><a href="#overriding-the-property-name">3.6.3. Overriding the property name</a></li>
+<li><a href="#null-handling">3.6.4. Null handling</a></li>
 </ul>
 </li>
-<li><a href="#custom-json-response-field-names">3.6. Custom JSON response field names</a></li>
-<li><a href="#logging">3.7. Logging</a></li>
+<li><a href="#custom-json-response-field-names">3.7. Custom JSON response field names</a></li>
+<li><a href="#logging">3.8. Logging</a></li>
 </ul>
 </li>
 <li><a href="#custom-exception-handler">4. Custom exception handler</a></li>
@@ -105,7 +106,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 1.5.0.</p>
+<p>This documentation is for version 1.6.0.</p>
 </div>
 </div>
 </div>
@@ -783,9 +784,52 @@ If we want to only override this for fields that are named <code>password</code>
 </div>
 </div>
 <div class="sect2">
-<h3 id="exception-handlers"><a class="anchor" href="#exception-handlers"></a>3.4. Exception handlers</h3>
+<h3 id="super-class-hierarchy-search"><a class="anchor" href="#super-class-hierarchy-search"></a>3.4. Super class hierarchy search</h3>
+<div class="paragraph">
+<p>By default, the library will only match <a href="#http-response-status">HTTP response status</a>, <a href="#error-codes">Error codes</a> or <a href="#error-messages">Error messages</a> settings in the properties when there is an exact match with the full qualified name of the <code>Exception</code>.</p>
+</div>
+<div class="paragraph">
+<p>If you want to define settings for a group of Exceptions that share a common superclass, then this is possible by enabling the <code>error.handling.search-super-class-hierarchy</code> setting:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.search-super-class-hierarchy=true</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this in place, we can for instance set the properties for any <code>RuntimeException</code> sub-class like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.http-statuses.java.lang.RuntimeException=bad_request
+error.handling.codes.java.lang.RuntimeException=RUNTIME_EXCEPTION
+error.handling.messages.java.lang.RuntimeException=A runtime exception has happened</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Assume this exception is thrown:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">public class MyException extends RuntimeException {}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then the response will be:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "code": "RUNTIME_EXCEPTION",
+  "message": "A runtime exception has happened"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="exception-handlers"><a class="anchor" href="#exception-handlers"></a>3.5. Exception handlers</h3>
 <div class="sect3">
-<h4 id="validation"><a class="anchor" href="#validation"></a>3.4.1. Validation</h4>
+<h4 id="validation"><a class="anchor" href="#validation"></a>3.5.1. Validation</h4>
 <div class="paragraph">
 <p>There are 2 cases that this library will create specific JSON responses when validation errors occur:</p>
 </div>
@@ -871,6 +915,14 @@ public static class TestService {
       "code": "ValidCustomer",
       "message": "UserAlreadyExists"
     }
+  ],
+  "parameterErrors": [
+    {
+      "code": "REQUIRED_NOT_NULL",
+      "message": "must not be null",
+      "parameter": "extraArg",
+      "rejectedValue": null
+    }
   ]
 }</code></pre>
 </div>
@@ -889,6 +941,10 @@ public static class TestService {
 <li>
 <p>The <code>fieldErrors</code> array contains all field-level validation problems.
 It shows the name of the property that failed the validation and the value that was received in the request.</p>
+</li>
+<li>
+<p>The <code>parameterErrors</code> array contains all the parameter-level validation problems.
+It shows the name of the parameter that failed the validation and the value that was received in the request.</p>
 </li>
 <li>
 <p>The <code>globalErrors</code> array contains the class-level validation problems.</p>
@@ -981,7 +1037,7 @@ public @interface ValidCustomer {
 </div>
 </div>
 <div class="sect3">
-<h4 id="unreadable-http-message"><a class="anchor" href="#unreadable-http-message"></a>3.4.2. Unreadable HTTP message</h4>
+<h4 id="unreadable-http-message"><a class="anchor" href="#unreadable-http-message"></a>3.5.2. Unreadable HTTP message</h4>
 <div class="paragraph">
 <p>If a controller receives a message that it cannot read, because the JSON is invalid for example, then a <code>HttpMessageNotReadableException</code> is thrown.
 When this happens, the library will return something like the following response:</p>
@@ -996,7 +1052,7 @@ When this happens, the library will return something like the following response
 </div>
 </div>
 <div class="sect3">
-<h4 id="type-conversion-exceptions"><a class="anchor" href="#type-conversion-exceptions"></a>3.4.3. Type conversion exceptions</h4>
+<h4 id="type-conversion-exceptions"><a class="anchor" href="#type-conversion-exceptions"></a>3.5.3. Type conversion exceptions</h4>
 <div class="paragraph">
 <p>Type conversion exceptions like <code>MethodArgumentTypeMismatchException</code> and <code>TypeMismatchException</code> will have some extra info about the class that was expected and the value that was rejected:</p>
 </div>
@@ -1013,7 +1069,7 @@ When this happens, the library will return something like the following response
 </div>
 </div>
 <div class="sect3">
-<h4 id="optimistic-locking-exceptions"><a class="anchor" href="#optimistic-locking-exceptions"></a>3.4.4. Optimistic locking exceptions</h4>
+<h4 id="optimistic-locking-exceptions"><a class="anchor" href="#optimistic-locking-exceptions"></a>3.5.4. Optimistic locking exceptions</h4>
 <div class="paragraph">
 <p>When an <code>org.springframework.orm.ObjectOptimisticLockingFailureException</code> is thrown, the resulting response will be something like:</p>
 </div>
@@ -1029,7 +1085,7 @@ When this happens, the library will return something like the following response
 </div>
 </div>
 <div class="sect3">
-<h4 id="spring-security-exceptions"><a class="anchor" href="#spring-security-exceptions"></a>3.4.5. Spring Security exceptions</h4>
+<h4 id="spring-security-exceptions"><a class="anchor" href="#spring-security-exceptions"></a>3.5.5. Spring Security exceptions</h4>
 <div class="paragraph">
 <p>If Spring Security is on the classpath, then those exceptions will be handled.
 They will just have a <code>code</code> and a <code>message</code>.</p>
@@ -1082,12 +1138,12 @@ They will just have a <code>code</code> and a <code>message</code>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="adding-extra-properties-in-the-response"><a class="anchor" href="#adding-extra-properties-in-the-response"></a>3.5. Adding extra properties in the response</h3>
+<h3 id="adding-extra-properties-in-the-response"><a class="anchor" href="#adding-extra-properties-in-the-response"></a>3.6. Adding extra properties in the response</h3>
 <div class="paragraph">
 <p>It is possible add extra properties in the JSON response by using the <code>@ErrorResponseProperty</code> annotation in your custom Exception class.</p>
 </div>
 <div class="sect3">
-<h4 id="via-method-annotation"><a class="anchor" href="#via-method-annotation"></a>3.5.1. Via method annotation</h4>
+<h4 id="via-method-annotation"><a class="anchor" href="#via-method-annotation"></a>3.6.1. Via method annotation</h4>
 <div class="paragraph">
 <p>This example annotates the <code>getUserId()</code> method with <code>@ResponseErrorProperty</code> so that the return value of the method is added to the JSON response:</p>
 </div>
@@ -1133,7 +1189,7 @@ public class UserNotFoundException extends RuntimeException {
 </div>
 </div>
 <div class="sect3">
-<h4 id="via-field-annotation"><a class="anchor" href="#via-field-annotation"></a>3.5.2. Via field annotation</h4>
+<h4 id="via-field-annotation"><a class="anchor" href="#via-field-annotation"></a>3.6.2. Via field annotation</h4>
 <div class="paragraph">
 <p>This example annotates the <code>userId</code> field with <code>@ResponseErrorProperty</code> so that the value of the field is added to the JSON response:</p>
 </div>
@@ -1187,7 +1243,7 @@ The annotated field can be <code>public</code> or <code>private</code>.
 </div>
 </div>
 <div class="sect3">
-<h4 id="overriding-the-property-name"><a class="anchor" href="#overriding-the-property-name"></a>3.5.3. Overriding the property name</h4>
+<h4 id="overriding-the-property-name"><a class="anchor" href="#overriding-the-property-name"></a>3.6.3. Overriding the property name</h4>
 <div class="paragraph">
 <p>It is also possible to override the property name that will be used in the response by using the <code>value</code> argument of the annotation.</p>
 </div>
@@ -1220,7 +1276,7 @@ public class UserNotFoundException extends RuntimeException {
 </div>
 </div>
 <div class="sect3">
-<h4 id="null-handling"><a class="anchor" href="#null-handling"></a>3.5.4. Null handling</h4>
+<h4 id="null-handling"><a class="anchor" href="#null-handling"></a>3.6.4. Null handling</h4>
 <div class="paragraph">
 <p>If a property or method that is annotated with <code>@ResponseErrorProperty</code> returns <code>null</code>, then the JSON output will not contain the property by default.
 If this is desirable, then use the <code>includeIfNull</code> property on the annotation to change this behaviour:</p>
@@ -1268,7 +1324,7 @@ public class UserNotFoundException extends RuntimeException {
 </div>
 </div>
 <div class="sect2">
-<h3 id="custom-json-response-field-names"><a class="anchor" href="#custom-json-response-field-names"></a>3.6. Custom JSON response field names</h3>
+<h3 id="custom-json-response-field-names"><a class="anchor" href="#custom-json-response-field-names"></a>3.7. Custom JSON response field names</h3>
 <div class="paragraph">
 <p>If the <code>code</code>, <code>message</code>, <code>fieldErrors</code> and/or <code>globalErrors</code> field names are not to your liking, then you can customize those through the following properties:</p>
 </div>
@@ -1307,7 +1363,7 @@ error.handling.json-field-names.global-errors=classFailures</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="logging"><a class="anchor" href="#logging"></a>3.7. Logging</h3>
+<h3 id="logging"><a class="anchor" href="#logging"></a>3.8. Logging</h3>
 <div class="paragraph">
 <p>The library will log a single line to the configured logging output for each Exception that is handled.
 This behaviour can be changed to log either nothing at all (<code>NO_LOGGING</code>), or to log full stack traces (<code>WITH_STACKTRACE</code>) via the <code>error.handling.exception-logging</code> property.</p>
@@ -1562,6 +1618,16 @@ One of <code>FULL_QUALIFIED_NAME</code>, <code>ALL_CAPS</code>.</p>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.search-super-class-hierarchy</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>By default, only the exact full qualified name of an <code>Exception</code> is searched for when setting <code>error.handling.http-statuses</code>, <code>error.handling.codes</code> or <code>error.handling.messages</code>.
+When this is set to <code>true</code>, you can use any superclass from your <code>Exception</code> type as well.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>false</code></p>
+</div></div></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.json-field-names.code</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>The field name that is used to serialize the <code>code</code> to JSON.</p>
@@ -1597,6 +1663,15 @@ One of <code>FULL_QUALIFIED_NAME</code>, <code>ALL_CAPS</code>.</p>
 <p><code>globalErrors</code></p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.json-field-names.parameterErrors</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The field name that is used to serialize the <code>parameterErrors</code> to JSON.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>parameterErrors</code></p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1604,7 +1679,7 @@ One of <code>FULL_QUALIFIED_NAME</code>, <code>ALL_CAPS</code>.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-04-02 13:59:53 UTC
+Last updated 2021-05-01 08:37:04 UTC
 </div>
 </div>
 </div>
