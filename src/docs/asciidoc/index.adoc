@@ -1132,3 +1132,7 @@ When this is set to `true`, you can use any superclass from your `Exception` typ
 |`parameterErrors`
 
 |===
+
+== Support
+
+If you have problems with the library, or you are missing a feature, feel free to create an issue on GitHub at https://github.com/wimdeblauwe/error-handling-spring-boot-starter.
