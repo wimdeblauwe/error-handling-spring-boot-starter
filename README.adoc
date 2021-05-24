@@ -36,6 +36,8 @@ and
 
 `mvn release:perform`
 
+Merge the tag to `master` so the documentation is updated.
+
 Finally, push the local commits and the tag to remote.
 
 [NOTE]
