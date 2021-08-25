@@ -3,6 +3,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -50,6 +51,10 @@ public class ErrorHandlingControllerAdvice {
             errorResponse = fallbackHandler.handle(exception);
         }
 
+        if (!properties.getFullStacktraceHttpStatuses().isEmpty()) {
+            logFullStacktraceIfNeeded(errorResponse.getHttpStatus(), exception);
+        }
+
         return ResponseEntity.status(errorResponse.getHttpStatus())
                              .body(errorResponse);
     }
@@ -66,6 +71,17 @@ public class ErrorHandlingControllerAdvice {
                     LOGGER.error(exception.getMessage());
                     break;
             }
+        }
+    }
+
+    private void logFullStacktraceIfNeeded(HttpStatus httpStatus, Throwable exception) {
+        String httpStatusValue = String.valueOf(httpStatus.value());
+        if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue)) {
+            LOGGER.error(exception.getMessage(), exception);
+        } else if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue.replaceFirst("\\d$", "x"))) {
+            LOGGER.error(exception.getMessage(), exception);
+        } else if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue.replaceFirst("\\d\\d$", "xx"))) {
+            LOGGER.error(exception.getMessage(), exception);
         }
     }
 }
