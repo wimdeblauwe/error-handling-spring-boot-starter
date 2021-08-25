@@ -1,5 +1,6 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.exception.*;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
@@ -10,7 +11,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.MethodNotAllowedException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -319,79 +319,4 @@ class DefaultFallbackApiExceptionHandlerTest {
                                                       new ErrorMessageMapper(properties));
     }
 
-    static class MyEntityNotFoundException extends RuntimeException {
-
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    static class ExceptionWithBadRequestStatus extends RuntimeException {
-
-    }
-
-    @ResponseErrorCode("MY_ERROR_CODE")
-    static class ExceptionWithResponseErrorCode extends RuntimeException {
-
-    }
-
-    static class ExceptionWithResponseErrorPropertyOnField extends RuntimeException {
-        @ResponseErrorProperty
-        private final String myProperty;
-
-        public ExceptionWithResponseErrorPropertyOnField(String message, String myProperty) {
-            super(message);
-            this.myProperty = myProperty;
-        }
-
-        public ExceptionWithResponseErrorPropertyOnField(String myProperty) {
-            this.myProperty = myProperty;
-        }
-
-        public String getMyProperty() {
-            return myProperty;
-        }
-    }
-
-    static class ExceptionWithResponseErrorPropertyOnFieldWithIncludeIfNull extends RuntimeException {
-        @ResponseErrorProperty(includeIfNull = true)
-        private final String myProperty;
-
-        public ExceptionWithResponseErrorPropertyOnFieldWithIncludeIfNull(String myProperty) {
-            this.myProperty = myProperty;
-        }
-
-        public String getMyProperty() {
-            return myProperty;
-        }
-    }
-
-    static class ExceptionWithResponseErrorPropertyOnMethod extends RuntimeException {
-        private final String myProperty;
-
-        public ExceptionWithResponseErrorPropertyOnMethod(String message, String myProperty) {
-            super(message);
-            this.myProperty = myProperty;
-        }
-
-        public ExceptionWithResponseErrorPropertyOnMethod(String myProperty) {
-            this.myProperty = myProperty;
-        }
-
-        @ResponseErrorProperty
-        public String getMyProperty() {
-            return myProperty;
-        }
-    }
-
-    static class ExceptionWithResponseErrorPropertyOnMethodWithIncludeIfNull extends RuntimeException {
-        private final String myProperty;
-
-        public ExceptionWithResponseErrorPropertyOnMethodWithIncludeIfNull(String myProperty) {
-            this.myProperty = myProperty;
-        }
-
-        @ResponseErrorProperty(includeIfNull = true)
-        public String getMyProperty() {
-            return myProperty;
-        }
-    }
 }
