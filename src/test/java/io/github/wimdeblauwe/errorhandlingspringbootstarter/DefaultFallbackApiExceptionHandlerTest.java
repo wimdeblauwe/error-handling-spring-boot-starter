@@ -116,7 +116,7 @@ class DefaultFallbackApiExceptionHandlerTest {
             ErrorHandlingProperties properties = new ErrorHandlingProperties();
             properties.setDefaultErrorCodeStrategy(ErrorHandlingProperties.DefaultErrorCodeStrategy.ALL_CAPS);
             Map<String, String> codes = new HashMap<>();
-            codes.put("io.github.wimdeblauwe.errorhandlingspringbootstarter.DefaultFallbackApiExceptionHandlerTest$MyEntityNotFoundException", "MY_CUSTOM_ERROR_CODE");
+            codes.put("io.github.wimdeblauwe.errorhandlingspringbootstarter.exception.MyEntityNotFoundException", "MY_CUSTOM_ERROR_CODE");
             properties.setCodes(codes);
             DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
             ApiErrorResponse response = handler.handle(new MyEntityNotFoundException());
