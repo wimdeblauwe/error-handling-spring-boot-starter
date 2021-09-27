@@ -9,7 +9,7 @@
     </parent>
     <groupId>io.github.wimdeblauwe</groupId>
     <artifactId>error-handling-spring-boot-starter</artifactId>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.8.0-SNAPSHOT</version>
     <name>Error Handling Spring Boot Starter</name>
     <description>Spring Boot starter that configures error handling</description>
 
