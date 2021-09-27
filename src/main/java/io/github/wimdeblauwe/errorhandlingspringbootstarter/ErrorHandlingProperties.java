@@ -20,6 +20,8 @@ public class ErrorHandlingProperties {
 
     private List<Class<? extends Throwable>> fullStacktraceClasses = new ArrayList<>();
 
+    private List<String> fullStacktraceHttpStatuses = new ArrayList<>();
+
     private DefaultErrorCodeStrategy defaultErrorCodeStrategy = DefaultErrorCodeStrategy.ALL_CAPS;
 
     private boolean httpStatusInJsonResponse = false;
@@ -62,6 +64,14 @@ public class ErrorHandlingProperties {
 
     public void setFullStacktraceClasses(List<Class<? extends Throwable>> fullStacktraceClasses) {
         this.fullStacktraceClasses = fullStacktraceClasses;
+    }
+
+    public List<String> getFullStacktraceHttpStatuses() {
+        return fullStacktraceHttpStatuses;
+    }
+
+    public void setFullStacktraceHttpStatuses(List<String> fullStacktraceHttpStatuses) {
+        this.fullStacktraceHttpStatuses = fullStacktraceHttpStatuses;
     }
 
     public DefaultErrorCodeStrategy getDefaultErrorCodeStrategy() {

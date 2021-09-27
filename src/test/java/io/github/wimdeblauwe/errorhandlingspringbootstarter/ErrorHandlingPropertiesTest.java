@@ -37,6 +37,9 @@ class ErrorHandlingPropertiesTest {
         assertThat(properties.getMessages())
                 .hasSize(1)
                 .hasEntrySatisfying("java.lang.NullPointerException", message -> assertThat(message).isEqualTo("A null pointer was thrown!"));
+        assertThat(properties.getFullStacktraceHttpStatuses())
+                .hasSize(3)
+                .containsExactly("500", "40x", "2xx");
     }
 
 }
