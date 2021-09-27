@@ -1022,6 +1022,19 @@ With this configuration, all exceptions will have a single log line in the loggi
 
 NOTE: Only the exact matches of the listed classes are used, not the subclasses of the specified classes.
 
+Another way to have additional logging is to specify a list of HTTP return codes that you want full stack traces for:
+
+[source,properties]
+----
+error.handling.full-stacktrace-http-statuses[0]=5xx
+error.handling.full-stacktrace-http-statuses[1]=403
+----
+
+This configuration will print a full stack trace for all errors in the 5xx range and for the exact 403 error code.
+
+NOTE: The logging that is done on the response codes is _additionally_ to the logging done on the exception type.
+You might want to only enable one of the two to avoid double stack traces.
+
 == Custom exception handler
 
 If the <<Configuration,extensive customization options>> are not enough, you can write your own `ApiExceptionHandler` implementation.
@@ -1084,6 +1097,11 @@ One of: `NO_LOGGING`, `MESSAGE_ONLY`,
 |Allows to specify a list of full qualified names of Exception classes that will always print a stack trace in the logging, regardless of the `error.handling.exception-logging` setting.
 See <<Logging>> for more info.
 |
+
+|error.handling.full-stacktrace-http-statuses
+|Allows to specify a list of HTTP error codes (or ranges) that will always print a stack trace in the logging, regardless of the `error.handling.exception-logging` setting.
+See <<Logging>> for more info.
+| A fixed code like `500` can be used, or a range like `50x` or `5xx` is also possible.
 
 |error.handling.default-error-code-strategy
 |Determines how an Exception is converted into a `code` in case there is no `@ResponseErrorCode` present on the class.
