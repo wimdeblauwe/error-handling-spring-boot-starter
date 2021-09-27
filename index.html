@@ -107,7 +107,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 1.7.0-SNAPSHOT.</p>
+<p>This documentation is for version 1.8.0-SNAPSHOT.</p>
 </div>
 </div>
 </div>
@@ -1394,6 +1394,31 @@ Only the exact matches of the listed classes are used, not the subclasses of the
 </tr>
 </table>
 </div>
+<div class="paragraph">
+<p>Another way to have additional logging is to specify a list of HTTP return codes that you want full stack traces for:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.full-stacktrace-http-statuses[0]=5xx
+error.handling.full-stacktrace-http-statuses[1]=403</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This configuration will print a full stack trace for all errors in the 5xx range and for the exact 403 error code.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The logging that is done on the response codes is <em>additionally</em> to the logging done on the exception type.
+You might want to only enable one of the two to avoid double stack traces.
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 </div>
@@ -1577,6 +1602,16 @@ See <a href="#logging">Logging</a> for more info.</p>
 <td class="tableblock halign-left valign-top"><div class="content"></div></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.full-stacktrace-http-statuses</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Allows to specify a list of HTTP error codes (or ranges) that will always print a stack trace in the logging, regardless of the <code>error.handling.exception-logging</code> setting.
+See <a href="#logging">Logging</a> for more info.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>A fixed code like <code>500</code> can be used, or a range like <code>50x</code> or <code>5xx</code> is also possible.</p>
+</div></div></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.default-error-code-strategy</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Determines how an Exception is converted into a <code>code</code> in case there is no <code>@ResponseErrorCode</code> present on the class.
@@ -1688,7 +1723,7 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-24 09:30:07 UTC
+Last updated 2021-09-27 06:35:05 UTC
 </div>
 </div>
 </div>
