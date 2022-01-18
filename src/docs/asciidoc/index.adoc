@@ -586,12 +586,33 @@ Then the response will be:
 }
 ----
 
-If you which to restore default error messaging from a certain point in the class hierarchy (say `MyException`), you can reset it using
+==== Reset back to default messaging at a point in exception class hierarchy
+
+Consider that case where you have an exception like:
+
+[source,java]
+----
+public class ApplicationException extends RuntimeException {}
+----
+
+but you already have the following configuration:
 
 [source,properties]
 ----
-error.handling.messages.com.example.MyException=
+error.handling.messages.java.lang.RuntimeException=A runtime exception has happened
+error.handling.search-super-class-hierarchy=true
 ----
+
+You may reset back to default error messaging from a certain point in the class hierarchy (say
+`my.ApplicationException`) by providing an empty value for that exception.
+
+[source,properties]
+----
+error.handling.messages.my.ApplicationException=
+----
+
+Now, `ApplicationException` and its subclasses will fall back to default messaging behaviour, rather than always showing
+"A runtime exception has happened".
 
 === Exception handlers
 

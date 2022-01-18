@@ -188,6 +188,27 @@ class DefaultFallbackApiExceptionHandlerTest {
         }
 
         @Test
+        void propertiesConfigurationInSuperClassWithHierarchyReset() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            properties.setSearchSuperClassHierarchy(true);
+            properties.getMessages().put(RuntimeException.class.getName(), "A runtime exception happened");
+            properties.getMessages().put(ApplicationException.class.getName(), null);
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            // class at hierarchy reset point
+            ApplicationException applicationException = new ApplicationException("Application exception message");
+            ApiErrorResponse applicationExceptionResponse = handler.handle(applicationException);
+            assertThat(applicationExceptionResponse.getMessage()).isEqualTo("Application exception message");
+            // subclass within reset hierarchy
+            SubclassOfApplicationException subclassOfApplicationException = new SubclassOfApplicationException("Subclass of application exception message");
+            ApiErrorResponse subclassOfApplicationExceptionResponse = handler.handle(subclassOfApplicationException);
+            assertThat(subclassOfApplicationExceptionResponse.getMessage()).isEqualTo("Subclass of application exception message");
+            // class outside reset hierarchy
+            MyEntityNotFoundException exception = new MyEntityNotFoundException();
+            ApiErrorResponse response = handler.handle(exception);
+            assertThat(response.getMessage()).isEqualTo("A runtime exception happened");
+        }
+
+        @Test
         void propertiesConfigurationInSuperClassIfSearchDisabled() {
             ErrorHandlingProperties properties = new ErrorHandlingProperties();
             properties.setSearchSuperClassHierarchy(false);
