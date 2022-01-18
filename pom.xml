@@ -15,7 +15,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
 
         <!-- Test Dependencies -->
         <json-unit.version>2.19.0</json-unit.version>
@@ -289,7 +289,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[${java.version}, 1.9)</version>
+                                    <version>[${java.version}, 12)</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
