@@ -586,6 +586,13 @@ Then the response will be:
 }
 ----
 
+If you which to restore default error messaging from a certain point in the class hierarchy (say `MyException`), you can reset it using
+
+[source,properties]
+----
+error.handling.messages.com.example.MyException=
+----
+
 === Exception handlers
 
 ==== Validation
