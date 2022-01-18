@@ -37,7 +37,6 @@ public class ErrorHandlingControllerAdvice {
     public ResponseEntity<?> handleException(Throwable exception, WebRequest webRequest, Locale locale) {
         LOGGER.debug("webRequest: {}", webRequest);
         LOGGER.debug("locale: {}", locale);
-        logException(exception);
 
         ApiErrorResponse errorResponse = null;
         for (ApiExceptionHandler handler : handlers) {
@@ -51,37 +50,49 @@ public class ErrorHandlingControllerAdvice {
             errorResponse = fallbackHandler.handle(exception);
         }
 
-        if (!properties.getFullStacktraceHttpStatuses().isEmpty()) {
-            logFullStacktraceIfNeeded(errorResponse.getHttpStatus(), exception);
-        }
+        logException(errorResponse, exception);
 
         return ResponseEntity.status(errorResponse.getHttpStatus())
                              .body(errorResponse);
     }
 
-    private void logException(Throwable exception) {
+    private void logException(ApiErrorResponse errorResponse, Throwable exception) {
         if (properties.getFullStacktraceClasses().contains(exception.getClass())) {
             LOGGER.error(exception.getMessage(), exception);
-        } else {
-            switch (properties.getExceptionLogging()) {
-                case WITH_STACKTRACE:
-                    LOGGER.error(exception.getMessage(), exception);
-                    break;
-                case MESSAGE_ONLY:
-                    LOGGER.error(exception.getMessage());
-                    break;
+        } else if (!properties.getFullStacktraceHttpStatuses().isEmpty()) {
+            boolean alreadyLogged = logFullStacktraceIfNeeded(errorResponse.getHttpStatus(), exception);
+            if (!alreadyLogged) {
+                doStandardFallbackLogging(exception);
             }
+        } else {
+            doStandardFallbackLogging(exception);
         }
     }
 
-    private void logFullStacktraceIfNeeded(HttpStatus httpStatus, Throwable exception) {
+    private void doStandardFallbackLogging(Throwable exception) {
+        switch (properties.getExceptionLogging()) {
+            case WITH_STACKTRACE:
+                LOGGER.error(exception.getMessage(), exception);
+                break;
+            case MESSAGE_ONLY:
+                LOGGER.error(exception.getMessage());
+                break;
+        }
+    }
+
+    private boolean logFullStacktraceIfNeeded(HttpStatus httpStatus, Throwable exception) {
         String httpStatusValue = String.valueOf(httpStatus.value());
         if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue)) {
             LOGGER.error(exception.getMessage(), exception);
+            return true;
         } else if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue.replaceFirst("\\d$", "x"))) {
             LOGGER.error(exception.getMessage(), exception);
+            return true;
         } else if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue.replaceFirst("\\d\\d$", "xx"))) {
             LOGGER.error(exception.getMessage(), exception);
+            return true;
         }
+
+        return false;
     }
 }
