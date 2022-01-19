@@ -75,7 +75,11 @@
 <li><a href="#field-specific-override-of-error-messages">3.3.3. Field specific override of error messages</a></li>
 </ul>
 </li>
-<li><a href="#super-class-hierarchy-search">3.4. Super class hierarchy search</a></li>
+<li><a href="#super-class-hierarchy-search">3.4. Super class hierarchy search</a>
+<ul class="sectlevel3">
+<li><a href="#reset-back-to-default-messaging-at-a-point-in-exception-class-hierarchy">3.4.1. Reset back to default messaging at a point in exception class hierarchy</a></li>
+</ul>
+</li>
 <li><a href="#exception-handlers">3.5. Exception handlers</a>
 <ul class="sectlevel3">
 <li><a href="#validation">3.5.1. Validation</a></li>
@@ -824,6 +828,39 @@ error.handling.messages.java.lang.RuntimeException=A runtime exception has happe
   "code": "RUNTIME_EXCEPTION",
   "message": "A runtime exception has happened"
 }</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="reset-back-to-default-messaging-at-a-point-in-exception-class-hierarchy"><a class="anchor" href="#reset-back-to-default-messaging-at-a-point-in-exception-class-hierarchy"></a>3.4.1. Reset back to default messaging at a point in exception class hierarchy</h4>
+<div class="paragraph">
+<p>Consider that case where you have an exception like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">public class ApplicationException extends RuntimeException {}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>but you already have the following configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.messages.java.lang.RuntimeException=A runtime exception has happened
+error.handling.search-super-class-hierarchy=true</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You may reset back to default error messaging from a certain point in the class hierarchy (say
+<code>my.ApplicationException</code>) by providing an empty value for that exception.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.messages.my.ApplicationException=</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now, <code>ApplicationException</code> and its subclasses will fall back to default messaging behaviour, rather than always showing
+"A runtime exception has happened".</p>
 </div>
 </div>
 </div>
@@ -1723,7 +1760,7 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-09-27 06:35:05 UTC
+Last updated 2022-01-19 20:34:38 UTC
 </div>
 </div>
 </div>
