@@ -2,6 +2,8 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 
+import static org.springframework.util.StringUtils.hasText;
+
 /**
  * This class contains the logic for getting the matching error message for the given {@link Throwable}.
  */
@@ -14,7 +16,7 @@ public class ErrorMessageMapper {
 
     public String getErrorMessage(Throwable exception) {
         String code = getErrorMessageFromProperties(exception.getClass());
-        if (code != null) {
+        if (hasText(code)) {
             return code;
         }
         return exception.getMessage();
