@@ -63,6 +63,14 @@ public class ErrorHandlingConfiguration {
     }
 
     @Bean
+    public BindExceptionHandler bindExceptionHandler(ErrorHandlingProperties properties,
+                                                     HttpStatusMapper httpStatusMapper,
+                                                     ErrorCodeMapper errorCodeMapper,
+                                                     ErrorMessageMapper errorMessageMapper) {
+        return new BindExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+    }
+
+    @Bean
     public ConstraintViolationApiExceptionHandler constraintViolationApiExceptionHandler(ErrorHandlingProperties properties,
                                                                                          HttpStatusMapper httpStatusMapper,
                                                                                          ErrorCodeMapper errorCodeMapper,
