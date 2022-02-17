@@ -618,9 +618,9 @@ Now, `ApplicationException` and its subclasses will fall back to default messagi
 
 ==== Validation
 
-There are 2 cases that this library will create specific JSON responses when validation errors occur:
+There are 4 cases that this library will create specific JSON responses when validation errors occur:
 
-. When using `@Valid` in the parameter of a controller method.
+. When using `@Valid` in the parameter of a controller method for a request body.
 For example:
 +
 [source,java]
@@ -643,6 +643,59 @@ public class MyExampleController {
 }
 ----
 
+. When annotating an `@RequestParam` parameter with extra validation annotations.
+For example:
++
+[source,java]
+----
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
+
+@RestController
+@RequestMapping("/example")
+@Validated
+public class MyExampleController {
+
+    @GetMapping
+    public MyResponse doSomething(@NotBlank @RequestParam("param") String param ) {
+        // ...
+    }
+}
+----
++
+[NOTE]
+====
+You need to add `org.springframework.validation.annotation.Validated` annotation on the _controller_ class otherwise, the validation annotations on the request parameter will not work.
+====
+
+. When using `@Valid` in the parameter of a controller method for a class that is mapped to request parameters.
+For example:
++
+[source,java]
+----
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
+
+@RestController
+@RequestMapping("/example")
+public class MyExampleController {
+
+    @GetMapping
+    public MyResponse doSomething(@Valid ExampleRequestParameters requestParameters ) {
+        // ...
+    }
+}
+----
++
+Where `TestRequestBody` would have standard or custom validation annotations.
+
 . When using validation annotations on Spring components that are themselves annotated with https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/validation/annotation/Validated.html[`@Validated`].
 For example:
 +
@@ -663,7 +716,7 @@ public static class TestService {
 }
 ----
 
-In both cases, the response JSON will be similar to this:
+In all cases, the response JSON will be similar to this:
 
 [source,json]
 ----
