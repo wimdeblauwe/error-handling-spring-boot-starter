@@ -31,9 +31,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest
 @ContextConfiguration(classes = {ErrorHandlingConfiguration.class,
-        BindExceptionHandlerTest.TestController.class})
+        BindApiExceptionHandlerTest.TestController.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class BindExceptionHandlerTest {
+class BindApiExceptionHandlerTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -63,14 +63,6 @@ public class ErrorHandlingConfiguration {
     }
 
     @Bean
-    public BindExceptionHandler bindExceptionHandler(ErrorHandlingProperties properties,
-                                                     HttpStatusMapper httpStatusMapper,
-                                                     ErrorCodeMapper errorCodeMapper,
-                                                     ErrorMessageMapper errorMessageMapper) {
-        return new BindExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
-    }
-
-    @Bean
     public ConstraintViolationApiExceptionHandler constraintViolationApiExceptionHandler(ErrorHandlingProperties properties,
                                                                                          HttpStatusMapper httpStatusMapper,
                                                                                          ErrorCodeMapper errorCodeMapper,
@@ -87,11 +79,11 @@ public class ErrorHandlingConfiguration {
     }
 
     @Bean
-    public MethodArgumentNotValidApiExceptionHandler methodArgumentNotValidApiExceptionHandler(ErrorHandlingProperties properties,
-                                                                                               HttpStatusMapper httpStatusMapper,
-                                                                                               ErrorCodeMapper errorCodeMapper,
-                                                                                               ErrorMessageMapper errorMessageMapper) {
-        return new MethodArgumentNotValidApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+    public BindApiExceptionHandler methodArgumentNotValidApiExceptionHandler(ErrorHandlingProperties properties,
+                                                                             HttpStatusMapper httpStatusMapper,
+                                                                             ErrorCodeMapper errorCodeMapper,
+                                                                             ErrorMessageMapper errorMessageMapper) {
+        return new BindApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Bean
