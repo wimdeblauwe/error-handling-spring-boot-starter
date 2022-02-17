@@ -11,11 +11,14 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -133,9 +136,24 @@ class BindExceptionHandlerTest {
                .andExpect(jsonPath("fieldErrors[0].rejectedValue").value(Matchers.nullValue()));
     }
 
+    @Test
+    @WithMockUser
+    void testRequestParam() throws Exception {
+        // Note this is handled by ConstraintViolationApiExceptionHandler, but it seemed test wise to
+        // more appropriate to include it here
+        mockMvc.perform(MockMvcRequestBuilders.get("/test/request-param")
+                                              .queryParam("param", ""))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("parameterErrors", hasSize(1)))
+               .andExpect(jsonPath("parameterErrors[0].code").value("REQUIRED_NOT_BLANK"))
+               .andExpect(jsonPath("parameterErrors[0].message").value("must not be blank"))
+               .andExpect(jsonPath("parameterErrors[0].parameter").value("param"))
+               .andExpect(jsonPath("parameterErrors[0].rejectedValue").value(""));
+    }
 
     @RestController
     @RequestMapping
+    @Validated
     public static class TestController {
         @GetMapping("/test/field-validation")
         public void someGetMethod(@Valid TestRequest testRequest) {
@@ -146,6 +164,12 @@ class BindExceptionHandlerTest {
         public void someGetMethodWithObjectValidation(@Valid TestRequestForObjectValidation testRequest) {
 
         }
+
+        @GetMapping("/test/request-param")
+        public void someGetMethod(@NotBlank @RequestParam("param") String param) {
+
+        }
+
     }
 
     public static class TestRequest {
