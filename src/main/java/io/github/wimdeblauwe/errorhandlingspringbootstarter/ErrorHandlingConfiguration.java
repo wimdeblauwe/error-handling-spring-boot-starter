@@ -79,11 +79,11 @@ public class ErrorHandlingConfiguration {
     }
 
     @Bean
-    public MethodArgumentNotValidApiExceptionHandler methodArgumentNotValidApiExceptionHandler(ErrorHandlingProperties properties,
-                                                                                               HttpStatusMapper httpStatusMapper,
-                                                                                               ErrorCodeMapper errorCodeMapper,
-                                                                                               ErrorMessageMapper errorMessageMapper) {
-        return new MethodArgumentNotValidApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+    public BindApiExceptionHandler bindApiExceptionHandler(ErrorHandlingProperties properties,
+                                                           HttpStatusMapper httpStatusMapper,
+                                                           ErrorCodeMapper errorCodeMapper,
+                                                           ErrorMessageMapper errorMessageMapper) {
+        return new BindApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Bean

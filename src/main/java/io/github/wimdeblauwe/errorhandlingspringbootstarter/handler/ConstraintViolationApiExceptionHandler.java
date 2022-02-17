@@ -21,7 +21,7 @@ import java.util.stream.StreamSupport;
  * {@link ConstraintViolationException}. This typically happens when there is validation
  * on Spring services that gets triggered.
  *
- * @see MethodArgumentNotValidApiExceptionHandler
+ * @see BindApiExceptionHandler
  */
 public class ConstraintViolationApiExceptionHandler extends AbstractApiExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConstraintViolationApiExceptionHandler.class);
