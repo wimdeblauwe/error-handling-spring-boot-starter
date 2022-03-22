@@ -2,6 +2,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Locale;
 
 @ControllerAdvice(annotations = RestController.class)
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class ErrorHandlingControllerAdvice {
     private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlingControllerAdvice.class);
 
