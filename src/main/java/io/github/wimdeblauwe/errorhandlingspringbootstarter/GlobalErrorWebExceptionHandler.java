@@ -97,11 +97,11 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
         }
         List<ApiParameterError> parameterErrors = errorResponse.getParameterErrors();
         if(!parameterErrors.isEmpty()) {
-            mapResponse.put("paramaterErrors", parameterErrors);
+            mapResponse.put("parameterErrors", parameterErrors);
         }
         Map<String, Object> properties = errorResponse.getProperties();
         if(!properties.isEmpty()) {
-            mapResponse.put("propertes", properties);
+            mapResponse.put("properties", properties);
         }
         logException(errorResponse, exception);
         return ServerResponse.status(errorResponse.getHttpStatus())
