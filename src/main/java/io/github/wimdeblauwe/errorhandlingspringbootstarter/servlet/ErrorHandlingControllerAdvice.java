@@ -1,5 +1,9 @@
-package io.github.wimdeblauwe.errorhandlingspringbootstarter;
+package io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet;
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.FallbackApiExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;

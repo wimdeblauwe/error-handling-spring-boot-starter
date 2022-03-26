@@ -1,5 +1,6 @@
-package io.github.wimdeblauwe.errorhandlingspringbootstarter;
+package io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive;
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
