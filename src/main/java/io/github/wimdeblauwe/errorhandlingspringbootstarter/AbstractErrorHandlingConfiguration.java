@@ -9,6 +9,11 @@ import org.springframework.context.annotation.Bean;
 
 public abstract class AbstractErrorHandlingConfiguration {
     @Bean
+    public LoggingService loggingService(ErrorHandlingProperties properties) {
+        return new LoggingService(properties);
+    }
+
+    @Bean
     public HttpStatusMapper httpStatusMapper(ErrorHandlingProperties properties) {
         return new HttpStatusMapper(properties);
     }

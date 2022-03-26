@@ -1,14 +1,10 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet;
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.FallbackApiExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,16 +19,16 @@ import java.util.Locale;
 public class ErrorHandlingControllerAdvice {
     private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlingControllerAdvice.class);
 
-    private final ErrorHandlingProperties properties;
     private final List<ApiExceptionHandler> handlers;
     private final FallbackApiExceptionHandler fallbackHandler;
+    private final LoggingService loggingService;
 
-    public ErrorHandlingControllerAdvice(ErrorHandlingProperties properties,
-                                         List<ApiExceptionHandler> handlers,
-                                         FallbackApiExceptionHandler fallbackHandler) {
-        this.properties = properties;
+    public ErrorHandlingControllerAdvice(List<ApiExceptionHandler> handlers,
+                                         FallbackApiExceptionHandler fallbackHandler,
+                                         LoggingService loggingService) {
         this.handlers = handlers;
         this.fallbackHandler = fallbackHandler;
+        this.loggingService = loggingService;
         this.handlers.sort(AnnotationAwareOrderComparator.INSTANCE);
 
         LOGGER.info("Error Handling Spring Boot Starter active with {} handlers", this.handlers.size());
@@ -56,49 +52,9 @@ public class ErrorHandlingControllerAdvice {
             errorResponse = fallbackHandler.handle(exception);
         }
 
-        logException(errorResponse, exception);
+        loggingService.logException(errorResponse, exception);
 
         return ResponseEntity.status(errorResponse.getHttpStatus())
                              .body(errorResponse);
-    }
-
-    private void logException(ApiErrorResponse errorResponse, Throwable exception) {
-        if (properties.getFullStacktraceClasses().contains(exception.getClass())) {
-            LOGGER.error(exception.getMessage(), exception);
-        } else if (!properties.getFullStacktraceHttpStatuses().isEmpty()) {
-            boolean alreadyLogged = logFullStacktraceIfNeeded(errorResponse.getHttpStatus(), exception);
-            if (!alreadyLogged) {
-                doStandardFallbackLogging(exception);
-            }
-        } else {
-            doStandardFallbackLogging(exception);
-        }
-    }
-
-    private void doStandardFallbackLogging(Throwable exception) {
-        switch (properties.getExceptionLogging()) {
-            case WITH_STACKTRACE:
-                LOGGER.error(exception.getMessage(), exception);
-                break;
-            case MESSAGE_ONLY:
-                LOGGER.error(exception.getMessage());
-                break;
-        }
-    }
-
-    private boolean logFullStacktraceIfNeeded(HttpStatus httpStatus, Throwable exception) {
-        String httpStatusValue = String.valueOf(httpStatus.value());
-        if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue)) {
-            LOGGER.error(exception.getMessage(), exception);
-            return true;
-        } else if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue.replaceFirst("\\d$", "x"))) {
-            LOGGER.error(exception.getMessage(), exception);
-            return true;
-        } else if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue.replaceFirst("\\d\\d$", "xx"))) {
-            LOGGER.error(exception.getMessage(), exception);
-            return true;
-        }
-
-        return false;
     }
 }

@@ -1,9 +1,6 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive;
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.AbstractErrorHandlingConfiguration;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.FallbackApiExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,10 +32,13 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
 
     @Bean
     @Order(-2)
-    public ErrorWebExceptionHandler globalErrorWebExceptionHandler(ErrorAttributes errorAttributes, ServerProperties serverProperties,
-                                                                   WebProperties webProperties, ObjectProvider<ViewResolver> viewResolvers,
-                                                                   ServerCodecConfigurer serverCodecConfigurer, ApplicationContext applicationContext,
-                                                                   ErrorHandlingProperties properties,
+    public ErrorWebExceptionHandler globalErrorWebExceptionHandler(ErrorAttributes errorAttributes,
+                                                                   ServerProperties serverProperties,
+                                                                   WebProperties webProperties,
+                                                                   ObjectProvider<ViewResolver> viewResolvers,
+                                                                   ServerCodecConfigurer serverCodecConfigurer,
+                                                                   ApplicationContext applicationContext,
+                                                                   LoggingService loggingService,
                                                                    List<ApiExceptionHandler> handlers,
                                                                    FallbackApiExceptionHandler fallbackApiExceptionHandler) {
 
@@ -46,10 +46,9 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
                                                                                              webProperties.getResources(),
                                                                                              serverProperties.getError(),
                                                                                              applicationContext,
-                                                                                             properties,
                                                                                              handlers,
-                                                                                             fallbackApiExceptionHandler
-        );
+                                                                                             fallbackApiExceptionHandler,
+                                                                                             loggingService);
         exceptionHandler.setViewResolvers(viewResolvers.orderedStream().collect(Collectors.toList()));
         exceptionHandler.setMessageWriters(serverCodecConfigurer.getWriters());
         exceptionHandler.setMessageReaders(serverCodecConfigurer.getReaders());
