@@ -21,8 +21,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
  */
 public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
 
-    public BindApiExceptionHandler(ErrorHandlingProperties properties,
-                                   HttpStatusMapper httpStatusMapper,
+    public BindApiExceptionHandler(HttpStatusMapper httpStatusMapper,
                                    ErrorCodeMapper errorCodeMapper,
                                    ErrorMessageMapper errorMessageMapper) {
         super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
@@ -30,17 +29,18 @@ public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
 
     @Override
     public boolean canHandle(Throwable exception) {
-        return exception instanceof BindException;
+        // BindingResult is a common interface between org.springframework.validation.BindException
+        // and org.springframework.web.bind.support.WebExchangeBindException
+        return exception instanceof BindingResult;
     }
 
     @Override
     public ApiErrorResponse handle(Throwable exception) {
 
-        BindException ex = (BindException) exception;
+        BindingResult bindingResult = (BindingResult) exception;
         ApiErrorResponse response = new ApiErrorResponse(getHttpStatus(exception, HttpStatus.BAD_REQUEST),
                                                          getErrorCode(exception),
-                                                         getMessage(ex));
-        BindingResult bindingResult = ex.getBindingResult();
+                                                         getMessage(bindingResult));
         if (bindingResult.hasFieldErrors()) {
             bindingResult.getFieldErrors().stream()
                          .map(fieldError -> new ApiFieldError(getCode(fieldError),
@@ -72,7 +72,7 @@ public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
         return errorMessageMapper.getErrorMessage(fieldSpecificCode, code, fieldError.getDefaultMessage());
     }
 
-    private String getMessage(BindException exception) {
-        return "Validation failed for object='" + exception.getBindingResult().getObjectName() + "'. Error count: " + exception.getBindingResult().getErrorCount();
+    private String getMessage(BindingResult bindingResult) {
+        return "Validation failed for object='" + bindingResult.getObjectName() + "'. Error count: " + bindingResult.getErrorCount();
     }
 }

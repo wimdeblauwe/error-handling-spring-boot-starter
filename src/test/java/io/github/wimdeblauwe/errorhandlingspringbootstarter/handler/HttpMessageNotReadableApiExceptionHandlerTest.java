@@ -1,7 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingConfiguration;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
-@ContextConfiguration(classes = {ErrorHandlingConfiguration.class,
+@ContextConfiguration(classes = {ServletErrorHandlingConfiguration.class,
         HttpMessageNotReadableApiExceptionHandlerTest.TestController.class})
 class HttpMessageNotReadableApiExceptionHandlerTest {
 

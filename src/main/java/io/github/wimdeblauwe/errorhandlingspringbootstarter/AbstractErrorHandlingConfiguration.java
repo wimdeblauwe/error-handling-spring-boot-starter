@@ -5,29 +5,12 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapp
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
-import java.util.List;
-
-@Configuration
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@EnableConfigurationProperties(ErrorHandlingProperties.class)
-@ConditionalOnProperty(value = "error.handling.enabled", matchIfMissing = true)
-@PropertySource("classpath:/error-handling-defaults.properties")
-public class ErrorHandlingConfiguration {
-
+public abstract class AbstractErrorHandlingConfiguration {
     @Bean
-    public ErrorHandlingControllerAdvice errorHandlingControllerAdvice(ErrorHandlingProperties properties,
-                                                                       List<ApiExceptionHandler> handlers,
-                                                                       FallbackApiExceptionHandler fallbackApiExceptionHandler) {
-        return new ErrorHandlingControllerAdvice(properties,
-                                                 handlers,
-                                                 fallbackApiExceptionHandler);
+    public LoggingService loggingService(ErrorHandlingProperties properties) {
+        return new LoggingService(properties);
     }
 
     @Bean
@@ -79,11 +62,10 @@ public class ErrorHandlingConfiguration {
     }
 
     @Bean
-    public BindApiExceptionHandler bindApiExceptionHandler(ErrorHandlingProperties properties,
-                                                           HttpStatusMapper httpStatusMapper,
+    public BindApiExceptionHandler bindApiExceptionHandler(HttpStatusMapper httpStatusMapper,
                                                            ErrorCodeMapper errorCodeMapper,
                                                            ErrorMessageMapper errorMessageMapper) {
-        return new BindApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        return new BindApiExceptionHandler(httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Bean
