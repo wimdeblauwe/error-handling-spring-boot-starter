@@ -81,6 +81,8 @@ The HTTP status code will be _500 Internal Server Error_.
 
 Next to this quite simple default behaviour, there is special handling for some of the common Spring exceptions and there is an extensive amount of <<Configuration,customization options>> that should make this library a good fit for all of your error handling for REST controllers.
 
+This works for `@RestController` classes that are https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#spring-web[servlet based] and for those that use https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html[Spring WebFlux] (reactive).
+
 ==== Validation exception handling
 
 For some exceptions like https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/bind/MethodArgumentNotValidException.html[`MethodArgumentNotValidException`], https://docs.oracle.com/javaee/7/api/javax/validation/ConstraintViolationException.html[`ConstraintViolationException`],... there is special handling and extra information is returned in the response.
@@ -165,6 +167,11 @@ The library is automatically active when it is on the classpath.
 ==== With `@WebMvcTest`
 
 There is nothing special to configure for unit tests that use `@WebMvcTest`.
+The library is automatically active when it is on the classpath.
+
+==== With `@WebFluxTest`
+
+There is nothing special to configure for unit tests that use `@WebFluxTest`.
 The library is automatically active when it is on the classpath.
 
 == Configuration
