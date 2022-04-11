@@ -46,6 +46,7 @@ public abstract class AbstractErrorHandlingConfiguration {
     }
 
     @Bean
+    // https://stackoverflow.com/questions/71627101/conditionalonclass-for-javax-validation-constraintviolationexception-not-work/71698449#71698449
     public ConstraintViolationApiExceptionHandler constraintViolationApiExceptionHandler(ErrorHandlingProperties properties,
                                                                                          HttpStatusMapper httpStatusMapper,
                                                                                          ErrorCodeMapper errorCodeMapper,

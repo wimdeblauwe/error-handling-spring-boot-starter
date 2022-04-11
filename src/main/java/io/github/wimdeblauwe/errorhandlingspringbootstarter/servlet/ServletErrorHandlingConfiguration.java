@@ -1,6 +1,10 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.MissingRequestValueExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,6 +20,15 @@ import java.util.List;
 @ConditionalOnProperty(value = "error.handling.enabled", matchIfMissing = true)
 @PropertySource("classpath:/error-handling-defaults.properties")
 public class ServletErrorHandlingConfiguration extends AbstractErrorHandlingConfiguration {
+
+    @Bean
+    public MissingRequestValueExceptionHandler missingRequestValueExceptionHandler(HttpStatusMapper httpStatusMapper,
+                                                                                   ErrorCodeMapper errorCodeMapper,
+                                                                                   ErrorMessageMapper errorMessageMapper) {
+        return new MissingRequestValueExceptionHandler(httpStatusMapper,
+                                                       errorCodeMapper,
+                                                       errorMessageMapper);
+    }
 
     @Bean
     public ErrorHandlingControllerAdvice errorHandlingControllerAdvice(List<ApiExceptionHandler> handlers,
