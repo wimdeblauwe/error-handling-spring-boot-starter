@@ -1,6 +1,11 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.ServerErrorExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.ServerWebInputExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -29,6 +34,24 @@ import java.util.stream.Collectors;
 @ConditionalOnProperty(value = "error.handling.enabled", matchIfMissing = true)
 @PropertySource("classpath:/error-handling-defaults.properties")
 public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingConfiguration {
+
+    @Bean
+    public ServerWebInputExceptionHandler serverWebInputExceptionHandler(HttpStatusMapper httpStatusMapper,
+                                                                         ErrorCodeMapper errorCodeMapper,
+                                                                         ErrorMessageMapper errorMessageMapper) {
+        return new ServerWebInputExceptionHandler(httpStatusMapper,
+                                                  errorCodeMapper,
+                                                  errorMessageMapper);
+    }
+
+    @Bean
+    public ServerErrorExceptionHandler serverErrorExceptionHandler(HttpStatusMapper httpStatusMapper,
+                                                                   ErrorCodeMapper errorCodeMapper,
+                                                                   ErrorMessageMapper errorMessageMapper) {
+        return new ServerErrorExceptionHandler(httpStatusMapper,
+                                               errorCodeMapper,
+                                               errorMessageMapper);
+    }
 
     @Bean
     @Order(-2)
