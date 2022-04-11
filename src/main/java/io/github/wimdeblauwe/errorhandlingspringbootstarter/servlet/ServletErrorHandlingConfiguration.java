@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
 import java.util.List;
@@ -19,6 +20,9 @@ import java.util.List;
 @EnableConfigurationProperties(ErrorHandlingProperties.class)
 @ConditionalOnProperty(value = "error.handling.enabled", matchIfMissing = true)
 @PropertySource("classpath:/error-handling-defaults.properties")
+@Import({ValidationErrorHandlingConfiguration.class,
+        SpringSecurityErrorHandlingConfiguration.class,
+        SpringOrmErrorHandlingConfiguration.class})
 public class ServletErrorHandlingConfiguration extends AbstractErrorHandlingConfiguration {
 
     @Bean

@@ -20,6 +20,7 @@ import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.codec.ServerCodecConfigurer;
@@ -33,6 +34,9 @@ import java.util.stream.Collectors;
 @EnableConfigurationProperties({ErrorHandlingProperties.class, WebProperties.class, ServerProperties.class})
 @ConditionalOnProperty(value = "error.handling.enabled", matchIfMissing = true)
 @PropertySource("classpath:/error-handling-defaults.properties")
+@Import({ValidationErrorHandlingConfiguration.class,
+        SpringSecurityErrorHandlingConfiguration.class,
+        SpringOrmErrorHandlingConfiguration.class})
 public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingConfiguration {
 
     @Bean
