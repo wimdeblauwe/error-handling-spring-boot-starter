@@ -122,7 +122,7 @@ public class ErrorHandlingProperties {
         this.searchSuperClassHierarchy = searchSuperClassHierarchy;
     }
 
-    enum ExceptionLogging {
+    public enum ExceptionLogging {
         NO_LOGGING,
         MESSAGE_ONLY,
         WITH_STACKTRACE

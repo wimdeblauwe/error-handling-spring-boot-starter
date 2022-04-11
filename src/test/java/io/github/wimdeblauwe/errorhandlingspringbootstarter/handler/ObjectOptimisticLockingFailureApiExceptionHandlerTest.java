@@ -1,7 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingConfiguration;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
-@ContextConfiguration(classes = {ErrorHandlingConfiguration.class,
+@ContextConfiguration(classes = {ServletErrorHandlingConfiguration.class,
         ObjectOptimisticLockingFailureApiExceptionHandlerTest.TestController.class})
 class ObjectOptimisticLockingFailureApiExceptionHandlerTest {
 

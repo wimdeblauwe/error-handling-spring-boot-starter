@@ -1,7 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingConfiguration;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
-@ContextConfiguration(classes = {ErrorHandlingConfiguration.class,
+@ContextConfiguration(classes = {ServletErrorHandlingConfiguration.class,
         BindApiExceptionHandlerWithMethodArgumentNotValidTest.TestController.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class BindApiExceptionHandlerWithMethodArgumentNotValidTest {
