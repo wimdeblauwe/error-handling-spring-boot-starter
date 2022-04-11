@@ -1,17 +1,12 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive.ReactiveErrorHandlingConfiguration;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -23,7 +18,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
         },
         controllers = ServerWebInputExceptionHandlerTestController.class
 )
-@ImportAutoConfiguration(classes = {ReactiveErrorHandlingConfiguration.class, ServerWebInputExceptionHandlerTest.CodecConfig.class})
 class ServerWebInputExceptionHandlerTest {
 
     @Autowired
@@ -93,14 +87,4 @@ class ServerWebInputExceptionHandlerTest {
                      .jsonPath("parameterName").value(Matchers.equalTo("test"))
                      .jsonPath("parameterType").value(Matchers.equalTo("String"));
     }
-
-    static class CodecConfig {
-
-        @Bean
-        @ConditionalOnMissingBean(ServerCodecConfigurer.class)
-        public ServerCodecConfigurer serverCodecConfigurer() {
-            return ServerCodecConfigurer.create();
-        }
-    }
-
 }
