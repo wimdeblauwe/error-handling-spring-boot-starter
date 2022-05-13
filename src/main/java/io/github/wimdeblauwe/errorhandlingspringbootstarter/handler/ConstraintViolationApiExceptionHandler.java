@@ -12,8 +12,10 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ElementKind;
 import javax.validation.Path;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
@@ -47,6 +49,8 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
                                                          getMessage(ex));
         Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
         violations.stream()
+                  // sort violations to ensure deterministic order
+                  .sorted(Comparator.comparing(constraintViolation -> constraintViolation.getPropertyPath().toString()))
                   .map(constraintViolation -> {
                       Optional<Path.Node> leafNode = getLeafNode(constraintViolation.getPropertyPath());
                       if (leafNode.isPresent()) {
@@ -56,7 +60,8 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
                               return new ApiFieldError(getCode(constraintViolation),
                                                        node.toString(),
                                                        getMessage(constraintViolation),
-                                                       constraintViolation.getInvalidValue());
+                                                       constraintViolation.getInvalidValue(),
+                                                       getPathWithoutPrefix(constraintViolation.getPropertyPath()));
                           } else if (elementKind == ElementKind.BEAN) {
                               return new ApiGlobalError(getCode(constraintViolation),
                                                         getMessage(constraintViolation));
@@ -89,6 +94,19 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
 
     private Optional<Path.Node> getLeafNode(Path path) {
         return StreamSupport.stream(path.spliterator(), false).reduce((a, b) -> b);
+    }
+
+    /**
+     * @param path
+     * @return The property path without the method and argument name or any leading "." in the result.
+     */
+    private String getPathWithoutPrefix(Path path) {
+        String collect = StreamSupport.stream(path.spliterator(), false)
+                                      .limit(2)
+                                      .map(a -> a.getName())
+                                      .collect(Collectors.joining("."));
+        String substring = path.toString().substring(collect.length());
+        return substring.startsWith(".") ? substring.substring(1) : substring;
     }
 
     private String getCode(ConstraintViolation<?> constraintViolation) {

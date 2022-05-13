@@ -3,15 +3,19 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiFieldError;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiGlobalError;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import javax.validation.Path;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Class to handle {@link BindException} and {@link MethodArgumentNotValidException} exceptions. This is typically
@@ -43,10 +47,19 @@ public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
                                                          getMessage(bindingResult));
         if (bindingResult.hasFieldErrors()) {
             bindingResult.getFieldErrors().stream()
-                         .map(fieldError -> new ApiFieldError(getCode(fieldError),
-                                                              fieldError.getField(),
-                                                              getMessage(fieldError),
-                                                              fieldError.getRejectedValue()))
+                         .map(fieldError -> {
+                             String path = null;
+                             try {
+                                 path = fieldError.unwrap(ConstraintViolationImpl.class).getPropertyPath().toString();
+                             } catch (RuntimeException runtimeException) {
+                                // only set a path if we have a ConstraintViolation
+                             }
+                             return new ApiFieldError(getCode(fieldError),
+                                                      fieldError.getField(),
+                                                      getMessage(fieldError),
+                                                      fieldError.getRejectedValue(),
+                                                      path);
+                         })
                          .forEach(response::addFieldError);
         }
 

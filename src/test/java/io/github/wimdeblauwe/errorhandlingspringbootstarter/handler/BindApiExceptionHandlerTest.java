@@ -49,7 +49,9 @@ class BindApiExceptionHandlerTest {
                .andExpect(jsonPath("fieldErrors[0].code").value("REQUIRED_NOT_NULL"))
                .andExpect(jsonPath("fieldErrors[0].message").value("must not be null"))
                .andExpect(jsonPath("fieldErrors[0].property").value("param2"))
-               .andExpect(jsonPath("fieldErrors[0].rejectedValue").value(Matchers.nullValue()));
+               .andExpect(jsonPath("fieldErrors[0].rejectedValue").value(Matchers.nullValue()))
+               .andExpect(jsonPath("fieldErrors[0].path").value("param2"))
+        ;
     }
 
     @Test
@@ -64,7 +66,9 @@ class BindApiExceptionHandlerTest {
                .andExpect(jsonPath("fieldErrors[0].code").value("SHOULD_NOT_BE_NULL"))
                .andExpect(jsonPath("fieldErrors[0].message").value("must not be null"))
                .andExpect(jsonPath("fieldErrors[0].property").value("param2"))
-               .andExpect(jsonPath("fieldErrors[0].rejectedValue").value(Matchers.nullValue()));
+               .andExpect(jsonPath("fieldErrors[0].rejectedValue").value(Matchers.nullValue()))
+               .andExpect(jsonPath("fieldErrors[0].path").value("param2"))
+        ;
     }
 
     @Test
@@ -133,7 +137,9 @@ class BindApiExceptionHandlerTest {
                .andExpect(jsonPath("fieldErrors[0].code").value("REQUIRED_NOT_NULL"))
                .andExpect(jsonPath("fieldErrors[0].message").value("must not be null"))
                .andExpect(jsonPath("fieldErrors[0].property").value("param2"))
-               .andExpect(jsonPath("fieldErrors[0].rejectedValue").value(Matchers.nullValue()));
+               .andExpect(jsonPath("fieldErrors[0].rejectedValue").value(Matchers.nullValue()))
+               .andExpect(jsonPath("fieldErrors[0].path").value("param2"))
+        ;
     }
 
     @Test
@@ -148,7 +154,8 @@ class BindApiExceptionHandlerTest {
                .andExpect(jsonPath("parameterErrors[0].code").value("REQUIRED_NOT_BLANK"))
                .andExpect(jsonPath("parameterErrors[0].message").value("must not be blank"))
                .andExpect(jsonPath("parameterErrors[0].parameter").value("param"))
-               .andExpect(jsonPath("parameterErrors[0].rejectedValue").value(""));
+               .andExpect(jsonPath("parameterErrors[0].rejectedValue").value(""))
+        ;
     }
 
     @RestController

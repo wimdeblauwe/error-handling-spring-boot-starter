@@ -25,7 +25,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Objects;
+import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -240,6 +240,77 @@ class ConstraintViolationApiExceptionHandlerTest {
         ;
     }
 
+    @Test
+    @WithMockUser
+    void testNestedPropertyPath(@Autowired ErrorHandlingProperties properties) throws Exception {
+        mockMvc.perform(post("/test/person-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"name\": \"\", \"kids\": [{\"name\": \"\"}]}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 2"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors[0].path", equalTo("kids[0].name")))
+               .andExpect(jsonPath("fieldErrors[1].path", equalTo("name")))
+        ;
+    }
+    @Test
+    @WithMockUser
+    void testNestedPropertyPathFromList(@Autowired ErrorHandlingProperties properties) throws Exception {
+        mockMvc.perform(post("/test/list-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("[" +
+                                                 "{\"name\": \"Will Smith\", \"kids\": [{\"name\": \"Jaden Smith\"}]}," +
+                                                 "{\"name\": \"\", \"kids\": [{\"name\": \"\"}]}]")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 2"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors[0].path", equalTo("[1].kids[0].name")))
+               .andExpect(jsonPath("fieldErrors[1].path", equalTo("[1].name")))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testNestedPropertyPathFromSet(@Autowired ErrorHandlingProperties properties) throws Exception {
+        mockMvc.perform(post("/test/set-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("[" +
+                                                 "{\"name\": \"Will Smith\", \"kids\": [{\"name\": \"Jaden Smith\"}]}," +
+                                                 "{\"name\": \"\", \"kids\": [{\"name\": \"\"}]}]")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 2"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors[0].path", equalTo("[].kids[0].name")))
+               .andExpect(jsonPath("fieldErrors[1].path", equalTo("[].name")))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testNestedPropertyPathFromMap(@Autowired ErrorHandlingProperties properties) throws Exception {
+        mockMvc.perform(post("/test/map-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{" +
+                                         "\"one\":" +
+                                                 "{\"name\": \"Will Smith\", \"kids\": [{\"name\": \"Jaden Smith\"}]}," +
+                                         "\"two\":" +
+                                                 "{\"name\": \"\", \"kids\": [{\"name\": \"\"}]}}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 2"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors[0].path", equalTo("[two].kids[0].name")))
+               .andExpect(jsonPath("fieldErrors[1].path", equalTo("[two].name")))
+        ;
+    }
+
     @RestController
     @RequestMapping
     public static class TestController {
@@ -249,6 +320,26 @@ class ConstraintViolationApiExceptionHandlerTest {
         @PostMapping("/test/validation")
         public void doPostWithoutValidation(@RequestBody TestRequestBody requestBody) {
             service.doSomething(requestBody);
+        }
+
+        @PostMapping("/test/person-validation")
+        public void doPersonPostWithoutValidation(@RequestBody Person requestBody) {
+            service.doSomethingWithPerson(requestBody);
+        }
+
+        @PostMapping("/test/list-validation")
+        public void doListPostWithoutValidation(@RequestBody List<Person> requestBody) {
+            service.doSomethingWithList(requestBody);
+        }
+
+        @PostMapping("/test/set-validation")
+        public void doSetPostWithoutValidation(@RequestBody Set<Person> requestBody) {
+            service.doSomethingWithSet(requestBody);
+        }
+
+        @PostMapping("/test/map-validation")
+        public void doMapPostWithoutValidation(@RequestBody Map<String, Person> requestBody) {
+            service.doSomethingWithMap(requestBody);
         }
     }
 
@@ -268,6 +359,46 @@ class ConstraintViolationApiExceptionHandlerTest {
     public static class TestService {
         void doSomething(@Valid TestRequestBody requestBody) {
 
+        }
+
+        void doSomethingWithPerson(@Valid Person requestBody) {
+
+        }
+
+        void doSomethingWithList(List<@Valid Person> requestBody) {
+
+        }
+
+        void doSomethingWithSet(Set<@Valid Person> requestBody) {
+
+        }
+
+        void doSomethingWithMap(Map<String, @Valid Person> requestBody) {
+
+        }
+    }
+
+    public static class Person {
+
+        @Size(min = 1, max = 255)
+        private String name;
+
+        private List<@Valid Person> kids = new ArrayList<>();
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public List<Person> getKids() {
+            return kids;
+        }
+
+        public void setKids(List<Person> kids) {
+            this.kids = kids;
         }
     }
 
