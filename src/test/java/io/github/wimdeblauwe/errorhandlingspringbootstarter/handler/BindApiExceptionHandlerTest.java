@@ -144,6 +144,24 @@ class BindApiExceptionHandlerTest {
 
     @Test
     @WithMockUser
+    void testDisableAddingPath(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.getCodes().put("org.springframework.validation.BindException", "BIND_FAILED");
+        properties.setAddPathToError(false);
+        mockMvc.perform(MockMvcRequestBuilders.get("/test/field-validation")
+                                              .queryParam("param1", "foo"))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("BIND_FAILED"))
+               .andExpect(jsonPath("fieldErrors", hasSize(1)))
+               .andExpect(jsonPath("fieldErrors[0].code").value("REQUIRED_NOT_NULL"))
+               .andExpect(jsonPath("fieldErrors[0].message").value("must not be null"))
+               .andExpect(jsonPath("fieldErrors[0].property").value("param2"))
+               .andExpect(jsonPath("fieldErrors[0].rejectedValue").value(Matchers.nullValue()))
+               .andExpect(jsonPath("fieldErrors[0].path").doesNotExist())
+        ;
+    }
+
+    @Test
+    @WithMockUser
     void testRequestParam() throws Exception {
         // Note this is handled by ConstraintViolationApiExceptionHandler, but it seemed test wise to
         // more appropriate to include it here

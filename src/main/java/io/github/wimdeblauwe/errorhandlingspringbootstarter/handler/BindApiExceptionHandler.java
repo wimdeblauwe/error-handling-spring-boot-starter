@@ -3,6 +3,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiFieldError;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiGlobalError;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
@@ -13,10 +14,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import javax.validation.Path;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 /**
  * Class to handle {@link BindException} and {@link MethodArgumentNotValidException} exceptions. This is typically
  * used:
@@ -25,10 +22,14 @@ import java.util.stream.StreamSupport;
  */
 public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
 
-    public BindApiExceptionHandler(HttpStatusMapper httpStatusMapper,
+    private final ErrorHandlingProperties properties;
+
+    public BindApiExceptionHandler(ErrorHandlingProperties properties,
+                                   HttpStatusMapper httpStatusMapper,
                                    ErrorCodeMapper errorCodeMapper,
                                    ErrorMessageMapper errorMessageMapper) {
         super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        this.properties = properties;
     }
 
     @Override
@@ -82,6 +83,10 @@ public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
     }
 
     private String getPath(FieldError fieldError) {
+        if (!properties.isAddPathToError()) {
+            return null;
+        }
+
         String path = null;
         try {
             path = fieldError.unwrap(ConstraintViolationImpl.class)

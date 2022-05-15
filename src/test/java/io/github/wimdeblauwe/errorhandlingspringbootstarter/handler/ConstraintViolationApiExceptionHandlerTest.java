@@ -328,6 +328,23 @@ class ConstraintViolationApiExceptionHandlerTest {
         ;
     }
 
+    @Test
+    @WithMockUser
+    void testDisableAddingPath(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.setAddPathToError(false);
+        mockMvc.perform(post("/test/multi-nested-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"level1\": {\"level2\": {\"fieldAtLevel2\": \"\"}}}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 1"))
+               .andExpect(jsonPath("fieldErrors", hasSize(1)))
+               .andExpect(jsonPath("fieldErrors[0].property", equalTo("fieldAtLevel2")))
+               .andExpect(jsonPath("fieldErrors[0].path").doesNotExist())
+        ;
+    }
+
     @RestController
     @RequestMapping
     public static class TestController {

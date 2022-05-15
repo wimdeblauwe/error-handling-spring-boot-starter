@@ -27,12 +27,14 @@ import java.util.stream.StreamSupport;
  */
 public class ConstraintViolationApiExceptionHandler extends AbstractApiExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConstraintViolationApiExceptionHandler.class);
+    private final ErrorHandlingProperties properties;
 
     public ConstraintViolationApiExceptionHandler(ErrorHandlingProperties properties,
                                                   HttpStatusMapper httpStatusMapper,
                                                   ErrorCodeMapper errorCodeMapper,
                                                   ErrorMessageMapper errorMessageMapper) {
         super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        this.properties = properties;
     }
 
     @Override
@@ -61,7 +63,7 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
                                                        node.toString(),
                                                        getMessage(constraintViolation),
                                                        constraintViolation.getInvalidValue(),
-                                                       getPathWithoutPrefix(constraintViolation.getPropertyPath()));
+                                                       getPath(constraintViolation));
                           } else if (elementKind == ElementKind.BEAN) {
                               return new ApiGlobalError(getCode(constraintViolation),
                                                         getMessage(constraintViolation));
@@ -94,6 +96,14 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
 
     private Optional<Path.Node> getLeafNode(Path path) {
         return StreamSupport.stream(path.spliterator(), false).reduce((a, b) -> b);
+    }
+
+    private String getPath(ConstraintViolation<?> constraintViolation) {
+        if (!properties.isAddPathToError()) {
+            return null;
+        }
+
+        return getPathWithoutPrefix(constraintViolation.getPropertyPath());
     }
 
     /**
