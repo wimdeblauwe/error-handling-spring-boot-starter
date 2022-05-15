@@ -47,19 +47,11 @@ public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
                                                          getMessage(bindingResult));
         if (bindingResult.hasFieldErrors()) {
             bindingResult.getFieldErrors().stream()
-                         .map(fieldError -> {
-                             String path = null;
-                             try {
-                                 path = fieldError.unwrap(ConstraintViolationImpl.class).getPropertyPath().toString();
-                             } catch (RuntimeException runtimeException) {
-                                // only set a path if we have a ConstraintViolation
-                             }
-                             return new ApiFieldError(getCode(fieldError),
-                                                      fieldError.getField(),
-                                                      getMessage(fieldError),
-                                                      fieldError.getRejectedValue(),
-                                                      path);
-                         })
+                         .map(fieldError -> new ApiFieldError(getCode(fieldError),
+                                                              fieldError.getField(),
+                                                              getMessage(fieldError),
+                                                              fieldError.getRejectedValue(),
+                                                              getPath(fieldError)))
                          .forEach(response::addFieldError);
         }
 
@@ -87,5 +79,17 @@ public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
 
     private String getMessage(BindingResult bindingResult) {
         return "Validation failed for object='" + bindingResult.getObjectName() + "'. Error count: " + bindingResult.getErrorCount();
+    }
+
+    private String getPath(FieldError fieldError) {
+        String path = null;
+        try {
+            path = fieldError.unwrap(ConstraintViolationImpl.class)
+                             .getPropertyPath()
+                             .toString();
+        } catch (RuntimeException runtimeException) {
+            // only set a path if we have a ConstraintViolation
+        }
+        return path;
     }
 }

@@ -97,13 +97,16 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
     }
 
     /**
-     * @param path
-     * @return The property path without the method and argument name or any leading "." in the result.
+     * This method will truncate the first 2 parts of the full property path so the
+     * method name and argument name are not visible in the returned path.
+     *
+     * @param path the full property path of the constraint violation
+     * @return The truncated property path
      */
     private String getPathWithoutPrefix(Path path) {
         String collect = StreamSupport.stream(path.spliterator(), false)
                                       .limit(2)
-                                      .map(a -> a.getName())
+                                      .map(Path.Node::getName)
                                       .collect(Collectors.joining("."));
         String substring = path.toString().substring(collect.length());
         return substring.startsWith(".") ? substring.substring(1) : substring;
