@@ -1248,6 +1248,9 @@ When this is set to `true`, you can use any superclass from your `Exception` typ
 |The field name that is used to serialize the `parameterErrors` to JSON.
 |`parameterErrors`
 
+|error.handling.add-path-to-error
+|This property allows to remove the `path` property in the error response when set to `false`.
+|`true`
 |===
 
 == Support
