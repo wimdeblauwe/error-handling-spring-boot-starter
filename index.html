@@ -112,7 +112,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 3.0.1.</p>
+<p>This documentation is for version 3.1.0.</p>
 </div>
 </div>
 </div>
@@ -274,13 +274,15 @@ public class MyExampleController {
       "code": "INVALID_SIZE",
       "property": "name",
       "message": "size must be between 10 and 2147483647",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "name"
     },
     {
       "code": "REQUIRED_NOT_BLANK",
       "property": "favoriteMovie",
       "message": "must not be blank",
-      "rejectedValue": null
+      "rejectedValue": null,
+      "path": "favoriteMovie"
     }
   ]
 }</code></pre>
@@ -556,7 +558,8 @@ It is possible to override those via the <code>application.properties</code>.</p
       "code": "SIZE_REQUIREMENT_NOT_MET", <i class="conum" data-value="1"></i><b>(1)</b>
       "property": "name",
       "message": "size must be between 10 and 2147483647",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "name"
     }
   ]
 }</code></pre>
@@ -602,7 +605,8 @@ It is possible to override those via the <code>application.properties</code>.</p
       "code": "REGEX_PATTERN_VALIDATION_FAILED",
       "property": "password",
       "message": "must match \".*{8}\"",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "password"
     }
   ]
 }</code></pre>
@@ -630,7 +634,8 @@ If we want to only override this for fields that are named <code>password</code>
       "code": "PASSWORD_COMPLEXITY_REQUIREMENTS_NOT_MET",
       "property": "password",
       "message": "must match \".*{8}\"",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "password"
     }
   ]
 }</code></pre>
@@ -706,7 +711,8 @@ This is most useful for the validation messages.</p>
       "code": "REQUIRED_NOT_BLANK",
       "property": "name",
       "message": "The property should not be blank",<i class="conum" data-value="1"></i><b>(1)</b>
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "name"
     }
   ]
 }</code></pre>
@@ -755,7 +761,8 @@ This is most useful for the validation messages.</p>
       "code": "REGEX_PATTERN_VALIDATION_FAILED",
       "property": "password",
       "message": "must match \".*{8}\"",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "password"
     }
   ]
 }</code></pre>
@@ -783,7 +790,8 @@ If we want to only override this for fields that are named <code>password</code>
       "code": "REGEX_PATTERN_VALIDATION_FAILED",
       "property": "password",
       "message": "The password complexity rules are not met. A password must be 8 characters minimum.", <i class="conum" data-value="1"></i><b>(1)</b>
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "password"
     }
   ]
 }</code></pre>
@@ -1013,13 +1021,15 @@ public static class TestService {
       "code": "INVALID_SIZE",
       "property": "name",
       "message": "size must be between 10 and 2147483647",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "name"
     },
     {
       "code": "REQUIRED_NOT_BLANK",
       "property": "favoriteMovie",
       "message": "must not be blank",
-      "rejectedValue": null
+      "rejectedValue": null,
+      "path": "favoriteMovie"
     }
   ],
   "globalErrors": [
@@ -1465,7 +1475,8 @@ error.handling.json-field-names.global-errors=classFailures</code></pre>
       "code": "INVALID_SIZE",
       "property": "name",
       "message": "size must be between 10 and 2147483647",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "name"
     }
   ],
   "classFailures": [
@@ -1823,6 +1834,15 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 <p><code>parameterErrors</code></p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.add-path-to-error</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>This property allows to remove the <code>path</code> property in the error response when set to <code>false</code>.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>true</code></p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1838,7 +1858,7 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-04-11 19:16:36 UTC
+Last updated 2022-05-16 05:56:34 UTC
 </div>
 </div>
 </div>
