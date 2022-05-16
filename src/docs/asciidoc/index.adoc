@@ -145,13 +145,15 @@ The validation fails, and the following JSON response will be returned:
       "code": "INVALID_SIZE",
       "property": "name",
       "message": "size must be between 10 and 2147483647",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "name"
     },
     {
       "code": "REQUIRED_NOT_BLANK",
       "property": "favoriteMovie",
       "message": "must not be blank",
-      "rejectedValue": null
+      "rejectedValue": null,
+      "path": "favoriteMovie"
     }
   ]
 }
@@ -365,7 +367,8 @@ If there is now a validation error for `@Size`, then the response body will be:
       "code": "SIZE_REQUIREMENT_NOT_MET", // <.>
       "property": "name",
       "message": "size must be between 10 and 2147483647",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "name"
     }
   ]
 }
@@ -400,7 +403,8 @@ By default, this error is in the response:
       "code": "REGEX_PATTERN_VALIDATION_FAILED",
       "property": "password",
       "message": "must match \".*{8}\"",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "password"
     }
   ]
 }
@@ -426,7 +430,8 @@ This results in:
       "code": "PASSWORD_COMPLEXITY_REQUIREMENTS_NOT_MET",
       "property": "password",
       "message": "must match \".*{8}\"",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "password"
     }
   ]
 }
@@ -486,7 +491,8 @@ Then the `message` in the output is this:
       "code": "REQUIRED_NOT_BLANK",
       "property": "name",
       "message": "The property should not be blank",//<.>
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "name"
     }
   ]
 }
@@ -523,7 +529,8 @@ By default, this error is in the response:
       "code": "REGEX_PATTERN_VALIDATION_FAILED",
       "property": "password",
       "message": "must match \".*{8}\"",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "password"
     }
   ]
 }
@@ -549,7 +556,8 @@ This results in:
       "code": "REGEX_PATTERN_VALIDATION_FAILED",
       "property": "password",
       "message": "The password complexity rules are not met. A password must be 8 characters minimum.", //<.>
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "password"
     }
   ]
 }
@@ -735,13 +743,15 @@ In all cases, the response JSON will be similar to this:
       "code": "INVALID_SIZE",
       "property": "name",
       "message": "size must be between 10 and 2147483647",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "name"
     },
     {
       "code": "REQUIRED_NOT_BLANK",
       "property": "favoriteMovie",
       "message": "must not be blank",
-      "rejectedValue": null
+      "rejectedValue": null,
+      "path": "favoriteMovie"
     }
   ],
   "globalErrors": [
@@ -1080,7 +1090,8 @@ With these settings, a response will look similar to this:
       "code": "INVALID_SIZE",
       "property": "name",
       "message": "size must be between 10 and 2147483647",
-      "rejectedValue": ""
+      "rejectedValue": "",
+      "path": "name"
     }
   ],
   "classFailures": [
@@ -1237,6 +1248,9 @@ When this is set to `true`, you can use any superclass from your `Exception` typ
 |The field name that is used to serialize the `parameterErrors` to JSON.
 |`parameterErrors`
 
+|error.handling.add-path-to-error
+|This property allows to remove the `path` property in the error response when set to `false`.
+|`true`
 |===
 
 == Support

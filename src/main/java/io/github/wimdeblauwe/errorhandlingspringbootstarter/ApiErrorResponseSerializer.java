@@ -39,6 +39,7 @@ public class ApiErrorResponseSerializer extends JsonSerializer<ApiErrorResponse>
                 jsonGenerator.writeStringField(fieldNames.getMessage(), fieldError.getMessage());
                 jsonGenerator.writeStringField("property", fieldError.getProperty());
                 jsonGenerator.writeObjectField("rejectedValue", fieldError.getRejectedValue());
+                jsonGenerator.writeObjectField("path", fieldError.getPath());
                 jsonGenerator.writeEndObject();
             }
             jsonGenerator.writeEndArray();

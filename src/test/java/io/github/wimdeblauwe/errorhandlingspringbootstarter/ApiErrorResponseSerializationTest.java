@@ -38,7 +38,7 @@ class ApiErrorResponseSerializationTest {
     @Test
     void testSerializationWithFieldError() throws IOException {
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
-        response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", "bad"));
+        response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", "bad", "path"));
         String json = objectMapper.writeValueAsString(response);
         assertThatJson(json).and(
                 jsonAssert -> jsonAssert.node("code").isEqualTo("TEST_CODE"),
@@ -47,14 +47,15 @@ class ApiErrorResponseSerializationTest {
                 jsonAssert -> jsonAssert.node("fieldErrors[0].code").isEqualTo("FIELD_ERROR_CODE"),
                 jsonAssert -> jsonAssert.node("fieldErrors[0].property").isEqualTo("testField"),
                 jsonAssert -> jsonAssert.node("fieldErrors[0].message").isEqualTo("Test Field Message"),
-                jsonAssert -> jsonAssert.node("fieldErrors[0].rejectedValue").isEqualTo("bad")
+                jsonAssert -> jsonAssert.node("fieldErrors[0].rejectedValue").isEqualTo("bad"),
+                jsonAssert -> jsonAssert.node("fieldErrors[0].path").isEqualTo("path")
         );
     }
 
     @Test
     void testSerializationWithFieldErrorWithNullRejectedValue() throws IOException {
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
-        response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", null));
+        response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", null, "path"));
         String json = objectMapper.writeValueAsString(response);
         assertThatJson(json).and(
                 jsonAssert -> jsonAssert.node("code").isEqualTo("TEST_CODE"),
@@ -63,7 +64,8 @@ class ApiErrorResponseSerializationTest {
                 jsonAssert -> jsonAssert.node("fieldErrors[0].code").isEqualTo("FIELD_ERROR_CODE"),
                 jsonAssert -> jsonAssert.node("fieldErrors[0].property").isEqualTo("testField"),
                 jsonAssert -> jsonAssert.node("fieldErrors[0].message").isEqualTo("Test Field Message"),
-                jsonAssert -> jsonAssert.node("fieldErrors[0].rejectedValue").isNull()
+                jsonAssert -> jsonAssert.node("fieldErrors[0].rejectedValue").isNull(),
+                jsonAssert -> jsonAssert.node("fieldErrors[0].path").isEqualTo("path")
         );
     }
 
@@ -163,7 +165,7 @@ class ApiErrorResponseSerializationTest {
         @Test
         void testSerializationWithFieldError() throws IOException {
             ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
-            response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", "bad"));
+            response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", "bad", "path"));
             String json = objectMapper.writeValueAsString(response);
             assertThatJson(json).and(
                     jsonAssert -> jsonAssert.node("errorCode").isEqualTo("TEST_CODE"),
@@ -172,7 +174,8 @@ class ApiErrorResponseSerializationTest {
                     jsonAssert -> jsonAssert.node("fieldFailures[0].errorCode").isEqualTo("FIELD_ERROR_CODE"),
                     jsonAssert -> jsonAssert.node("fieldFailures[0].property").isEqualTo("testField"),
                     jsonAssert -> jsonAssert.node("fieldFailures[0].description").isEqualTo("Test Field Message"),
-                    jsonAssert -> jsonAssert.node("fieldFailures[0].rejectedValue").isEqualTo("bad")
+                    jsonAssert -> jsonAssert.node("fieldFailures[0].rejectedValue").isEqualTo("bad"),
+                    jsonAssert -> jsonAssert.node("fieldFailures[0].path").isEqualTo("path")
             );
         }
 

@@ -32,6 +32,8 @@ public class ErrorHandlingProperties {
 
     private Map<String, String> messages = new HashMap<>();
 
+    private boolean addPathToError = true;
+
     private boolean searchSuperClassHierarchy = false;
 
     public boolean isEnabled() {
@@ -120,6 +122,14 @@ public class ErrorHandlingProperties {
 
     public void setSearchSuperClassHierarchy(boolean searchSuperClassHierarchy) {
         this.searchSuperClassHierarchy = searchSuperClassHierarchy;
+    }
+
+    public boolean isAddPathToError() {
+        return addPathToError;
+    }
+
+    public void setAddPathToError(boolean addPathToError) {
+        this.addPathToError = addPathToError;
     }
 
     public enum ExceptionLogging {

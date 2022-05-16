@@ -7,6 +7,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingPropert
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -21,10 +22,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
  */
 public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
 
-    public BindApiExceptionHandler(HttpStatusMapper httpStatusMapper,
+    private final ErrorHandlingProperties properties;
+
+    public BindApiExceptionHandler(ErrorHandlingProperties properties,
+                                   HttpStatusMapper httpStatusMapper,
                                    ErrorCodeMapper errorCodeMapper,
                                    ErrorMessageMapper errorMessageMapper) {
         super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        this.properties = properties;
     }
 
     @Override
@@ -46,7 +51,8 @@ public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
                          .map(fieldError -> new ApiFieldError(getCode(fieldError),
                                                               fieldError.getField(),
                                                               getMessage(fieldError),
-                                                              fieldError.getRejectedValue()))
+                                                              fieldError.getRejectedValue(),
+                                                              getPath(fieldError)))
                          .forEach(response::addFieldError);
         }
 
@@ -74,5 +80,21 @@ public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
 
     private String getMessage(BindingResult bindingResult) {
         return "Validation failed for object='" + bindingResult.getObjectName() + "'. Error count: " + bindingResult.getErrorCount();
+    }
+
+    private String getPath(FieldError fieldError) {
+        if (!properties.isAddPathToError()) {
+            return null;
+        }
+
+        String path = null;
+        try {
+            path = fieldError.unwrap(ConstraintViolationImpl.class)
+                             .getPropertyPath()
+                             .toString();
+        } catch (RuntimeException runtimeException) {
+            // only set a path if we have a ConstraintViolation
+        }
+        return path;
     }
 }
