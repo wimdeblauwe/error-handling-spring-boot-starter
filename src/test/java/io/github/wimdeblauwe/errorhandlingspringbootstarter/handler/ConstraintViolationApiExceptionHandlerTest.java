@@ -19,13 +19,14 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.*;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Objects;
+import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -240,6 +241,110 @@ class ConstraintViolationApiExceptionHandlerTest {
         ;
     }
 
+    @Test
+    @WithMockUser
+    void testNestedPropertyPath(@Autowired ErrorHandlingProperties properties) throws Exception {
+        mockMvc.perform(post("/test/person-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"name\": \"\", \"kids\": [{\"name\": \"\"}]}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 2"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors[0].path", equalTo("kids[0].name")))
+               .andExpect(jsonPath("fieldErrors[1].path", equalTo("name")))
+        ;
+    }
+    @Test
+    @WithMockUser
+    void testNestedPropertyPathFromList(@Autowired ErrorHandlingProperties properties) throws Exception {
+        mockMvc.perform(post("/test/list-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("[" +
+                                                 "{\"name\": \"Will Smith\", \"kids\": [{\"name\": \"Jaden Smith\"}]}," +
+                                                 "{\"name\": \"\", \"kids\": [{\"name\": \"\"}]}]")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 2"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors[0].path", equalTo("[1].kids[0].name")))
+               .andExpect(jsonPath("fieldErrors[1].path", equalTo("[1].name")))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testNestedPropertyPathFromSet(@Autowired ErrorHandlingProperties properties) throws Exception {
+        mockMvc.perform(post("/test/set-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("[" +
+                                                 "{\"name\": \"Will Smith\", \"kids\": [{\"name\": \"Jaden Smith\"}]}," +
+                                                 "{\"name\": \"\", \"kids\": [{\"name\": \"\"}]}]")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 2"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors[0].path", equalTo("[].kids[0].name")))
+               .andExpect(jsonPath("fieldErrors[1].path", equalTo("[].name")))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testNestedPropertyPathFromMap(@Autowired ErrorHandlingProperties properties) throws Exception {
+        mockMvc.perform(post("/test/map-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{" +
+                                         "\"one\":" +
+                                                 "{\"name\": \"Will Smith\", \"kids\": [{\"name\": \"Jaden Smith\"}]}," +
+                                         "\"two\":" +
+                                                 "{\"name\": \"\", \"kids\": [{\"name\": \"\"}]}}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 2"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors[0].path", equalTo("[two].kids[0].name")))
+               .andExpect(jsonPath("fieldErrors[1].path", equalTo("[two].name")))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testNestedPropertyPathFromMultiNested(@Autowired ErrorHandlingProperties properties) throws Exception {
+        mockMvc.perform(post("/test/multi-nested-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"level1\": {\"level2\": {\"fieldAtLevel2\": \"\"}}}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 1"))
+               .andExpect(jsonPath("fieldErrors", hasSize(1)))
+               .andExpect(jsonPath("fieldErrors[0].property", equalTo("fieldAtLevel2")))
+               .andExpect(jsonPath("fieldErrors[0].path", equalTo("level1.level2.fieldAtLevel2")))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testDisableAddingPath(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.setAddPathToError(false);
+        mockMvc.perform(post("/test/multi-nested-validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"level1\": {\"level2\": {\"fieldAtLevel2\": \"\"}}}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("Validation failed. Error count: 1"))
+               .andExpect(jsonPath("fieldErrors", hasSize(1)))
+               .andExpect(jsonPath("fieldErrors[0].property", equalTo("fieldAtLevel2")))
+               .andExpect(jsonPath("fieldErrors[0].path").doesNotExist())
+        ;
+    }
+
     @RestController
     @RequestMapping
     public static class TestController {
@@ -249,6 +354,31 @@ class ConstraintViolationApiExceptionHandlerTest {
         @PostMapping("/test/validation")
         public void doPostWithoutValidation(@RequestBody TestRequestBody requestBody) {
             service.doSomething(requestBody);
+        }
+
+        @PostMapping("/test/person-validation")
+        public void doPersonPostWithoutValidation(@RequestBody Person requestBody) {
+            service.doSomethingWithPerson(requestBody);
+        }
+
+        @PostMapping("/test/list-validation")
+        public void doListPostWithoutValidation(@RequestBody List<Person> requestBody) {
+            service.doSomethingWithList(requestBody);
+        }
+
+        @PostMapping("/test/set-validation")
+        public void doSetPostWithoutValidation(@RequestBody Set<Person> requestBody) {
+            service.doSomethingWithSet(requestBody);
+        }
+
+        @PostMapping("/test/map-validation")
+        public void doMapPostWithoutValidation(@RequestBody Map<String, Person> requestBody) {
+            service.doSomethingWithMap(requestBody);
+        }
+
+        @PostMapping("/test/multi-nested-validation")
+        public void doMultiNestedValidation(@RequestBody MultiNestedRequest request) {
+            service.doSomethingWithMultiNested(request);
         }
     }
 
@@ -268,6 +398,50 @@ class ConstraintViolationApiExceptionHandlerTest {
     public static class TestService {
         void doSomething(@Valid TestRequestBody requestBody) {
 
+        }
+
+        void doSomethingWithPerson(@Valid Person requestBody) {
+
+        }
+
+        void doSomethingWithList(List<@Valid Person> requestBody) {
+
+        }
+
+        void doSomethingWithSet(Set<@Valid Person> requestBody) {
+
+        }
+
+        void doSomethingWithMap(Map<String, @Valid Person> requestBody) {
+
+        }
+
+        public void doSomethingWithMultiNested(@Valid MultiNestedRequest request) {
+
+        }
+    }
+
+    public static class Person {
+
+        @Size(min = 1, max = 255)
+        private String name;
+
+        private List<@Valid Person> kids = new ArrayList<>();
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public List<Person> getKids() {
+            return kids;
+        }
+
+        public void setKids(List<Person> kids) {
+            this.kids = kids;
         }
     }
 
@@ -316,6 +490,45 @@ class ConstraintViolationApiExceptionHandlerTest {
         public boolean isValid(TestRequestBody requestBody,
                                ConstraintValidatorContext context) {
             return Objects.equals(requestBody.getValue(), requestBody.getValue2());
+        }
+    }
+
+    public static class MultiNestedRequest {
+        @Valid
+        private MultiNestedLevel1 level1;
+
+        public MultiNestedLevel1 getLevel1() {
+            return level1;
+        }
+
+        public void setLevel1(MultiNestedLevel1 level1) {
+            this.level1 = level1;
+        }
+    }
+
+    public static class MultiNestedLevel1 {
+        @Valid
+        private MultiNestedLevel2 level2;
+
+        public MultiNestedLevel2 getLevel2() {
+            return level2;
+        }
+
+        public void setLevel2(MultiNestedLevel2 level2) {
+            this.level2 = level2;
+        }
+    }
+
+    public static class MultiNestedLevel2 {
+        @NotBlank
+        private String fieldAtLevel2;
+
+        public String getFieldAtLevel2() {
+            return fieldAtLevel2;
+        }
+
+        public void setFieldAtLevel2(String fieldAtLevel2) {
+            this.fieldAtLevel2 = fieldAtLevel2;
         }
     }
 }

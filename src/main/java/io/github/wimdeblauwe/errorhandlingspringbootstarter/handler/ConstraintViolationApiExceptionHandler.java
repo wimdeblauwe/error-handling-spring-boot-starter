@@ -12,8 +12,10 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ElementKind;
 import javax.validation.Path;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
@@ -25,12 +27,14 @@ import java.util.stream.StreamSupport;
  */
 public class ConstraintViolationApiExceptionHandler extends AbstractApiExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConstraintViolationApiExceptionHandler.class);
+    private final ErrorHandlingProperties properties;
 
     public ConstraintViolationApiExceptionHandler(ErrorHandlingProperties properties,
                                                   HttpStatusMapper httpStatusMapper,
                                                   ErrorCodeMapper errorCodeMapper,
                                                   ErrorMessageMapper errorMessageMapper) {
         super(httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        this.properties = properties;
     }
 
     @Override
@@ -47,6 +51,8 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
                                                          getMessage(ex));
         Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
         violations.stream()
+                  // sort violations to ensure deterministic order
+                  .sorted(Comparator.comparing(constraintViolation -> constraintViolation.getPropertyPath().toString()))
                   .map(constraintViolation -> {
                       Optional<Path.Node> leafNode = getLeafNode(constraintViolation.getPropertyPath());
                       if (leafNode.isPresent()) {
@@ -56,7 +62,8 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
                               return new ApiFieldError(getCode(constraintViolation),
                                                        node.toString(),
                                                        getMessage(constraintViolation),
-                                                       constraintViolation.getInvalidValue());
+                                                       constraintViolation.getInvalidValue(),
+                                                       getPath(constraintViolation));
                           } else if (elementKind == ElementKind.BEAN) {
                               return new ApiGlobalError(getCode(constraintViolation),
                                                         getMessage(constraintViolation));
@@ -89,6 +96,30 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
 
     private Optional<Path.Node> getLeafNode(Path path) {
         return StreamSupport.stream(path.spliterator(), false).reduce((a, b) -> b);
+    }
+
+    private String getPath(ConstraintViolation<?> constraintViolation) {
+        if (!properties.isAddPathToError()) {
+            return null;
+        }
+
+        return getPathWithoutPrefix(constraintViolation.getPropertyPath());
+    }
+
+    /**
+     * This method will truncate the first 2 parts of the full property path so the
+     * method name and argument name are not visible in the returned path.
+     *
+     * @param path the full property path of the constraint violation
+     * @return The truncated property path
+     */
+    private String getPathWithoutPrefix(Path path) {
+        String collect = StreamSupport.stream(path.spliterator(), false)
+                                      .limit(2)
+                                      .map(Path.Node::getName)
+                                      .collect(Collectors.joining("."));
+        String substring = path.toString().substring(collect.length());
+        return substring.startsWith(".") ? substring.substring(1) : substring;
     }
 
     private String getCode(ConstraintViolation<?> constraintViolation) {

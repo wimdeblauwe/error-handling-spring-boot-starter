@@ -55,10 +55,11 @@ public abstract class AbstractErrorHandlingConfiguration {
     }
 
     @Bean
-    public BindApiExceptionHandler bindApiExceptionHandler(HttpStatusMapper httpStatusMapper,
+    public BindApiExceptionHandler bindApiExceptionHandler(ErrorHandlingProperties properties,
+                                                           HttpStatusMapper httpStatusMapper,
                                                            ErrorCodeMapper errorCodeMapper,
                                                            ErrorMessageMapper errorMessageMapper) {
-        return new BindApiExceptionHandler(httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        return new BindApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Bean
