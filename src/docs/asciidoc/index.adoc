@@ -110,7 +110,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/example")
@@ -345,7 +345,7 @@ This results in this response:
 
 ==== General override of validation error codes
 
-The library has codes defined for all https://docs.oracle.com/javaee/7/api/javax/validation/constraints/package-summary.html[javax.validation.constraints] annotations.
+The library has codes defined for all https://docs.oracle.com/javaee/7/api/javax/validation/constraints/package-summary.html[jakarta.validation.constraints] annotations.
 It is possible to override those via the `application.properties`.
 
 The default `code` for `@Size` is `INVALID_SIZE`, but if you want to change this to `SIZE_REQUIREMENT_NOT_MET`, then define the following property:
@@ -645,7 +645,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/example")
@@ -668,7 +668,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/example")
@@ -696,7 +696,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/example")
@@ -718,8 +718,8 @@ For example:
 ----
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 @Service
 @Validated

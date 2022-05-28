@@ -3,6 +3,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 public class LoggingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingService.class);
@@ -36,7 +37,7 @@ public class LoggingService {
         }
     }
 
-    private boolean logFullStacktraceIfNeeded(HttpStatus httpStatus, Throwable exception) {
+    private boolean logFullStacktraceIfNeeded(HttpStatusCode httpStatus, Throwable exception) {
         String httpStatusValue = String.valueOf(httpStatus.value());
         if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue)) {
             LOGGER.error(exception.getMessage(), exception);

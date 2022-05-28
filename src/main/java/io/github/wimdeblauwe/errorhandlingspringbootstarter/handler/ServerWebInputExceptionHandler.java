@@ -6,7 +6,9 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageM
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.MissingRequestValueException;
 import org.springframework.web.server.ServerWebInputException;
 
 public class ServerWebInputExceptionHandler extends AbstractApiExceptionHandler {
@@ -26,7 +28,7 @@ public class ServerWebInputExceptionHandler extends AbstractApiExceptionHandler 
     @Override
     public ApiErrorResponse handle(Throwable exception) {
         ServerWebInputException ex = (ServerWebInputException) exception;
-        HttpStatus status = ex.getStatus();
+        HttpStatusCode status = ex.getStatusCode();
         ApiErrorResponse response = new ApiErrorResponse(status,
                                                          getErrorCode(exception),
                                                          getErrorMessage(exception));

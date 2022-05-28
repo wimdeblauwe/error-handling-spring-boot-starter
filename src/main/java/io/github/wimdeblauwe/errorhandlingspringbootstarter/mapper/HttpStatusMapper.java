@@ -3,6 +3,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,24 +17,24 @@ public class HttpStatusMapper {
         this.properties = properties;
     }
 
-    public HttpStatus getHttpStatus(Throwable exception) {
+    public HttpStatusCode getHttpStatus(Throwable exception) {
         return getHttpStatus(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public HttpStatus getHttpStatus(Throwable exception, HttpStatus defaultHttpStatus) {
-        HttpStatus status = getHttpStatusFromPropertiesOrAnnotation(exception.getClass());
+    public HttpStatusCode getHttpStatus(Throwable exception, HttpStatus defaultHttpStatus) {
+        HttpStatusCode status = getHttpStatusFromPropertiesOrAnnotation(exception.getClass());
         if (status != null) {
             return status;
         }
 
         if (exception instanceof ResponseStatusException) {
-            return ((ResponseStatusException) exception).getStatus();
+            return ((ResponseStatusException) exception).getStatusCode();
         }
 
         return defaultHttpStatus;
     }
 
-    private HttpStatus getHttpStatusFromPropertiesOrAnnotation(Class<?> exceptionClass) {
+    private HttpStatusCode getHttpStatusFromPropertiesOrAnnotation(Class<?> exceptionClass) {
         if (exceptionClass == null) {
             return null;
         }

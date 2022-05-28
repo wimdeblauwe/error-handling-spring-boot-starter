@@ -3,7 +3,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 @RestController
 @RequestMapping

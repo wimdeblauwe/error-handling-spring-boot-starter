@@ -49,7 +49,7 @@ class ServerWebInputExceptionHandlerTest {
                      .expectBody()
                      .consumeWith(System.out::println)
                      .jsonPath("code").value(Matchers.equalTo("VALIDATION_FAILED"))
-                     .jsonPath("message").value(Matchers.equalTo("400 BAD_REQUEST \"Missing cookie 'favorite' for method parameter of type String\""))
+                     .jsonPath("message").value(Matchers.equalTo("400 BAD_REQUEST \"Required cookie 'favorite' is not present.\""))
                      .jsonPath("parameterName").value(Matchers.equalTo("favoriteCookie"))
                      .jsonPath("parameterType").value(Matchers.equalTo("String"))
         ;
@@ -66,7 +66,7 @@ class ServerWebInputExceptionHandlerTest {
                      .expectBody()
                      .consumeWith(System.out::println)
                      .jsonPath("code").value(Matchers.equalTo("VALIDATION_FAILED"))
-                     .jsonPath("message").value(Matchers.equalTo("400 BAD_REQUEST \"Missing request header 'X-Custom-Header' for method parameter of type String\""))
+                     .jsonPath("message").value(Matchers.equalTo("400 BAD_REQUEST \"Required header 'X-Custom-Header' is not present.\""))
                      .jsonPath("parameterName").value(Matchers.equalTo("customHeader"))
                      .jsonPath("parameterType").value(Matchers.equalTo("String"))
         ;
@@ -83,7 +83,7 @@ class ServerWebInputExceptionHandlerTest {
                      .expectBody()
                      .consumeWith(System.out::println)
                      .jsonPath("code").value(Matchers.equalTo("VALIDATION_FAILED"))
-                     .jsonPath("message").value(Matchers.equalTo("400 BAD_REQUEST \"Required String parameter 'test' is not present\""))
+                     .jsonPath("message").value(Matchers.equalTo("400 BAD_REQUEST \"Required query parameter 'test' is not present.\""))
                      .jsonPath("parameterName").value(Matchers.equalTo("test"))
                      .jsonPath("parameterType").value(Matchers.equalTo("String"));
     }
