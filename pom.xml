@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.5.8</version>
-        <relativePath /> <!-- lookup parent from repository -->
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.github.wimdeblauwe</groupId>
     <artifactId>error-handling-spring-boot-starter</artifactId>
@@ -30,7 +31,7 @@
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
-        <spring-asciidoctor-backends.version>0.0.1-M1</spring-asciidoctor-backends.version>
+        <spring-asciidoctor-backends.version>0.0.3</spring-asciidoctor-backends.version>
     </properties>
     <licenses>
         <license>
@@ -265,9 +266,12 @@
     <!-- Should be removed once spring-asciidoctor-backends is in Maven Central -->
     <pluginRepositories>
         <pluginRepository>
-            <id>spring-milestone</id>
-            <name>Spring Milestone Repository</name>
-            <url>https://repo.spring.io/milestone</url>
+            <id>spring-release</id>
+            <name>Spring Releases</name>
+            <url>https://repo.spring.io/release</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </pluginRepository>
     </pluginRepositories>
     <profiles>
