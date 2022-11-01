@@ -1134,6 +1134,39 @@ This configuration will print a full stack trace for all errors in the 5xx range
 NOTE: The logging that is done on the response codes is _additionally_ to the logging done on the exception type.
 You might want to only enable one of the two to avoid double stack traces.
 
+=== Handle non-rest controller exceptions
+
+The library is setup in such a way that only exceptions coming from `@RestController` classes are handled.
+This avoids that the library would interfere with `@Controller` method exceptions, if you have a mixed setup with for instance an admin backend using `@Controller` for the web interface and an actual API for a mobile app using `@RestController`.
+
+The consequence of this is that exceptions that never hit an `@RestController` are https://github.com/spring-projects/spring-framework/issues/29120[not processed by the library].
+Example of such exceptions:
+
+* `org.springframework.web.HttpRequestMethodNotSupportedException`
+* `org.springframework.web.HttpMediaTypeNotSupportedException`
+
+If you would like to have support for those exceptions (and your project is only using `@RestController` classes), then you can define this class:
+
+[source,java]
+----
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ErrorHandlingControllerAdvice;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+
+import java.util.List;
+
+@ControllerAdvice
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+public class FallbackExceptionHandler extends ErrorHandlingControllerAdvice {
+
+    public FallbackExceptionHandler(List<ApiExceptionHandler> handlers,
+                                    FallbackApiExceptionHandler fallbackHandler,
+                                    LoggingService loggingService) {
+        super(handlers, fallbackHandler, loggingService);
+    }
+}
+----
+
 == Custom exception handler
 
 If the <<Configuration,extensive customization options>> are not enough, you can write your own `ApiExceptionHandler` implementation.
