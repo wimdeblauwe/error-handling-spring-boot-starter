@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -79,22 +79,22 @@ class SpringSecurityApiExceptionHandlerTest {
     }
 
     @TestConfiguration
-    static class TestConfig extends WebSecurityConfigurerAdapter {
+    static class TestConfig {
         @Bean
         public UnauthorizedEntryPoint unauthorizedEntryPoint(HttpStatusMapper httpStatusMapper, ErrorCodeMapper errorCodeMapper, ErrorMessageMapper errorMessageMapper, ObjectMapper objectMapper) {
             return new UnauthorizedEntryPoint(httpStatusMapper, errorCodeMapper, errorMessageMapper, objectMapper);
         }
 
-        @Autowired
-        private UnauthorizedEntryPoint unauthorizedEntryPoint;
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                       UnauthorizedEntryPoint unauthorizedEntryPoint) throws Exception {
             http.httpBasic().disable();
 
-            http.authorizeRequests().anyRequest().authenticated();
+            http.authorizeHttpRequests().anyRequest().authenticated();
 
             http.exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint);
+
+            return http.build();
         }
     }
 }

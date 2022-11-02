@@ -5,12 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
@@ -27,16 +28,16 @@ import java.io.IOException;
  *             return new UnauthorizedEntryPoint(httpStatusMapper, errorCodeMapper, errorMessageMapper, objectMapper);
  *         }
  *
- *         &#64;Autowired
- *         private UnauthorizedEntryPoint unauthorizedEntryPoint;
- *
- *         &#64;Override
- *         protected void configure(HttpSecurity http) throws Exception {
+ *         &#64;Bean
+ *         public SecurityFilterChain securityFilterChain(HttpSecurity http,
+ *                                                        UnauthorizedEntryPoint unauthorizedEntryPoint) throws Exception {
  *             http.httpBasic().disable();
  *
- *             http.authorizeRequests().anyRequest().authenticated();
+ *             http.authorizeHttpRequests().anyRequest().authenticated();
  *
  *             http.exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint);
+ *
+ *             return http.build();
  *         }
  *     }
  * </pre>
@@ -64,7 +65,7 @@ public class UnauthorizedEntryPoint implements AuthenticationEntryPoint {
     }
 
     public ApiErrorResponse createResponse(AuthenticationException exception) {
-        HttpStatus httpStatus = httpStatusMapper.getHttpStatus(exception, HttpStatus.UNAUTHORIZED);
+        HttpStatusCode httpStatus = httpStatusMapper.getHttpStatus(exception, HttpStatus.UNAUTHORIZED);
         String code = errorCodeMapper.getErrorCode(exception);
         String message = errorMessageMapper.getErrorMessage(exception);
 
