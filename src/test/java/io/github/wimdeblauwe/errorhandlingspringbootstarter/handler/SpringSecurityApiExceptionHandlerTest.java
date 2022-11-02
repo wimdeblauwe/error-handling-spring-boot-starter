@@ -1,11 +1,20 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.UnauthorizedEntryPoint;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,11 +28,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest
 @ContextConfiguration(classes = {ServletErrorHandlingConfiguration.class,
-        SpringSecurityApiExceptionHandlerTest.TestController.class})
+        SpringSecurityApiExceptionHandlerTest.TestController.class,
+        SpringSecurityApiExceptionHandlerTest.TestConfig.class})
 class SpringSecurityApiExceptionHandlerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Test
+    void testUnauthorized() throws Exception {
+        mockMvc.perform(get("/test/spring-security/access-denied"))
+               .andExpect(status().isUnauthorized())
+               .andExpect(jsonPath("code").value("UNAUTHORIZED"))
+               .andExpect(jsonPath("message").value("Full authentication is required to access this resource"));
+    }
 
     @Test
     @WithMockUser
@@ -60,4 +78,23 @@ class SpringSecurityApiExceptionHandlerTest {
         }
     }
 
+    @TestConfiguration
+    static class TestConfig extends WebSecurityConfigurerAdapter {
+        @Bean
+        public UnauthorizedEntryPoint unauthorizedEntryPoint(HttpStatusMapper httpStatusMapper, ErrorCodeMapper errorCodeMapper, ErrorMessageMapper errorMessageMapper, ObjectMapper objectMapper) {
+            return new UnauthorizedEntryPoint(httpStatusMapper, errorCodeMapper, errorMessageMapper, objectMapper);
+        }
+
+        @Autowired
+        private UnauthorizedEntryPoint unauthorizedEntryPoint;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.httpBasic().disable();
+
+            http.authorizeRequests().anyRequest().authenticated();
+
+            http.exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint);
+        }
+    }
 }
