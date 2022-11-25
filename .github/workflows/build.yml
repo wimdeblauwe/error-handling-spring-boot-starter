@@ -45,6 +45,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./target/generated-docs
+          destination_dir: current
           exclude_assets: 'img/banner-logo.svg,img/doc-background.svg,img/doc-background-dark.svg'
 
       - name: GitHub Pages action (versioned dir)
