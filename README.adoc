@@ -28,6 +28,29 @@ If you are new to the library, check out https://foojay.io/today/better-error-ha
 
 NOTE: Documentation is very important to us, so if you find something missing from the docs, please create an issue about it.
 
+== Spring Boot compatibility
+
+|===
+|error-handling-spring-boot-starter |Spring Boot|Minimum Java version
+
+|https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/3.3.0[3.3.0]
+|2.7.x
+|11
+
+|https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/3.2.0[3.2.0]
+|2.5.x
+|11
+
+|https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/2.1.0[2.1.0]
+|2.5.x
+|11
+
+|https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/1.7.0[1.7.0]
+|2.2.x
+|8
+
+|===
+
 == Articles
 
 Blogs and articles about this library:
