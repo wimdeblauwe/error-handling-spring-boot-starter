@@ -27,16 +27,16 @@ import java.io.IOException;
  *             return new UnauthorizedEntryPoint(httpStatusMapper, errorCodeMapper, errorMessageMapper, objectMapper);
  *         }
  *
- *         &#64;Autowired
- *         private UnauthorizedEntryPoint unauthorizedEntryPoint;
- *
- *         &#64;Override
- *         protected void configure(HttpSecurity http) throws Exception {
+ *         &#64;Bean
+ *         public SecurityFilterChain securityFilterChain(HttpSecurity http,
+ *                                                        UnauthorizedEntryPoint unauthorizedEntryPoint) throws Exception {
  *             http.httpBasic().disable();
  *
- *             http.authorizeRequests().anyRequest().authenticated();
+ *             http.authorizeHttpRequests().anyRequest().authenticated();
  *
  *             http.exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint);
+ *
+ *             return http.build();
  *         }
  *     }
  * </pre>

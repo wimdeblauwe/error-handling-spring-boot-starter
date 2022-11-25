@@ -203,6 +203,7 @@ public class UserNotFoundException extends RuntimeException {
     }
 }
 ----
+
 <.> Specify the HTTP response status via a class level annotation.
 
 ==== Set HTTP response status via properties
@@ -373,6 +374,7 @@ If there is now a validation error for `@Size`, then the response body will be:
   ]
 }
 ----
+
 <.> Custom code used for the field error
 
 ==== Field specific override of validation error codes
@@ -465,6 +467,7 @@ The response JSON:
   "message": "Could not find user with id 123" //<.>
 }
 ----
+
 <.> The output uses the `message` of the Exception by default.
 
 ==== General override of error messages
@@ -497,6 +500,7 @@ Then the `message` in the output is this:
   ]
 }
 ----
+
 <.> Custom message used for the field error
 
 So you start with `error.handling.messages` and suffix with the name of the validation annotation used (`@NotBlank` in the above example).
@@ -562,6 +566,7 @@ This results in:
   ]
 }
 ----
+
 <.> Custom error message used in the response
 
 === Super class hierarchy search
@@ -626,8 +631,7 @@ You may reset back to default error messaging from a certain point in the class 
 error.handling.messages.my.ApplicationException=
 ----
 
-Now, `ApplicationException` and its subclasses will fall back to default messaging behaviour, rather than always showing
-"A runtime exception has happened".
+Now, `ApplicationException` and its subclasses will fall back to default messaging behaviour, rather than always showing "A runtime exception has happened".
 
 === Exception handlers
 
@@ -952,6 +956,7 @@ public class UserNotFoundException extends RuntimeException {
     }
 }
 ----
+
 <.> Add the result of this method as an extra property in the response
 
 The resulting response:
@@ -984,6 +989,7 @@ public class UserNotFoundException extends RuntimeException {
     }
 }
 ----
+
 <.> Add the result of this method as an extra property in the response
 
 The resulting response:
@@ -1053,6 +1059,7 @@ public class UserNotFoundException extends RuntimeException {
     }
 }
 ----
+
 <.> Set the `includeIfNull` setting to `true`
 
 The resulting response assuming the passed in `userId` is `null`:
@@ -1148,7 +1155,17 @@ Example configuration:
 
 [source,java]
 ----
-public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.UnauthorizedEntryPoint;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+
+public class WebSecurityConfiguration {
     @Bean
     public UnauthorizedEntryPoint unauthorizedEntryPoint(HttpStatusMapper httpStatusMapper,
                                                          ErrorCodeMapper errorCodeMapper,
@@ -1157,16 +1174,16 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new UnauthorizedEntryPoint(httpStatusMapper, errorCodeMapper, errorMessageMapper, objectMapper);
     }
 
-    @Autowired
-    private UnauthorizedEntryPoint unauthorizedEntryPoint;
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   UnauthorizedEntryPoint unauthorizedEntryPoint) throws Exception {
         http.httpBasic().disable();
 
-        http.authorizeRequests().anyRequest().authenticated();
+        http.authorizeHttpRequests().anyRequest().authenticated();
 
-        http.exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint); //<.>
+        http.exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint);//<.>
+
+        return http.build();
     }
 }
 ----
@@ -1228,6 +1245,7 @@ The implementation could look something like this:
 ----
 include::{include-test}/handler/CustomExceptionApiExceptionHandler.java[]
 ----
+
 <.> Ensure your custom handler is added to the Spring context.
 Easiest is just add the `@Component` annotation.
 <.> Implement the `ApiExceptionHandler` interface.
