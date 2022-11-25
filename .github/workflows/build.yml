@@ -33,12 +33,27 @@ jobs:
       - name: Build with Maven
         run: ./mvnw clean verify
 
+      - name: Set Release version env variable
+        run: |
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
       - name: GitHub Pages action
         if: |
           github.ref == 'refs/heads/master' &&
            matrix.java == 11
-        uses: peaceiris/actions-gh-pages@v3.7.3
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./target/generated-docs
+          exclude_assets: 'img/banner-logo.svg,img/doc-background.svg,img/doc-background-dark.svg'
+
+      - name: GitHub Pages action (versioned dir)
+        if: |
+          github.ref == 'refs/heads/master' &&
+           matrix.java == 11
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/generated-docs
+          destination_dir: ${{ env.RELEASE_VERSION }}
           exclude_assets: 'img/banner-logo.svg,img/doc-background.svg,img/doc-background-dark.svg'
