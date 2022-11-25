@@ -114,7 +114,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 3.2.0.</p>
+<p>This documentation is for version 3.3.0.</p>
 </div>
 </div>
 </div>
@@ -887,8 +887,7 @@ error.handling.search-super-class-hierarchy=true</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Now, <code>ApplicationException</code> and its subclasses will fall back to default messaging behaviour, rather than always showing
-"A runtime exception has happened".</p>
+<p>Now, <code>ApplicationException</code> and its subclasses will fall back to default messaging behaviour, rather than always showing "A runtime exception has happened".</p>
 </div>
 </div>
 </div>
@@ -1580,7 +1579,17 @@ Second, set the bean as the entrypoint.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="fold-block hide-when-folded">import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.UnauthorizedEntryPoint;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+
+</span><span class="fold-block">public class WebSecurityConfiguration {
     @Bean
     public UnauthorizedEntryPoint unauthorizedEntryPoint(HttpStatusMapper httpStatusMapper,
                                                          ErrorCodeMapper errorCodeMapper,
@@ -1589,19 +1598,19 @@ Second, set the bean as the entrypoint.</p>
         return new UnauthorizedEntryPoint(httpStatusMapper, errorCodeMapper, errorMessageMapper, objectMapper);
     }
 
-    @Autowired
-    private UnauthorizedEntryPoint unauthorizedEntryPoint;
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   UnauthorizedEntryPoint unauthorizedEntryPoint) throws Exception {
         http.httpBasic().disable();
 
-        http.authorizeRequests().anyRequest().authenticated();
+        http.authorizeHttpRequests().anyRequest().authenticated();
 
-        http.exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint); <i class="conum" data-value="2"></i><b>(2)</b>
+        http.exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint);<i class="conum" data-value="2"></i><b>(2)</b>
+
+        return http.build();
     }
 }
-</code></pre>
+</span></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -1975,7 +1984,7 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-11-02 12:17:20 UTC
+Last updated 2022-11-25 07:59:18 UTC
 </div>
 </div>
 </div>
