@@ -17,11 +17,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -90,7 +91,7 @@ class ConstraintViolationApiExceptionHandlerTest {
     @Test
     @WithMockUser
     void testErrorCodeOverride(@Autowired ErrorHandlingProperties properties) throws Exception {
-        properties.getCodes().put("javax.validation.ConstraintViolationException", "VIOLATION_EXCEPTION");
+        properties.getCodes().put("jakarta.validation.ConstraintViolationException", "VIOLATION_EXCEPTION");
         mockMvc.perform(post("/test/validation")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"value2\": \"\"}")

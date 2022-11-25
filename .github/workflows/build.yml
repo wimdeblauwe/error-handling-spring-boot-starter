@@ -12,7 +12,7 @@ jobs:
     name: "Build with ${{ matrix.java }}"
     strategy:
       matrix:
-        java: [ 11 ]
+        java: [ 17 ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -40,7 +40,7 @@ jobs:
       - name: GitHub Pages action
         if: |
           github.ref == 'refs/heads/master' &&
-           matrix.java == 11
+           matrix.java == 17
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
       - name: GitHub Pages action (versioned dir)
         if: |
           github.ref == 'refs/heads/master' &&
-           matrix.java == 11
+           matrix.java == 17
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

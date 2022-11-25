@@ -24,7 +24,7 @@ public class ServerErrorExceptionHandler extends AbstractApiExceptionHandler {
     @Override
     public ApiErrorResponse handle(Throwable exception) {
         ServerErrorException ex = (ServerErrorException) exception;
-        ApiErrorResponse response = new ApiErrorResponse(ex.getStatus(),
+        ApiErrorResponse response = new ApiErrorResponse(ex.getStatusCode(),
                                                          getErrorCode(ex),
                                                          getErrorMessage(ex));
         MethodParameter methodParameter = ex.getMethodParameter();

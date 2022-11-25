@@ -331,7 +331,7 @@ class DefaultFallbackApiExceptionHandlerTest {
         ApiErrorResponse response = handler.handle(new MethodNotAllowedException(HttpMethod.OPTIONS, Lists.newArrayList(HttpMethod.GET, HttpMethod.POST)));
         assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
         assertThat(response.getCode()).isEqualTo("METHOD_NOT_ALLOWED");
-        assertThat(response.getMessage()).isEqualTo("405 METHOD_NOT_ALLOWED \"Request method 'OPTIONS' not supported\"");
+        assertThat(response.getMessage()).isEqualTo("405 METHOD_NOT_ALLOWED \"Request method 'OPTIONS' is not supported.\"");
     }
 
     private DefaultFallbackApiExceptionHandler createDefaultFallbackApiExceptionHandler(ErrorHandlingProperties properties) {
