@@ -114,7 +114,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 3.3.0.</p>
+<p>This documentation is for version 4.0.0.</p>
 </div>
 </div>
 </div>
@@ -240,7 +240,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 </span><span class="fold-block">@RestController
 @RequestMapping("/example")
@@ -538,7 +538,7 @@ public class UserNotFoundException extends RuntimeException {
 <div class="sect3">
 <h4 id="general-override-of-validation-error-codes"><a class="anchor" href="#general-override-of-validation-error-codes"></a>3.2.4. General override of validation error codes</h4>
 <div class="paragraph">
-<p>The library has codes defined for all <a href="https://docs.oracle.com/javaee/7/api/javax/validation/constraints/package-summary.html">javax.validation.constraints</a> annotations.
+<p>The library has codes defined for all <a href="https://docs.oracle.com/javaee/7/api/javax/validation/constraints/package-summary.html">jakarta.validation.constraints</a> annotations.
 It is possible to override those via the <code>application.properties</code>.</p>
 </div>
 <div class="paragraph">
@@ -910,7 +910,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 </span><span class="fold-block">@RestController
 @RequestMapping("/example")
@@ -935,7 +935,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 </span><span class="fold-block">@RestController
 @RequestMapping("/example")
@@ -974,7 +974,7 @@ For example:</p>
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 </span><span class="fold-block">@RestController
 @RequestMapping("/example")
@@ -999,8 +999,8 @@ For example:</p>
 <div class="content">
 <pre class="highlight"><code class="language-java" data-lang="java"><span class="fold-block hide-when-folded">import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 </span><span class="fold-block">@Service
 @Validated
@@ -1984,7 +1984,7 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-11-25 18:24:35 UTC
+Last updated 2022-11-30 20:56:24 UTC
 </div>
 </div>
 </div>
