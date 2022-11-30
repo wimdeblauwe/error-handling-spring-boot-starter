@@ -31,23 +31,27 @@ NOTE: Documentation is very important to us, so if you find something missing fr
 == Spring Boot compatibility
 
 |===
-|error-handling-spring-boot-starter |Spring Boot|Minimum Java version
+|error-handling-spring-boot-starter |Spring Boot|Minimum Java version|Docs
 
 |https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/4.0.0[4.0.0]
 |3.0.x
 |17
+|https://wimdeblauwe.github.io/error-handling-spring-boot-starter/4.0.0/[Documentation 4.0.0]
 
 |https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/3.3.0[3.3.0]
 |2.7.x
 |11
+|https://wimdeblauwe.github.io/error-handling-spring-boot-starter/3.3.0/[Documentation 3.3.0]
 
 |https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/3.2.0[3.2.0]
 |2.5.x
 |11
+|N/A
 
 |https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/2.1.0[2.1.0]
 |2.5.x
 |11
+|N/A
 
 |https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/1.7.0[1.7.0]
 |2.2.x
