@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ApiErrorResponse {
-    private final HttpStatus httpStatus;
+    private final HttpStatusCode httpStatus;
     private final String code;
     private final String message;
     private final Map<String, Object> properties;
@@ -21,7 +22,7 @@ public class ApiErrorResponse {
     private final List<ApiGlobalError> globalErrors;
     private final List<ApiParameterError> parameterErrors;
 
-    public ApiErrorResponse(HttpStatus httpStatus, String code, String message) {
+    public ApiErrorResponse(HttpStatusCode httpStatus, String code, String message) {
         this.httpStatus = httpStatus;
         this.code = code;
         this.message = message;
@@ -32,7 +33,7 @@ public class ApiErrorResponse {
     }
 
     @JsonIgnore
-    public HttpStatus getHttpStatus() {
+    public HttpStatusCode getHttpStatus() {
         return httpStatus;
     }
 

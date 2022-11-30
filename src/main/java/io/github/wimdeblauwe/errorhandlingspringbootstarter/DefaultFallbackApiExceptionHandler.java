@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.util.StringUtils;
 
 import java.beans.BeanInfo;
@@ -37,7 +38,7 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
 
     @Override
     public ApiErrorResponse handle(Throwable exception) {
-        HttpStatus statusCode = httpStatusMapper.getHttpStatus(exception);
+        HttpStatusCode statusCode = httpStatusMapper.getHttpStatus(exception);
         String errorCode = errorCodeMapper.getErrorCode(exception);
         String errorMessage = errorMessageMapper.getErrorMessage(exception);
 

@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,17 +34,11 @@ public class IntegrationTest {
                .andExpect(status().isBadRequest());
     }
 
-    static class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            http.authorizeRequests(registry -> registry.anyRequest().permitAll());
-        }
-
+    static class WebSecurityConfig {
         @Bean
-        public AuthenticationManager authenticationManagerBean() throws Exception {
-            // Although this seems like useless code,
-            // it is required to prevent Spring Boot creating a default password
-            return super.authenticationManagerBean();
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+            http.authorizeHttpRequests(registry -> registry.anyRequest().permitAll());
+            return http.build();
         }
     }
 }

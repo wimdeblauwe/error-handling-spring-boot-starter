@@ -4,18 +4,18 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.6</version>
+        <version>3.0.0</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.github.wimdeblauwe</groupId>
     <artifactId>error-handling-spring-boot-starter</artifactId>
-    <version>3.3.0</version>
+    <version>4.0.0</version>
     <name>Error Handling Spring Boot Starter</name>
     <description>Spring Boot starter that configures error handling</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
 
         <!-- Test Dependencies -->
         <json-unit.version>2.19.0</json-unit.version>
@@ -23,11 +23,11 @@
         <!-- Plugins -->
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-        <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
-        <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
+        <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+        <maven-javadoc-plugin.version>3.4.1</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+        <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
         <spring-asciidoctor-backends.version>0.0.3</spring-asciidoctor-backends.version>
@@ -50,7 +50,7 @@
         </developerConnection>
         <connection>scm:git:git@github.com:wimdeblauwe/error-handling-spring-boot-starter.git</connection>
         <url>git@github.com:wimdeblauwe/error-handling-spring-boot-starter.git</url>
-        <tag>3.3.0</tag>
+        <tag>4.0.0</tag>
     </scm>
     <issueManagement>
         <system>github</system>
@@ -142,7 +142,7 @@
                 <configuration>
                     <rules>
                         <requireJavaVersion>
-                            <version>[${java.version}, 12)</version>
+                            <version>[${java.version}, 18)</version>
                         </requireJavaVersion>
                     </rules>
                 </configuration>
@@ -196,7 +196,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven-javadoc-plugin.version}</version>
                 <configuration>
-                    <source>8</source>
+                    <source>${java.version}</source>
                     <detectJavaApiLink>false</detectJavaApiLink>
                 </configuration>
                 <executions>
@@ -297,7 +297,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[${java.version}, 12)</version>
+                                    <version>[${java.version}, 18)</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>

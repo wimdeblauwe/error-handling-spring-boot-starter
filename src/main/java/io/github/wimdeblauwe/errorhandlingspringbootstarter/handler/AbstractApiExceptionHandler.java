@@ -5,6 +5,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapp
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 public abstract class AbstractApiExceptionHandler implements ApiExceptionHandler {
     protected final HttpStatusMapper httpStatusMapper;
@@ -19,7 +20,7 @@ public abstract class AbstractApiExceptionHandler implements ApiExceptionHandler
         this.errorMessageMapper = errorMessageMapper;
     }
 
-    protected HttpStatus getHttpStatus(Throwable exception, HttpStatus defaultHttpStatus) {
+    protected HttpStatusCode getHttpStatus(Throwable exception, HttpStatus defaultHttpStatus) {
         return httpStatusMapper.getHttpStatus(exception, defaultHttpStatus);
     }
 
