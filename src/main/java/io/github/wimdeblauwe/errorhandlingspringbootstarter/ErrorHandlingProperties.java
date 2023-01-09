@@ -1,6 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,8 @@ public class ErrorHandlingProperties {
     private List<Class<? extends Throwable>> fullStacktraceClasses = new ArrayList<>();
 
     private List<String> fullStacktraceHttpStatuses = new ArrayList<>();
+
+    private Map<String, LogLevel> logLevels = new HashMap<>();
 
     private DefaultErrorCodeStrategy defaultErrorCodeStrategy = DefaultErrorCodeStrategy.ALL_CAPS;
 
@@ -74,6 +77,14 @@ public class ErrorHandlingProperties {
 
     public void setFullStacktraceHttpStatuses(List<String> fullStacktraceHttpStatuses) {
         this.fullStacktraceHttpStatuses = fullStacktraceHttpStatuses;
+    }
+
+    public Map<String, LogLevel> getLogLevels() {
+        return logLevels;
+    }
+
+    public void setLogLevels(Map<String, LogLevel> logLevels) {
+        this.logLevels = logLevels;
     }
 
     public DefaultErrorCodeStrategy getDefaultErrorCodeStrategy() {
