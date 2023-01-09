@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - '**'
+    tags:
+      - '3.**'
   pull_request:
     branches: [ master ]
 
@@ -31,11 +33,11 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Build with Maven
-        run: ./mvnw clean verify
+        run: ./mvnw -B -ntp clean verify
 
       - name: GitHub Pages action
         if: |
-          github.ref == 'refs/heads/master' &&
+          startsWith(github.ref, 'refs/tags/3.') &&
            matrix.java == 11
         uses: peaceiris/actions-gh-pages@v3.7.3
         with:
