@@ -2,7 +2,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatusCode;
 
 public class LoggingService {
@@ -14,42 +14,86 @@ public class LoggingService {
     }
 
     public void logException(ApiErrorResponse errorResponse, Throwable exception) {
+        HttpStatusCode httpStatus = errorResponse.getHttpStatus();
         if (properties.getFullStacktraceClasses().contains(exception.getClass())) {
-            LOGGER.error(exception.getMessage(), exception);
+            logAccordingToRequestedLogLevel(httpStatus, exception, true);
         } else if (!properties.getFullStacktraceHttpStatuses().isEmpty()) {
-            boolean alreadyLogged = logFullStacktraceIfNeeded(errorResponse.getHttpStatus(), exception);
+            boolean alreadyLogged = logFullStacktraceIfNeeded(httpStatus, exception);
             if (!alreadyLogged) {
-                doStandardFallbackLogging(exception);
+                doStandardFallbackLogging(httpStatus, exception);
             }
         } else {
-            doStandardFallbackLogging(exception);
+            doStandardFallbackLogging(httpStatus, exception);
         }
     }
 
-    private void doStandardFallbackLogging(Throwable exception) {
+    private void logAccordingToRequestedLogLevel(HttpStatusCode httpStatus, Throwable exception, boolean includeStacktrace) {
+        String httpStatusValue = String.valueOf(httpStatus.value());
+        if (properties.getLogLevels().get(httpStatusValue) != null) {
+            doLogOnLogLevel(properties.getLogLevels().get(httpStatusValue), exception, includeStacktrace);
+        } else if (properties.getLogLevels().get(getStatusWithLastNumberAsWildcard(httpStatusValue)) != null) {
+            doLogOnLogLevel(properties.getLogLevels().get(getStatusWithLastNumberAsWildcard(httpStatusValue)), exception, includeStacktrace);
+        } else if (properties.getLogLevels().get(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue)) != null) {
+            doLogOnLogLevel(properties.getLogLevels().get(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue)), exception, includeStacktrace);
+        } else {
+            LOGGER.error(exception.getMessage(), exception);
+        }
+    }
+
+    private void doLogOnLogLevel(LogLevel logLevel, Throwable exception, boolean includeStacktrace) {
+        if (includeStacktrace) {
+            switch (logLevel) {
+                case TRACE -> LOGGER.trace(exception.getMessage(), exception);
+                case DEBUG -> LOGGER.debug(exception.getMessage(), exception);
+                case INFO -> LOGGER.info(exception.getMessage(), exception);
+                case WARN -> LOGGER.warn(exception.getMessage(), exception);
+                case ERROR, FATAL -> LOGGER.error(exception.getMessage(), exception);
+                case OFF -> {
+                    // no-op
+                }
+            }
+        } else {
+            switch (logLevel) {
+                case TRACE -> LOGGER.trace(exception.getMessage());
+                case DEBUG -> LOGGER.debug(exception.getMessage());
+                case INFO -> LOGGER.info(exception.getMessage());
+                case WARN -> LOGGER.warn(exception.getMessage());
+                case ERROR, FATAL -> LOGGER.error(exception.getMessage());
+                case OFF -> {
+                    // no-op
+                }
+            }
+        }
+    }
+
+    private void doStandardFallbackLogging(HttpStatusCode httpStatus, Throwable exception) {
         switch (properties.getExceptionLogging()) {
-            case WITH_STACKTRACE:
-                LOGGER.error(exception.getMessage(), exception);
-                break;
-            case MESSAGE_ONLY:
-                LOGGER.error(exception.getMessage());
-                break;
+            case WITH_STACKTRACE -> logAccordingToRequestedLogLevel(httpStatus, exception, true);
+            case MESSAGE_ONLY -> logAccordingToRequestedLogLevel(httpStatus, exception, false);
         }
     }
 
     private boolean logFullStacktraceIfNeeded(HttpStatusCode httpStatus, Throwable exception) {
         String httpStatusValue = String.valueOf(httpStatus.value());
         if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue)) {
-            LOGGER.error(exception.getMessage(), exception);
+            logAccordingToRequestedLogLevel(httpStatus, exception, true);
             return true;
-        } else if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue.replaceFirst("\\d$", "x"))) {
-            LOGGER.error(exception.getMessage(), exception);
+        } else if (properties.getFullStacktraceHttpStatuses().contains(getStatusWithLastNumberAsWildcard(httpStatusValue))) {
+            logAccordingToRequestedLogLevel(httpStatus, exception, true);
             return true;
-        } else if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue.replaceFirst("\\d\\d$", "xx"))) {
-            LOGGER.error(exception.getMessage(), exception);
+        } else if (properties.getFullStacktraceHttpStatuses().contains(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue))) {
+            logAccordingToRequestedLogLevel(httpStatus, exception, true);
             return true;
         }
 
         return false;
+    }
+
+    private static String getStatusWithLastTwoNumbersAsWildcard(String httpStatusValue) {
+        return httpStatusValue.replaceFirst("\\d\\d$", "xx");
+    }
+
+    private static String getStatusWithLastNumberAsWildcard(String httpStatusValue) {
+        return httpStatusValue.replaceFirst("\\d$", "x");
     }
 }
