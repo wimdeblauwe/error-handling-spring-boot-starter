@@ -2,6 +2,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatus;
 
 public class LoggingService {
@@ -13,25 +14,87 @@ public class LoggingService {
     }
 
     public void logException(ApiErrorResponse errorResponse, Throwable exception) {
+        HttpStatus httpStatus = errorResponse.getHttpStatus();
         if (properties.getFullStacktraceClasses().contains(exception.getClass())) {
-            LOGGER.error(exception.getMessage(), exception);
+            logAccordingToRequestedLogLevel(httpStatus, exception, true);
         } else if (!properties.getFullStacktraceHttpStatuses().isEmpty()) {
-            boolean alreadyLogged = logFullStacktraceIfNeeded(errorResponse.getHttpStatus(), exception);
+            boolean alreadyLogged = logFullStacktraceIfNeeded(httpStatus, exception);
             if (!alreadyLogged) {
-                doStandardFallbackLogging(exception);
+                doStandardFallbackLogging(httpStatus, exception);
             }
         } else {
-            doStandardFallbackLogging(exception);
+            doStandardFallbackLogging(httpStatus, exception);
         }
     }
 
-    private void doStandardFallbackLogging(Throwable exception) {
+    private void logAccordingToRequestedLogLevel(HttpStatus httpStatus, Throwable exception, boolean includeStacktrace) {
+        String httpStatusValue = String.valueOf(httpStatus.value());
+        if (properties.getLogLevels().get(httpStatusValue) != null) {
+            doLogOnLogLevel(properties.getLogLevels().get(httpStatusValue), exception, includeStacktrace);
+        } else if (properties.getLogLevels().get(getStatusWithLastNumberAsWildcard(httpStatusValue)) != null) {
+            doLogOnLogLevel(properties.getLogLevels().get(getStatusWithLastNumberAsWildcard(httpStatusValue)), exception, includeStacktrace);
+        } else if (properties.getLogLevels().get(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue)) != null) {
+            doLogOnLogLevel(properties.getLogLevels().get(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue)), exception, includeStacktrace);
+        } else {
+            LOGGER.error(exception.getMessage(), exception);
+        }
+    }
+
+    private void doLogOnLogLevel(LogLevel logLevel, Throwable exception, boolean includeStacktrace) {
+        if (includeStacktrace) {
+            switch (logLevel) {
+                case TRACE:
+                    LOGGER.trace(exception.getMessage(), exception);
+                    break;
+                case DEBUG:
+                    LOGGER.debug(exception.getMessage(), exception);
+                    break;
+                case INFO:
+                    LOGGER.info(exception.getMessage(), exception);
+                    break;
+                case WARN:
+                    LOGGER.warn(exception.getMessage(), exception);
+                    break;
+                case ERROR:
+                case FATAL:
+                    LOGGER.error(exception.getMessage(), exception);
+                    break;
+                case OFF:
+                    // no-op
+                    break;
+            }
+        } else {
+            switch (logLevel) {
+                case TRACE:
+                    LOGGER.trace(exception.getMessage());
+                    break;
+                case DEBUG:
+                    LOGGER.debug(exception.getMessage());
+                    break;
+                case INFO:
+                    LOGGER.info(exception.getMessage());
+                    break;
+                case WARN:
+                    LOGGER.warn(exception.getMessage());
+                    break;
+                case ERROR:
+                case FATAL:
+                    LOGGER.error(exception.getMessage());
+                    break;
+                // no-op
+                case OFF:
+                    break;
+            }
+        }
+    }
+
+    private void doStandardFallbackLogging(HttpStatus httpStatus, Throwable exception) {
         switch (properties.getExceptionLogging()) {
             case WITH_STACKTRACE:
-                LOGGER.error(exception.getMessage(), exception);
+                logAccordingToRequestedLogLevel(httpStatus, exception, true);
                 break;
             case MESSAGE_ONLY:
-                LOGGER.error(exception.getMessage());
+                logAccordingToRequestedLogLevel(httpStatus, exception, false);
                 break;
         }
     }
@@ -39,16 +102,24 @@ public class LoggingService {
     private boolean logFullStacktraceIfNeeded(HttpStatus httpStatus, Throwable exception) {
         String httpStatusValue = String.valueOf(httpStatus.value());
         if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue)) {
-            LOGGER.error(exception.getMessage(), exception);
+            logAccordingToRequestedLogLevel(httpStatus, exception, true);
             return true;
-        } else if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue.replaceFirst("\\d$", "x"))) {
-            LOGGER.error(exception.getMessage(), exception);
+        } else if (properties.getFullStacktraceHttpStatuses().contains(getStatusWithLastNumberAsWildcard(httpStatusValue))) {
+            logAccordingToRequestedLogLevel(httpStatus, exception, true);
             return true;
-        } else if (properties.getFullStacktraceHttpStatuses().contains(httpStatusValue.replaceFirst("\\d\\d$", "xx"))) {
-            LOGGER.error(exception.getMessage(), exception);
+        } else if (properties.getFullStacktraceHttpStatuses().contains(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue))) {
+            logAccordingToRequestedLogLevel(httpStatus, exception, true);
             return true;
         }
 
         return false;
+    }
+
+    private static String getStatusWithLastTwoNumbersAsWildcard(String httpStatusValue) {
+        return httpStatusValue.replaceFirst("\\d\\d$", "xx");
+    }
+
+    private static String getStatusWithLastNumberAsWildcard(String httpStatusValue) {
+        return httpStatusValue.replaceFirst("\\d$", "x");
     }
 }
