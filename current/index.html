@@ -114,7 +114,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 4.0.0.</p>
+<p>This documentation is for version 4.1.0.</p>
 </div>
 </div>
 </div>
@@ -1560,6 +1560,22 @@ You might want to only enable one of the two to avoid double stack traces.
 </tr>
 </table>
 </div>
+<div class="paragraph">
+<p>It is also possible to define on what log level the exception message (and the stacktrace if enabled) should be printed.
+By default, everything is printed on ERROR, but using the <code>error.handling.log-levels</code> property, this can be changed.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.log-levels.400=DEBUG
+error.handling.log-levels.401=INFO
+error.handling.log-levels.5xx=ERROR</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this configuration, 400 Bad Request will be printed on DEBUG level.
+401 Unauthorized will be printed on INFO.
+Finally, all status code in the 5xx range will be printed on ERROR.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="spring-security-authenticationentrypoint"><a class="anchor" href="#spring-security-authenticationentrypoint"></a>3.9. Spring Security AuthenticationEntryPoint</h3>
@@ -1864,6 +1880,16 @@ See <a href="#logging">Logging</a> for more info.</p>
 </div></div></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.log-levels</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Allows to specify a map of HTTP error codes (or ranges) to log levels. This allows to specify for each HTTP error code on what log level the message (and stack trace) should be printed.
+See <a href="#logging">Logging</a> for more info.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>A fixed code like <code>500</code> can be used, or a range like <code>50x</code> or <code>5xx</code> is also possible.</p>
+</div></div></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.default-error-code-strategy</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Determines how an Exception is converted into a <code>code</code> in case there is no <code>@ResponseErrorCode</code> present on the class.
@@ -1984,7 +2010,7 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-11-30 21:01:41 UTC
+Last updated 2023-01-09 20:16:31 UTC
 </div>
 </div>
 </div>
