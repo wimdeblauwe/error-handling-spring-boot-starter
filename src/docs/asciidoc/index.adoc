@@ -1141,6 +1141,20 @@ This configuration will print a full stack trace for all errors in the 5xx range
 NOTE: The logging that is done on the response codes is _additionally_ to the logging done on the exception type.
 You might want to only enable one of the two to avoid double stack traces.
 
+It is also possible to define on what log level the exception message (and the stacktrace if enabled) should be printed.
+By default, everything is printed on ERROR, but using the `error.handling.log-levels` property, this can be changed.
+
+[source,properties]
+----
+error.handling.log-levels.400=DEBUG
+error.handling.log-levels.401=INFO
+error.handling.log-levels.5xx=ERROR
+----
+
+With this configuration, 400 Bad Request will be printed on DEBUG level.
+401 Unauthorized will be printed on INFO.
+Finally, all status code in the 5xx range will be printed on ERROR.
+
 === Spring Security AuthenticationEntryPoint
 
 By default, the library will not provide a response when there is an unauthorized exception.
@@ -1290,6 +1304,11 @@ See <<Logging>> for more info.
 
 |error.handling.full-stacktrace-http-statuses
 |Allows to specify a list of HTTP error codes (or ranges) that will always print a stack trace in the logging, regardless of the `error.handling.exception-logging` setting.
+See <<Logging>> for more info.
+| A fixed code like `500` can be used, or a range like `50x` or `5xx` is also possible.
+
+|error.handling.log-levels
+|Allows to specify a map of HTTP error codes (or ranges) to log levels. This allows to specify for each HTTP error code on what log level the message (and stack trace) should be printed.
 See <<Logging>> for more info.
 | A fixed code like `500` can be used, or a range like `50x` or `5xx` is also possible.
 
