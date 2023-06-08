@@ -18,4 +18,27 @@ public class IntegrationTestRestController {
     void throwExceptionWithBadRequestStatus() {
         throw new ExceptionWithBadRequestStatus();
     }
+
+    @GetMapping("/inherit")
+    void testInherit() {
+        throw new ResourceNotFoundException("test-use-case", ResourceNotFoundException.class, "my-id");
+    }
+
+    static class ApplicationError extends RuntimeException {
+
+        @ResponseErrorProperty("code")
+        protected final String useCaseCode;
+
+        public ApplicationError(String useCaseCode, String message) {
+            super(message);
+            this.useCaseCode = useCaseCode;
+        }
+    }
+
+    static class ResourceNotFoundException extends ApplicationError {
+
+        public ResourceNotFoundException(String useCaseCode, Class<?> resource, String resourceId) {
+            super(useCaseCode, resource.getSimpleName() + " with id " + resourceId + " not found");
+        }
+    }
 }

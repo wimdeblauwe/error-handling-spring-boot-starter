@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.beans.BeanInfo;
@@ -51,7 +52,7 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
 
     private Map<String, Object> getFieldResponseErrorProperties(Throwable exception) {
         Map<String, Object> result = new HashMap<>();
-        for (Field field : exception.getClass().getDeclaredFields()) {
+        ReflectionUtils.doWithFields(exception.getClass(), field -> {
             if (field.isAnnotationPresent(ResponseErrorProperty.class)) {
                 try {
                     field.setAccessible(true);
@@ -63,14 +64,14 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
                     LOGGER.error(String.format("Unable to use field result of field %s.%s", exception.getClass().getName(), field.getName()));
                 }
             }
-        }
+        });
         return result;
     }
 
     private Map<String, Object> getMethodResponseErrorProperties(Throwable exception) {
         Map<String, Object> result = new HashMap<>();
         Class<? extends Throwable> exceptionClass = exception.getClass();
-        for (Method method : exceptionClass.getMethods()) {
+        ReflectionUtils.doWithMethods(exceptionClass, method -> {
             if (method.isAnnotationPresent(ResponseErrorProperty.class)
                     && method.getReturnType() != Void.TYPE
                     && method.getParameterCount() == 0) {
@@ -86,14 +87,14 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
                     LOGGER.error(String.format("Unable to use method result of method %s.%s", exceptionClass.getName(), method.getName()));
                 }
             }
-        }
+        });
         return result;
     }
 
     private String getPropertyName(Field field) {
         ResponseErrorProperty annotation = AnnotationUtils.getAnnotation(field, ResponseErrorProperty.class);
         assert annotation != null;
-        if (!StringUtils.isEmpty(annotation.value())) {
+        if (StringUtils.hasText(annotation.value())) {
             return annotation.value();
         }
 
@@ -103,7 +104,7 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
     private String getPropertyName(Class<? extends Throwable> exceptionClass, Method method) {
         ResponseErrorProperty annotation = AnnotationUtils.getAnnotation(method, ResponseErrorProperty.class);
         assert annotation != null;
-        if (!StringUtils.isEmpty(annotation.value())) {
+        if (StringUtils.hasText(annotation.value())) {
             return annotation.value();
         }
 
