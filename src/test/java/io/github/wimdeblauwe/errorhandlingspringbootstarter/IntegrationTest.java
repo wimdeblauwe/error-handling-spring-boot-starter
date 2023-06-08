@@ -34,6 +34,12 @@ public class IntegrationTest {
                .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void test() throws Exception {
+        mockMvc.perform(get("/integration-test/inherit"))
+               .andExpect(status().isBadRequest());
+    }
+
     static class WebSecurityConfig {
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

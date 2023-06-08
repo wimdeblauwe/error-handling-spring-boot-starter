@@ -265,6 +265,17 @@ class DefaultFallbackApiExceptionHandlerTest {
             assertThat(response.getMessage()).isNull();
             assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.nullValue()));
         }
+
+        @Test
+        void testResponseErrorPropertyOnFieldOfSuperclass() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new SubclassOfExceptionWithResponseErrorPropertyOnField("test message", "test property"));
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getCode()).isEqualTo("SUBCLASS_OF_EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_FIELD");
+            assertThat(response.getMessage()).isEqualTo("test message");
+            assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("test property")));
+        }
     }
 
     @Nested
@@ -311,6 +322,17 @@ class DefaultFallbackApiExceptionHandlerTest {
             assertThat(response.getCode()).isEqualTo("EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD_WITH_INCLUDE_IF_NULL");
             assertThat(response.getMessage()).isNull();
             assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.nullValue()));
+        }
+
+        @Test
+        void testResponseErrorPropertyOnMethodOfSuperclass() {
+            ErrorHandlingProperties properties = new ErrorHandlingProperties();
+            DefaultFallbackApiExceptionHandler handler = createDefaultFallbackApiExceptionHandler(properties);
+            ApiErrorResponse response = handler.handle(new SubclassOfExceptionWithResponseErrorPropertyOnMethod("test message", "myValue"));
+            assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getCode()).isEqualTo("SUBCLASS_OF_EXCEPTION_WITH_RESPONSE_ERROR_PROPERTY_ON_METHOD");
+            assertThat(response.getMessage()).isEqualTo("test message");
+            assertThat(response.getProperties()).hasEntrySatisfying("myProperty", new HamcrestCondition<>(Matchers.is("myValue")));
         }
     }
 
