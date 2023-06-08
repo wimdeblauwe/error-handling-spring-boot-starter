@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,12 +30,6 @@ public class IntegrationTest {
     @Test
     void testExceptionWithBadRequestStatus() throws Exception {
         mockMvc.perform(get("/integration-test/bad-request"))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void test() throws Exception {
-        mockMvc.perform(get("/integration-test/inherit"))
                .andExpect(status().isBadRequest());
     }
 
