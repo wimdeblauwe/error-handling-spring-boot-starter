@@ -23,8 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest
 @ContextConfiguration(classes = {ServletErrorHandlingConfiguration.class,
@@ -39,6 +38,7 @@ class SpringSecurityApiExceptionHandlerTest {
     void testUnauthorized() throws Exception {
         mockMvc.perform(get("/test/spring-security/access-denied"))
                .andExpect(status().isUnauthorized())
+               .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"))
                .andExpect(jsonPath("code").value("UNAUTHORIZED"))
                .andExpect(jsonPath("message").value("Full authentication is required to access this resource"));
     }
