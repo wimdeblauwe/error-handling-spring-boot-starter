@@ -36,7 +36,7 @@ public class LoggingService {
         } else if (properties.getLogLevels().get(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue)) != null) {
             doLogOnLogLevel(properties.getLogLevels().get(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue)), exception, includeStacktrace);
         } else {
-            LOGGER.error(exception.getMessage(), exception);
+            doLogOnLogLevel(LogLevel.ERROR, exception, includeStacktrace);
         }
     }
 

@@ -30,7 +30,7 @@
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
-        <spring-asciidoctor-backends.version>0.0.3</spring-asciidoctor-backends.version>
+        <spring-asciidoctor-backends.version>0.0.5</spring-asciidoctor-backends.version>
     </properties>
     <licenses>
         <license>
@@ -262,17 +262,6 @@
             </plugin>
         </plugins>
     </build>
-    <!-- Should be removed once spring-asciidoctor-backends is in Maven Central -->
-    <pluginRepositories>
-        <pluginRepository>
-            <id>spring-release</id>
-            <name>Spring Releases</name>
-            <url>https://repo.spring.io/release</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
     <profiles>
         <profile>
             <id>release</id>
