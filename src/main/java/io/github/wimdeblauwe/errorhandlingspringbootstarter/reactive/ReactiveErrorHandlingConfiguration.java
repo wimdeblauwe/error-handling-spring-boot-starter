@@ -67,7 +67,8 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
                                                                    ApplicationContext applicationContext,
                                                                    LoggingService loggingService,
                                                                    List<ApiExceptionHandler> handlers,
-                                                                   FallbackApiExceptionHandler fallbackApiExceptionHandler) {
+                                                                   FallbackApiExceptionHandler fallbackApiExceptionHandler,
+                                                                   List<ApiErrorResponseCustomizer> responseCustomizers) {
 
         GlobalErrorWebExceptionHandler exceptionHandler = new GlobalErrorWebExceptionHandler(errorAttributes,
                                                                                              webProperties.getResources(),
@@ -75,7 +76,8 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
                                                                                              applicationContext,
                                                                                              handlers,
                                                                                              fallbackApiExceptionHandler,
-                                                                                             loggingService);
+                                                                                             loggingService,
+                                                                                             responseCustomizers);
         exceptionHandler.setViewResolvers(viewResolvers.orderedStream().collect(Collectors.toList()));
         exceptionHandler.setMessageWriters(serverCodecConfigurer.getWriters());
         exceptionHandler.setMessageReaders(serverCodecConfigurer.getReaders());

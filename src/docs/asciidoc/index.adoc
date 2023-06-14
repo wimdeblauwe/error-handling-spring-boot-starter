@@ -931,7 +931,7 @@ The full list of Exception types that are handled:
 
 === Adding extra properties in the response
 
-It is possible add extra properties in the JSON response by using the `@ErrorResponseProperty` annotation in your custom Exception class.
+It is possible to add extra properties in the JSON response by using the `@ErrorResponseProperty` annotation in your custom Exception class.
 
 ==== Via method annotation
 
@@ -1072,6 +1072,40 @@ The resulting response assuming the passed in `userId` is `null`:
   "userId": null
 }
 ----
+
+==== Global customization of the response JSON
+
+The previous methods can only be used if you have access to the source code of the exception class.
+If you want to add some property globally for all exceptions, also those from libraries you import, then you can implement an `ApiErrorResponseCustomizer`.
+
+For example, suppose you want to add a timestamp to all error responses.
+You can do so by declaring the following bean:
+
+[source,java]
+----
+    @Bean
+    public ApiErrorResponseCustomizer timestampErrorResponseCustomizer() {
+        return new ApiErrorResponseCustomizer() {
+            @Override
+            public void customize(ApiErrorResponse response) {
+                response.addErrorProperty("instant", Instant.now());
+            }
+        };
+    }
+----
+
+An example resulting response could look like this:
+
+[source,json]
+----
+{
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id UserId{id=8c7fb13c-0924-47d4-821a-36f73558c898}",
+  "instant": "2023-06-14T06:20:12.719357Z"
+}
+----
+
+You can declare multiple such beans in your application.
 
 === Custom JSON response field names
 
