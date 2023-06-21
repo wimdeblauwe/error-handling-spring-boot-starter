@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean
     public ServerWebInputExceptionHandler serverWebInputExceptionHandler(HttpStatusMapper httpStatusMapper,
                                                                          ErrorCodeMapper errorCodeMapper,
                                                                          ErrorMessageMapper errorMessageMapper) {
@@ -49,6 +50,7 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public ServerErrorExceptionHandler serverErrorExceptionHandler(HttpStatusMapper httpStatusMapper,
                                                                    ErrorCodeMapper errorCodeMapper,
                                                                    ErrorMessageMapper errorMessageMapper) {
@@ -58,6 +60,7 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
     }
 
     @Bean
+    @ConditionalOnMissingBean
     @Order(-2)
     public ErrorWebExceptionHandler globalErrorWebExceptionHandler(ErrorAttributes errorAttributes,
                                                                    ServerProperties serverProperties,
