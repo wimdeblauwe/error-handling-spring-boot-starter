@@ -1,9 +1,6 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive;
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.FallbackApiExceptionHandler;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.LoggingService;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
@@ -25,6 +22,7 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
     private final List<ApiExceptionHandler> handlers;
     private final FallbackApiExceptionHandler fallbackHandler;
     private final LoggingService loggingService;
+    private final List<ApiErrorResponseCustomizer> responseCustomizers;
 
     public GlobalErrorWebExceptionHandler(ErrorAttributes errorAttributes,
                                           WebProperties.Resources resources,
@@ -32,11 +30,13 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
                                           ApplicationContext applicationContext,
                                           List<ApiExceptionHandler> handlers,
                                           FallbackApiExceptionHandler fallbackHandler,
-                                          LoggingService loggingService) {
+                                          LoggingService loggingService,
+                                          List<ApiErrorResponseCustomizer> responseCustomizers) {
         super(errorAttributes, resources, errorProperties, applicationContext);
         this.handlers = handlers;
         this.fallbackHandler = fallbackHandler;
         this.loggingService = loggingService;
+        this.responseCustomizers = responseCustomizers;
     }
 
     @Override
@@ -65,6 +65,10 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
 
         if (errorResponse == null) {
             errorResponse = fallbackHandler.handle(exception);
+        }
+
+        for (ApiErrorResponseCustomizer responseCustomizer : responseCustomizers) {
+            responseCustomizer.customize(errorResponse);
         }
 
         loggingService.logException(errorResponse, exception);

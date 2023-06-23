@@ -22,13 +22,16 @@ public class ErrorHandlingControllerAdvice {
     private final List<ApiExceptionHandler> handlers;
     private final FallbackApiExceptionHandler fallbackHandler;
     private final LoggingService loggingService;
+    private final List<ApiErrorResponseCustomizer> responseCustomizers;
 
     public ErrorHandlingControllerAdvice(List<ApiExceptionHandler> handlers,
                                          FallbackApiExceptionHandler fallbackHandler,
-                                         LoggingService loggingService) {
+                                         LoggingService loggingService,
+                                         List<ApiErrorResponseCustomizer> responseCustomizers) {
         this.handlers = handlers;
         this.fallbackHandler = fallbackHandler;
         this.loggingService = loggingService;
+        this.responseCustomizers = responseCustomizers;
         this.handlers.sort(AnnotationAwareOrderComparator.INSTANCE);
 
         LOGGER.info("Error Handling Spring Boot Starter active with {} handlers", this.handlers.size());
@@ -50,6 +53,10 @@ public class ErrorHandlingControllerAdvice {
 
         if (errorResponse == null) {
             errorResponse = fallbackHandler.handle(exception);
+        }
+
+        for (ApiErrorResponseCustomizer responseCustomizer : responseCustomizers) {
+            responseCustomizer.customize(errorResponse);
         }
 
         loggingService.logException(errorResponse, exception);

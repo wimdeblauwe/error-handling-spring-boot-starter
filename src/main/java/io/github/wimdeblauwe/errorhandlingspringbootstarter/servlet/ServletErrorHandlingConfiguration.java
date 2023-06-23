@@ -6,6 +6,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapp
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,6 +27,7 @@ import java.util.List;
 public class ServletErrorHandlingConfiguration extends AbstractErrorHandlingConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean
     public MissingRequestValueExceptionHandler missingRequestValueExceptionHandler(HttpStatusMapper httpStatusMapper,
                                                                                    ErrorCodeMapper errorCodeMapper,
                                                                                    ErrorMessageMapper errorMessageMapper) {
@@ -35,11 +37,14 @@ public class ServletErrorHandlingConfiguration extends AbstractErrorHandlingConf
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public ErrorHandlingControllerAdvice errorHandlingControllerAdvice(List<ApiExceptionHandler> handlers,
                                                                        FallbackApiExceptionHandler fallbackApiExceptionHandler,
-                                                                       LoggingService loggingService) {
+                                                                       LoggingService loggingService,
+                                                                       List<ApiErrorResponseCustomizer> responseCustomizers) {
         return new ErrorHandlingControllerAdvice(handlers,
                                                  fallbackApiExceptionHandler,
-                                                 loggingService);
+                                                 loggingService,
+                                                 responseCustomizers);
     }
 }

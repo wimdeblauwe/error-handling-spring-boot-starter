@@ -5,6 +5,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapp
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -13,6 +14,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 @ConditionalOnClass(ObjectOptimisticLockingFailureException.class)
 public class SpringOrmErrorHandlingConfiguration {
     @Bean
+    @ConditionalOnMissingBean
     public ObjectOptimisticLockingFailureApiExceptionHandler objectOptimisticLockingFailureApiExceptionHandler(ErrorHandlingProperties properties,
                                                                                                                HttpStatusMapper httpStatusMapper,
                                                                                                                ErrorCodeMapper errorCodeMapper,
