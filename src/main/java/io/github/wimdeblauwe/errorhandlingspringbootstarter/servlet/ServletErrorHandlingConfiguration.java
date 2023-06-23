@@ -40,9 +40,11 @@ public class ServletErrorHandlingConfiguration extends AbstractErrorHandlingConf
     @ConditionalOnMissingBean
     public ErrorHandlingControllerAdvice errorHandlingControllerAdvice(List<ApiExceptionHandler> handlers,
                                                                        FallbackApiExceptionHandler fallbackApiExceptionHandler,
-                                                                       LoggingService loggingService) {
+                                                                       LoggingService loggingService,
+                                                                       List<ApiErrorResponseCustomizer> responseCustomizers) {
         return new ErrorHandlingControllerAdvice(handlers,
                                                  fallbackApiExceptionHandler,
-                                                 loggingService);
+                                                 loggingService,
+                                                 responseCustomizers);
     }
 }
