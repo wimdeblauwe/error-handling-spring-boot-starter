@@ -6,30 +6,36 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.TypeMismatch
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
 public abstract class AbstractErrorHandlingConfiguration {
     @Bean
+    @ConditionalOnMissingBean
     public LoggingService loggingService(ErrorHandlingProperties properties) {
         return new LoggingService(properties);
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public HttpStatusMapper httpStatusMapper(ErrorHandlingProperties properties) {
         return new HttpStatusMapper(properties);
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public ErrorCodeMapper errorCodeMapper(ErrorHandlingProperties properties) {
         return new ErrorCodeMapper(properties);
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public ErrorMessageMapper errorMessageMapper(ErrorHandlingProperties properties) {
         return new ErrorMessageMapper(properties);
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public FallbackApiExceptionHandler defaultHandler(HttpStatusMapper httpStatusMapper,
                                                       ErrorCodeMapper errorCodeMapper,
                                                       ErrorMessageMapper errorMessageMapper) {
@@ -39,6 +45,7 @@ public abstract class AbstractErrorHandlingConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public TypeMismatchApiExceptionHandler typeMismatchApiExceptionHandler(ErrorHandlingProperties properties,
                                                                            HttpStatusMapper httpStatusMapper,
                                                                            ErrorCodeMapper errorCodeMapper,
@@ -47,6 +54,7 @@ public abstract class AbstractErrorHandlingConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public HttpMessageNotReadableApiExceptionHandler httpMessageNotReadableApiExceptionHandler(ErrorHandlingProperties properties,
                                                                                                HttpStatusMapper httpStatusMapper,
                                                                                                ErrorCodeMapper errorCodeMapper,
@@ -55,6 +63,7 @@ public abstract class AbstractErrorHandlingConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public BindApiExceptionHandler bindApiExceptionHandler(ErrorHandlingProperties properties,
                                                            HttpStatusMapper httpStatusMapper,
                                                            ErrorCodeMapper errorCodeMapper,
@@ -63,6 +72,7 @@ public abstract class AbstractErrorHandlingConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public ApiErrorResponseSerializer apiErrorResponseSerializer(ErrorHandlingProperties properties) {
         return new ApiErrorResponseSerializer(properties);
     }
