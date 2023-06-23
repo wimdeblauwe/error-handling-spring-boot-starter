@@ -96,6 +96,7 @@
 <li><a href="#via-field-annotation">3.6.2. Via field annotation</a></li>
 <li><a href="#overriding-the-property-name">3.6.3. Overriding the property name</a></li>
 <li><a href="#null-handling">3.6.4. Null handling</a></li>
+<li><a href="#global-customization-of-the-response-json">3.6.5. Global customization of the response JSON</a></li>
 </ul>
 </li>
 <li><a href="#custom-json-response-field-names">3.7. Custom JSON response field names</a></li>
@@ -114,7 +115,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 4.1.3.</p>
+<p>This documentation is for version 4.2.0.</p>
 </div>
 </div>
 </div>
@@ -1277,7 +1278,7 @@ They will just have a <code>code</code> and a <code>message</code>.</p>
 <div class="sect2">
 <h3 id="adding-extra-properties-in-the-response"><a class="anchor" href="#adding-extra-properties-in-the-response"></a>3.6. Adding extra properties in the response</h3>
 <div class="paragraph">
-<p>It is possible add extra properties in the JSON response by using the <code>@ErrorResponseProperty</code> annotation in your custom Exception class.</p>
+<p>It is possible to add extra properties in the JSON response by using the <code>@ErrorResponseProperty</code> annotation in your custom Exception class.</p>
 </div>
 <div class="sect3">
 <h4 id="via-method-annotation"><a class="anchor" href="#via-method-annotation"></a>3.6.1. Via method annotation</h4>
@@ -1461,6 +1462,46 @@ public class UserNotFoundException extends RuntimeException {
   "userId": null
 }</code></pre>
 </div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="global-customization-of-the-response-json"><a class="anchor" href="#global-customization-of-the-response-json"></a>3.6.5. Global customization of the response JSON</h4>
+<div class="paragraph">
+<p>The previous methods can only be used if you have access to the source code of the exception class.
+If you want to add some property globally for all exceptions, also those from libraries you import, then you can implement an <code>ApiErrorResponseCustomizer</code>.</p>
+</div>
+<div class="paragraph">
+<p>For example, suppose you want to add a timestamp to all error responses.
+You can do so by declaring the following bean:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">    @Bean
+    public ApiErrorResponseCustomizer timestampErrorResponseCustomizer() {
+        return new ApiErrorResponseCustomizer() {
+            @Override
+            public void customize(ApiErrorResponse response) {
+                response.addErrorProperty("instant", Instant.now());
+            }
+        };
+    }
+</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>An example resulting response could look like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id UserId{id=8c7fb13c-0924-47d4-821a-36f73558c898}",
+  "instant": "2023-06-14T06:20:12.719357Z"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can declare multiple such beans in your application.</p>
 </div>
 </div>
 </div>
@@ -2010,7 +2051,7 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-06-14 07:12:17 UTC
+Last updated 2023-06-23 06:11:00 UTC
 </div>
 </div>
 </div>
