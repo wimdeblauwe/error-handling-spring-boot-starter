@@ -47,4 +47,24 @@ public class ServletErrorHandlingConfiguration extends AbstractErrorHandlingConf
                                                  loggingService,
                                                  responseCustomizers);
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ErrorHandlingDataFetcherExceptionResolverAdapter exceptionResolverAdapter(List<GraphqlExceptionHandler> handlers,
+                                                                                     FallbackGraphqlExceptionHandler fallbackGraphqlExceptionHandler,
+                                                                                     LoggingService loggingService) {
+        return new ErrorHandlingDataFetcherExceptionResolverAdapter(handlers,
+                                                                    fallbackGraphqlExceptionHandler,
+                                                                    loggingService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ErrorHandlingDataFetchingExceptionHandler dataFetchingExceptionHandler(List<GraphqlExceptionHandler> handlers,
+                                                                                  FallbackGraphqlExceptionHandler fallbackGraphqlExceptionHandler,
+                                                                                  LoggingService loggingService) {
+        return new ErrorHandlingDataFetchingExceptionHandler(handlers,
+                                                             fallbackGraphqlExceptionHandler,
+                                                             loggingService);
+    }
 }
