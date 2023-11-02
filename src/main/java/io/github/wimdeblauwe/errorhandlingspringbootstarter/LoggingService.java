@@ -1,5 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
+import graphql.GraphQLError;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.GraphQlErrorMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.logging.LogLevel;
@@ -8,13 +10,30 @@ import org.springframework.http.HttpStatusCode;
 public class LoggingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingService.class);
     private final ErrorHandlingProperties properties;
+    private final GraphQlErrorMapper graphQlErrorMapper;
 
-    public LoggingService(ErrorHandlingProperties properties) {
+    public LoggingService(ErrorHandlingProperties properties,
+                          GraphQlErrorMapper graphQlErrorMapper) {
         this.properties = properties;
+        this.graphQlErrorMapper = graphQlErrorMapper;
     }
 
     public void logException(ApiErrorResponse errorResponse, Throwable exception) {
         HttpStatusCode httpStatus = errorResponse.getHttpStatus();
+        if (properties.getFullStacktraceClasses().contains(exception.getClass())) {
+            logAccordingToRequestedLogLevel(httpStatus, exception, true);
+        } else if (!properties.getFullStacktraceHttpStatuses().isEmpty()) {
+            boolean alreadyLogged = logFullStacktraceIfNeeded(httpStatus, exception);
+            if (!alreadyLogged) {
+                doStandardFallbackLogging(httpStatus, exception);
+            }
+        } else {
+            doStandardFallbackLogging(httpStatus, exception);
+        }
+    }
+
+    public void logException(GraphQLError graphQLError, Throwable exception) {
+        HttpStatusCode httpStatus = this.graphQlErrorMapper.errorClassificationToHttpStatus(graphQLError.getErrorType());
         if (properties.getFullStacktraceClasses().contains(exception.getClass())) {
             logAccordingToRequestedLogLevel(httpStatus, exception, true);
         } else if (!properties.getFullStacktraceHttpStatuses().isEmpty()) {
