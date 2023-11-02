@@ -4,7 +4,6 @@ import graphql.GraphQLError;
 import graphql.GraphqlErrorBuilder;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.GqlErrorType;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.GraphqlExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.GraphQlErrorMapper;
