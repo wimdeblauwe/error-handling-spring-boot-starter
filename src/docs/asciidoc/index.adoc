@@ -822,7 +822,7 @@ public class CustomerValidator implements ConstraintValidator<ValidCustomer, Cre
 
 [NOTE]
 ====
-If you want to change the message for the global errors, the default Spring mechanism to do see keeps working.
+If you want to change the message for the global errors, the default Spring mechanism for that keeps working.
 
 So use `{}` to indicate that Spring should search the `messages.properties` file:
 
