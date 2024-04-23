@@ -19,8 +19,8 @@ This documentation is for version {project-version}.
 
 == Goal
 
-The goal of the project is to make it easy to have proper error responses for REST APIs build with Spring Boot.
-Just like Spring Boot itself it takes an opinionated approach to how the response body should look like in the case of an error.
+The goal of the project is to make it easy to have proper error responses for REST APIs built with Spring Boot.
+Just like Spring Boot itself, it takes an opinionated approach to how the response body should look like in the case of an error.
 
 == Getting started
 
@@ -822,7 +822,7 @@ public class CustomerValidator implements ConstraintValidator<ValidCustomer, Cre
 
 [NOTE]
 ====
-If you want to change the message for the global errors, the default Spring mechanismn to do see keeps working.
+If you want to change the message for the global errors, the default Spring mechanism to do see keeps working.
 
 So use `{}` to indicate that Spring should search the `messages.properties` file:
 
@@ -1357,7 +1357,7 @@ One of `FULL_QUALIFIED_NAME`, `ALL_CAPS`.
 
 |error.handling.http-statuses
 |Allows to set the HttpStatus response code to use for the full qualified name of an `Exception`
-| `HttpStatus.INTERNAL_SERVER_ERROR` is used for custom exceptions have no specific response status set here.
+| `HttpStatus.INTERNAL_SERVER_ERROR` is used for custom exceptions that have no specific response status set here.
 
 |error.handling.codes
 |Allows to set the code that should be used for the full qualified name of an `Exception` or the name of a validation annotation.
