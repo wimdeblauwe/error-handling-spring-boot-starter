@@ -1,6 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponseAccessDeniedHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.UnauthorizedEntryPoint;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
@@ -18,6 +19,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,10 +49,20 @@ class SpringSecurityApiExceptionHandlerTest {
 
     @Test
     @WithMockUser
-    void testForbidden() throws Exception {
+    void testForbiddenViaSecuredAnnotation() throws Exception {
         mockMvc.perform(get("/test/spring-security/admin"))
                .andExpect(status().isForbidden())
                .andExpect(header().string("Content-Type", "application/json"))
+               .andExpect(jsonPath("code").value("ACCESS_DENIED"))
+               .andExpect(jsonPath("message").value("Access Denied"));
+    }
+
+    @Test
+    @WithMockUser
+    void testForbiddenViaGlobalSecurityConfig() throws Exception {
+        mockMvc.perform(get("/test/spring-security/admin-global"))
+               .andExpect(status().isForbidden())
+               .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"))
                .andExpect(jsonPath("code").value("ACCESS_DENIED"))
                .andExpect(jsonPath("message").value("Access Denied"));
     }
@@ -94,6 +106,11 @@ class SpringSecurityApiExceptionHandlerTest {
         public void requiresAdminRole() {
 
         }
+
+        @GetMapping("/admin-global")
+        public void requiresAdminRoleViaGlobalConfig() {
+
+        }
     }
 
     @TestConfiguration
@@ -105,16 +122,27 @@ class SpringSecurityApiExceptionHandlerTest {
         }
 
         @Bean
+        public AccessDeniedHandler accessDeniedHandler(HttpStatusMapper httpStatusMapper, ErrorCodeMapper errorCodeMapper, ErrorMessageMapper errorMessageMapper, ObjectMapper objectMapper) {
+            return new ApiErrorResponseAccessDeniedHandler(objectMapper, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+        }
+
+        @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                       UnauthorizedEntryPoint unauthorizedEntryPoint) throws Exception {
+                                                       UnauthorizedEntryPoint unauthorizedEntryPoint,
+                                                       AccessDeniedHandler accessDeniedHandler) throws Exception {
             http.httpBasic().disable();
 
-            http.authorizeHttpRequests().anyRequest().authenticated();
+            http.authorizeHttpRequests()
+                .requestMatchers("/test/spring-security/admin-global").hasRole("ADMIN")
+                .anyRequest().authenticated();
 
             http.exceptionHandling()
-                .authenticationEntryPoint(unauthorizedEntryPoint);
+                .authenticationEntryPoint(unauthorizedEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler);
 
             return http.build();
         }
+
     }
+
 }
