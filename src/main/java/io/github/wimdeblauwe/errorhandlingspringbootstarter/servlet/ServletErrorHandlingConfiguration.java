@@ -1,5 +1,6 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.MissingRequestValueExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
@@ -10,11 +11,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
-
-import java.util.List;
+import org.springframework.core.Ordered;
 
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -38,13 +39,24 @@ public class ServletErrorHandlingConfiguration extends AbstractErrorHandlingConf
 
     @Bean
     @ConditionalOnMissingBean
-    public ErrorHandlingControllerAdvice errorHandlingControllerAdvice(List<ApiExceptionHandler> handlers,
-                                                                       FallbackApiExceptionHandler fallbackApiExceptionHandler,
-                                                                       LoggingService loggingService,
-                                                                       List<ApiErrorResponseCustomizer> responseCustomizers) {
-        return new ErrorHandlingControllerAdvice(handlers,
-                                                 fallbackApiExceptionHandler,
-                                                 loggingService,
-                                                 responseCustomizers);
+    public ErrorHandlingControllerAdvice errorHandlingControllerAdvice(ErrorHandlingFacade errorHandlingFacade) {
+        return new ErrorHandlingControllerAdvice(errorHandlingFacade);
+    }
+
+    @Bean
+    @ConditionalOnProperty("error.handling.handle-filter-chain-exceptions")
+    public FilterChainExceptionHandlerFilter filterChainExceptionHandlerFilter(ErrorHandlingFacade errorHandlingFacade, ObjectMapper objectMapper) {
+        return new FilterChainExceptionHandlerFilter(errorHandlingFacade, objectMapper);
+    }
+
+    @Bean
+    @ConditionalOnProperty("error.handling.handle-filter-chain-exceptions")
+    public FilterRegistrationBean<FilterChainExceptionHandlerFilter> filterChainExceptionHandlerFilterFilterRegistrationBean(FilterChainExceptionHandlerFilter filterChainExceptionHandlerFilter) {
+        FilterRegistrationBean<FilterChainExceptionHandlerFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(filterChainExceptionHandlerFilter);
+        registrationBean.addUrlPatterns("/*");
+        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+
+        return registrationBean;
     }
 }

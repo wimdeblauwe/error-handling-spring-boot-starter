@@ -1,6 +1,9 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive;
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponseCustomizer;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
@@ -13,30 +16,20 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.*;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Locale;
 
 public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
 
-    private final List<ApiExceptionHandler> handlers;
-    private final FallbackApiExceptionHandler fallbackHandler;
-    private final LoggingService loggingService;
-    private final List<ApiErrorResponseCustomizer> responseCustomizers;
+    private final ErrorHandlingFacade errorHandlingFacade;
 
     public GlobalErrorWebExceptionHandler(ErrorAttributes errorAttributes,
                                           WebProperties.Resources resources,
                                           ErrorProperties errorProperties,
                                           ApplicationContext applicationContext,
-                                          List<ApiExceptionHandler> handlers,
-                                          FallbackApiExceptionHandler fallbackHandler,
-                                          LoggingService loggingService,
-                                          List<ApiErrorResponseCustomizer> responseCustomizers) {
+                                          ErrorHandlingFacade errorHandlingFacade) {
         super(errorAttributes, resources, errorProperties, applicationContext);
-        this.handlers = handlers;
-        this.fallbackHandler = fallbackHandler;
-        this.loggingService = loggingService;
-        this.responseCustomizers = responseCustomizers;
+        this.errorHandlingFacade = errorHandlingFacade;
     }
 
     @Override
@@ -55,23 +48,7 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
         LOGGER.debug("webRequest: {}", request);
         LOGGER.debug("locale: {}", locale);
 
-        ApiErrorResponse errorResponse = null;
-        for (ApiExceptionHandler handler : handlers) {
-            if (handler.canHandle(exception)) {
-                errorResponse = handler.handle(exception);
-                break;
-            }
-        }
-
-        if (errorResponse == null) {
-            errorResponse = fallbackHandler.handle(exception);
-        }
-
-        for (ApiErrorResponseCustomizer responseCustomizer : responseCustomizers) {
-            responseCustomizer.customize(errorResponse);
-        }
-
-        loggingService.logException(errorResponse, exception);
+        ApiErrorResponse errorResponse = errorHandlingFacade.handle(exception);
 
         return ServerResponse.status(errorResponse.getHttpStatus())
                              .contentType(MediaType.APPLICATION_JSON)
