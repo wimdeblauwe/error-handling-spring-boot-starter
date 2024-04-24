@@ -12,7 +12,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
@@ -41,6 +43,16 @@ class SpringSecurityApiExceptionHandlerTest {
                .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"))
                .andExpect(jsonPath("code").value("UNAUTHORIZED"))
                .andExpect(jsonPath("message").value("Full authentication is required to access this resource"));
+    }
+
+    @Test
+    @WithMockUser
+    void testForbidden() throws Exception {
+        mockMvc.perform(get("/test/spring-security/admin"))
+               .andExpect(status().isForbidden())
+               .andExpect(header().string("Content-Type", "application/json"))
+               .andExpect(jsonPath("code").value("ACCESS_DENIED"))
+               .andExpect(jsonPath("message").value("Access Denied"));
     }
 
     @Test
@@ -76,9 +88,16 @@ class SpringSecurityApiExceptionHandlerTest {
         public void throwAccountExpired() {
             throw new AccountExpiredException("Fake account expired");
         }
+
+        @GetMapping("/admin")
+        @Secured("ADMIN")
+        public void requiresAdminRole() {
+
+        }
     }
 
     @TestConfiguration
+    @EnableMethodSecurity(securedEnabled = true)
     static class TestConfig {
         @Bean
         public UnauthorizedEntryPoint unauthorizedEntryPoint(HttpStatusMapper httpStatusMapper, ErrorCodeMapper errorCodeMapper, ErrorMessageMapper errorMessageMapper, ObjectMapper objectMapper) {
@@ -92,7 +111,8 @@ class SpringSecurityApiExceptionHandlerTest {
 
             http.authorizeHttpRequests().anyRequest().authenticated();
 
-            http.exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint);
+            http.exceptionHandling()
+                .authenticationEntryPoint(unauthorizedEntryPoint);
 
             return http.build();
         }
