@@ -1189,7 +1189,9 @@ With this configuration, 400 Bad Request will be printed on DEBUG level.
 401 Unauthorized will be printed on INFO.
 Finally, all status code in the 5xx range will be printed on ERROR.
 
-=== Spring Security AuthenticationEntryPoint
+=== Spring Security
+
+==== AuthenticationEntryPoint
 
 By default, the library will not provide a response when there is an unauthorized exception.
 It is impossible for this library to provide auto-configuration for this.
@@ -1238,6 +1240,75 @@ public class WebSecurityConfiguration {
 
 <.> Define the UnauthorizedEntryPoint as a bean.
 <.> Use the bean in the security configuration.
+
+==== AccessDeniedHandler
+
+Similar to the <<AuthenticationEntryPoint>>, there is also an `AccessDeniedHandler` implementation available at `io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponseAccessDeniedHandler`.
+
+Example configuration:
+
+[source,java]
+----
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.UnauthorizedEntryPoint;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+
+public class WebSecurityConfiguration {
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler(HttpStatusMapper httpStatusMapper,
+                                                   ErrorCodeMapper errorCodeMapper,
+                                                   ErrorMessageMapper errorMessageMapper,
+                                                   ObjectMapper objectMapper) { //<.>
+            return new ApiErrorResponseAccessDeniedHandler(objectMapper, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AccessDeniedHandler accessDeniedHandler) throws Exception {
+        http.httpBasic().disable();
+
+        http.authorizeHttpRequests().anyRequest().authenticated();
+
+        http.exceptionHandling().accessDeniedHandler(accessDeniedHandler);//<.>
+
+        return http.build();
+    }
+}
+----
+
+<.> Define the AccessDeniedHandler as a bean.
+<.> Use the bean in the security configuration.
+
+[NOTE]
+====
+You can perfectly combine the `AccessDeniedHandler` with the `UnauthorizedEntryPoint`:
+
+[source,java]
+----
+@Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   UnauthorizedEntryPoint unauthorizedEntryPoint,
+                                                   AccessDeniedHandler accessDeniedHandler) throws Exception {
+        http.httpBasic().disable();
+
+        http.authorizeHttpRequests().anyRequest().authenticated();
+
+        http.exceptionHandling()
+            .authenticationEntryPoint(unauthorizedEntryPoint)
+            .accessDeniedHandler(accessDeniedHandler);
+
+        return http.build();
+    }
+----
+
+====
 
 === Handle non-rest controller exceptions
 
