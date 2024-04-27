@@ -1272,6 +1272,13 @@ public class FallbackExceptionHandler extends ErrorHandlingControllerAdvice {
 }
 ----
 
+=== Handle filter exceptions
+
+By default, the library will not handle exceptions from custom filters.
+Those are implementations of `jakarta.servlet.Filter`, usually subclasses of `org.springframework.web.filter.OncePerRequestFilter` in a Spring Boot application.
+
+By setting the property `error.handling.handle-filter-chain-exceptions` to `true`, the library will handle those exceptions and return error responses just like is done for exceptions coming from controller methods.
+
 == Custom exception handler
 
 If the <<Configuration,extensive customization options>> are not enough, you can write your own `ApiExceptionHandler` implementation.
@@ -1395,6 +1402,10 @@ When this is set to `true`, you can use any superclass from your `Exception` typ
 |error.handling.add-path-to-error
 |This property allows to remove the `path` property in the error response when set to `false`.
 |`true`
+
+|error.handling.handle-filter-chain-exceptions
+|Set this to `true` to have the library intercept any exception thrown from custom filters and also have the same error responses as exceptions thrown from controller methods.
+|`false`.
 |===
 
 == Support
