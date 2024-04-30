@@ -101,8 +101,14 @@
 </li>
 <li><a href="#custom-json-response-field-names">3.7. Custom JSON response field names</a></li>
 <li><a href="#logging">3.8. Logging</a></li>
-<li><a href="#spring-security-authenticationentrypoint">3.9. Spring Security AuthenticationEntryPoint</a></li>
+<li><a href="#spring-security">3.9. Spring Security</a>
+<ul class="sectlevel3">
+<li><a href="#authenticationentrypoint">3.9.1. AuthenticationEntryPoint</a></li>
+<li><a href="#accessdeniedhandler">3.9.2. AccessDeniedHandler</a></li>
+</ul>
+</li>
 <li><a href="#handle-non-rest-controller-exceptions">3.10. Handle non-rest controller exceptions</a></li>
+<li><a href="#handle-filter-exceptions">3.11. Handle filter exceptions</a></li>
 </ul>
 </li>
 <li><a href="#custom-exception-handler">4. Custom exception handler</a></li>
@@ -115,7 +121,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 4.2.0.</p>
+<p>This documentation is for version 4.3.0.</p>
 </div>
 </div>
 </div>
@@ -1619,7 +1625,9 @@ Finally, all status code in the 5xx range will be printed on ERROR.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="spring-security-authenticationentrypoint"><a class="anchor" href="#spring-security-authenticationentrypoint"></a>3.9. Spring Security AuthenticationEntryPoint</h3>
+<h3 id="spring-security"><a class="anchor" href="#spring-security"></a>3.9. Spring Security</h3>
+<div class="sect3">
+<h4 id="authenticationentrypoint"><a class="anchor" href="#authenticationentrypoint"></a>3.9.1. AuthenticationEntryPoint</h4>
 <div class="paragraph">
 <p>By default, the library will not provide a response when there is an unauthorized exception.
 It is impossible for this library to provide auto-configuration for this.</p>
@@ -1683,6 +1691,98 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 </table>
 </div>
 </div>
+<div class="sect3">
+<h4 id="accessdeniedhandler"><a class="anchor" href="#accessdeniedhandler"></a>3.9.2. AccessDeniedHandler</h4>
+<div class="paragraph">
+<p>Similar to the <a href="#authenticationentrypoint">AuthenticationEntryPoint</a>, there is also an <code>AccessDeniedHandler</code> implementation available at <code>io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponseAccessDeniedHandler</code>.</p>
+</div>
+<div class="paragraph">
+<p>Example configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="fold-block hide-when-folded">import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.UnauthorizedEntryPoint;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+
+</span><span class="fold-block">public class WebSecurityConfiguration {
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler(HttpStatusMapper httpStatusMapper,
+                                                   ErrorCodeMapper errorCodeMapper,
+                                                   ErrorMessageMapper errorMessageMapper,
+                                                   ObjectMapper objectMapper) { <i class="conum" data-value="1"></i><b>(1)</b>
+            return new ApiErrorResponseAccessDeniedHandler(objectMapper, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AccessDeniedHandler accessDeniedHandler) throws Exception {
+        http.httpBasic().disable();
+
+        http.authorizeHttpRequests().anyRequest().authenticated();
+
+        http.exceptionHandling().accessDeniedHandler(accessDeniedHandler);<i class="conum" data-value="2"></i><b>(2)</b>
+
+        return http.build();
+    }
+}
+</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Define the AccessDeniedHandler as a bean.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Use the bean in the security configuration.</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>You can perfectly combine the <code>AccessDeniedHandler</code> with the <code>UnauthorizedEntryPoint</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">@Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   UnauthorizedEntryPoint unauthorizedEntryPoint,
+                                                   AccessDeniedHandler accessDeniedHandler) throws Exception {
+        http.httpBasic().disable();
+
+        http.authorizeHttpRequests().anyRequest().authenticated();
+
+        http.exceptionHandling()
+            .authenticationEntryPoint(unauthorizedEntryPoint)
+            .accessDeniedHandler(accessDeniedHandler);
+
+        return http.build();
+    }
+</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
 <div class="sect2">
 <h3 id="handle-non-rest-controller-exceptions"><a class="anchor" href="#handle-non-rest-controller-exceptions"></a>3.10. Handle non-rest controller exceptions</h3>
 <div class="paragraph">
@@ -1726,6 +1826,16 @@ public class FallbackExceptionHandler extends ErrorHandlingControllerAdvice {
 }
 </span></code></pre>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="handle-filter-exceptions"><a class="anchor" href="#handle-filter-exceptions"></a>3.11. Handle filter exceptions</h3>
+<div class="paragraph">
+<p>By default, the library will not handle exceptions from custom filters.
+Those are implementations of <code>jakarta.servlet.Filter</code>, usually subclasses of <code>org.springframework.web.filter.OncePerRequestFilter</code> in a Spring Boot application.</p>
+</div>
+<div class="paragraph">
+<p>By setting the property <code>error.handling.handle-filter-chain-exceptions</code> to <code>true</code>, the library will handle those exceptions and return error responses just like is done for exceptions coming from controller methods.</p>
 </div>
 </div>
 </div>
@@ -2036,6 +2146,15 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 <p><code>true</code></p>
 </div></div></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.handle-filter-chain-exceptions</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Set this to <code>true</code> to have the library intercept any exception thrown from custom filters and also have the same error responses as exceptions thrown from controller methods.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>false</code>.</p>
+</div></div></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -2051,7 +2170,7 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-04-24 06:15:35 UTC
+Last updated 2024-04-30 06:51:56 UTC
 </div>
 </div>
 </div>
