@@ -67,19 +67,13 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
                                                                    ObjectProvider<ViewResolver> viewResolvers,
                                                                    ServerCodecConfigurer serverCodecConfigurer,
                                                                    ApplicationContext applicationContext,
-                                                                   LoggingService loggingService,
-                                                                   List<ApiExceptionHandler> handlers,
-                                                                   FallbackApiExceptionHandler fallbackApiExceptionHandler,
-                                                                   List<ApiErrorResponseCustomizer> responseCustomizers) {
+                                                                         ErrorHandlingFacade errorHandlingFacade) {
 
         GlobalErrorWebExceptionHandler exceptionHandler = new GlobalErrorWebExceptionHandler(errorAttributes,
                                                                                              webProperties.getResources(),
                                                                                              serverProperties.getError(),
                                                                                              applicationContext,
-                                                                                             handlers,
-                                                                                             fallbackApiExceptionHandler,
-                                                                                             loggingService,
-                                                                                             responseCustomizers);
+                                                                                             errorHandlingFacade);
         exceptionHandler.setViewResolvers(viewResolvers.orderedStream().collect(Collectors.toList()));
         exceptionHandler.setMessageWriters(serverCodecConfigurer.getWriters());
         exceptionHandler.setMessageReaders(serverCodecConfigurer.getReaders());

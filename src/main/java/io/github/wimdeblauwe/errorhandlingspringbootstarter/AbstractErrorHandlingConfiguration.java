@@ -6,10 +6,30 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.TypeMismatch
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+
+import java.util.List;
 
 public abstract class AbstractErrorHandlingConfiguration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractErrorHandlingConfiguration.class);
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ErrorHandlingFacade errorHandlingFacade(List<ApiExceptionHandler> handlers,
+                                                   FallbackApiExceptionHandler fallbackHandler,
+                                                   LoggingService loggingService,
+                                                   List<ApiErrorResponseCustomizer> responseCustomizers) {
+        handlers.sort(AnnotationAwareOrderComparator.INSTANCE);
+        LOGGER.info("Error Handling Spring Boot Starter active with {} handlers", handlers.size());
+        LOGGER.debug("Handlers: {}", handlers);
+
+        return new ErrorHandlingFacade(handlers, fallbackHandler, loggingService, responseCustomizers);
+    }
+
     @Bean
     @ConditionalOnMissingBean
     public LoggingService loggingService(ErrorHandlingProperties properties) {

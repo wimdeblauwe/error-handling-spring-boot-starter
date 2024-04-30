@@ -39,6 +39,8 @@ public class ErrorHandlingProperties {
 
     private boolean searchSuperClassHierarchy = false;
 
+    private boolean handleFilterChainExceptions = false;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -141,6 +143,14 @@ public class ErrorHandlingProperties {
 
     public void setAddPathToError(boolean addPathToError) {
         this.addPathToError = addPathToError;
+    }
+
+    public boolean isHandleFilterChainExceptions() {
+        return handleFilterChainExceptions;
+    }
+
+    public void setHandleFilterChainExceptions(boolean handleFilterChainExceptions) {
+        this.handleFilterChainExceptions = handleFilterChainExceptions;
     }
 
     public enum ExceptionLogging {

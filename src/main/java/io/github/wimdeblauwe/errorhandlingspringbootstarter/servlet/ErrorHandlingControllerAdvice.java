@@ -1,17 +1,16 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet;
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
-import java.util.List;
 import java.util.Locale;
 
 @ControllerAdvice(annotations = RestController.class)
@@ -19,23 +18,10 @@ import java.util.Locale;
 public class ErrorHandlingControllerAdvice {
     private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlingControllerAdvice.class);
 
-    private final List<ApiExceptionHandler> handlers;
-    private final FallbackApiExceptionHandler fallbackHandler;
-    private final LoggingService loggingService;
-    private final List<ApiErrorResponseCustomizer> responseCustomizers;
+    private final ErrorHandlingFacade errorHandlingFacade;
 
-    public ErrorHandlingControllerAdvice(List<ApiExceptionHandler> handlers,
-                                         FallbackApiExceptionHandler fallbackHandler,
-                                         LoggingService loggingService,
-                                         List<ApiErrorResponseCustomizer> responseCustomizers) {
-        this.handlers = handlers;
-        this.fallbackHandler = fallbackHandler;
-        this.loggingService = loggingService;
-        this.responseCustomizers = responseCustomizers;
-        this.handlers.sort(AnnotationAwareOrderComparator.INSTANCE);
-
-        LOGGER.info("Error Handling Spring Boot Starter active with {} handlers", this.handlers.size());
-        LOGGER.debug("Handlers: {}", this.handlers);
+    public ErrorHandlingControllerAdvice(ErrorHandlingFacade errorHandlingFacade) {
+        this.errorHandlingFacade = errorHandlingFacade;
     }
 
     @ExceptionHandler
@@ -43,23 +29,7 @@ public class ErrorHandlingControllerAdvice {
         LOGGER.debug("webRequest: {}", webRequest);
         LOGGER.debug("locale: {}", locale);
 
-        ApiErrorResponse errorResponse = null;
-        for (ApiExceptionHandler handler : handlers) {
-            if (handler.canHandle(exception)) {
-                errorResponse = handler.handle(exception);
-                break;
-            }
-        }
-
-        if (errorResponse == null) {
-            errorResponse = fallbackHandler.handle(exception);
-        }
-
-        for (ApiErrorResponseCustomizer responseCustomizer : responseCustomizers) {
-            responseCustomizer.customize(errorResponse);
-        }
-
-        loggingService.logException(errorResponse, exception);
+        ApiErrorResponse errorResponse = errorHandlingFacade.handle(exception);
 
         return ResponseEntity.status(errorResponse.getHttpStatus())
                              .body(errorResponse);
