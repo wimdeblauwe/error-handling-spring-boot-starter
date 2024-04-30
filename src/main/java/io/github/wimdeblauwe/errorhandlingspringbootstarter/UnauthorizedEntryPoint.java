@@ -43,6 +43,8 @@ import java.nio.charset.StandardCharsets;
  *         }
  *     }
  * </pre>
+ *
+ * @see ApiErrorResponseAccessDeniedHandler
  */
 public class UnauthorizedEntryPoint implements AuthenticationEntryPoint {
 
