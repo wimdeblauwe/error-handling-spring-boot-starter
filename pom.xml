@@ -4,12 +4,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.0</version>
+        <version>3.3.3</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.github.wimdeblauwe</groupId>
     <artifactId>error-handling-spring-boot-starter</artifactId>
-    <version>4.3.0</version>
+    <version>4.4.0</version>
     <name>Error Handling Spring Boot Starter</name>
     <description>Spring Boot starter that configures error handling</description>
 
@@ -50,7 +50,7 @@
         </developerConnection>
         <connection>scm:git:git@github.com:wimdeblauwe/error-handling-spring-boot-starter.git</connection>
         <url>git@github.com:wimdeblauwe/error-handling-spring-boot-starter.git</url>
-        <tag>4.3.0</tag>
+        <tag>HEAD</tag>
     </scm>
     <issueManagement>
         <system>github</system>
@@ -295,6 +295,12 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
                         <version>${maven-gpg-plugin.version}</version>
+                        <configuration>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>

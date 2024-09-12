@@ -33,6 +33,11 @@ NOTE: Documentation is very important to us, so if you find something missing fr
 |===
 |error-handling-spring-boot-starter |Spring Boot|Minimum Java version|Docs
 
+|https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/4.4.0[4.4.0]
+|3.3.x
+|17
+|https://wimdeblauwe.github.io/error-handling-spring-boot-starter/4.4.0/[Documentation 4.4.0]
+
 |https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/4.3.0[4.3.0]
 |3.x
 |17
@@ -89,19 +94,15 @@ Blogs and articles about this library:
 
 == Release
 
-Release is done via the Maven Release Plugin:
+To release a new version of the project, follow these steps:
 
-`mvn release:prepare`
-
-and
-
-`mvn release:perform`
-
-Merge the tag to `master` so the documentation is updated.
-
-Finally, push the local commits and the tag to remote.
-
-[NOTE]
-====
-Before releasing, run `export GPG_TTY=$(tty)`
-====
+1. Update `pom.xml` with the new version (Use `mvn versions:set -DgenerateBackupPoms=false -DnewVersion=<VERSION>`)
+2. Commit the changes locally.
+3. Tag the commit with the version (e.g. `1.0.0`) and push the tag.
+4. Create a new release in GitHub via https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/new
+- Select the newly pushed tag
+- Update the release notes.
+This should automatically start the [release action](https://github.com/wimdeblauwe/error-handling-spring-boot-starter/actions).
+5. Merge the tag to `master` so the documentation is updated.
+6. Update `pom.xml` again with the next `SNAPSHOT` version.
+7. Close the milestone in the GitHub issue tracker.

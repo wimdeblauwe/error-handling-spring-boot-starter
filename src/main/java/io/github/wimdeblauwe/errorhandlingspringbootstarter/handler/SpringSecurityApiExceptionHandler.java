@@ -8,6 +8,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMap
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.*;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.HashMap;
@@ -22,6 +23,7 @@ public class SpringSecurityApiExceptionHandler extends AbstractApiExceptionHandl
     static {
         EXCEPTION_TO_STATUS_MAPPING = new HashMap<>();
         EXCEPTION_TO_STATUS_MAPPING.put(AccessDeniedException.class, FORBIDDEN);
+        EXCEPTION_TO_STATUS_MAPPING.put(AuthorizationDeniedException.class, FORBIDDEN);
         EXCEPTION_TO_STATUS_MAPPING.put(AccountExpiredException.class, BAD_REQUEST);
         EXCEPTION_TO_STATUS_MAPPING.put(AuthenticationCredentialsNotFoundException.class, UNAUTHORIZED);
         EXCEPTION_TO_STATUS_MAPPING.put(AuthenticationServiceException.class, INTERNAL_SERVER_ERROR);
