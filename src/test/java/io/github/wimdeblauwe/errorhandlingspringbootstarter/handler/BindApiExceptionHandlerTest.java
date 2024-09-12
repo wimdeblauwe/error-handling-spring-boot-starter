@@ -129,11 +129,11 @@ class BindApiExceptionHandlerTest {
     @Test
     @WithMockUser
     void testTopLevelCodeOverride(@Autowired ErrorHandlingProperties properties) throws Exception {
-        properties.getCodes().put("org.springframework.validation.BindException", "BIND_FAILED");
+        properties.getCodes().put("org.springframework.web.bind.MethodArgumentNotValidException", "METHOD_ARG_NOT_VALID");
         mockMvc.perform(MockMvcRequestBuilders.get("/test/field-validation")
                                               .queryParam("param1", "foo"))
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("code").value("BIND_FAILED"))
+               .andExpect(jsonPath("code").value("METHOD_ARG_NOT_VALID"))
                .andExpect(jsonPath("fieldErrors", hasSize(1)))
                .andExpect(jsonPath("fieldErrors[0].code").value("REQUIRED_NOT_NULL"))
                .andExpect(jsonPath("fieldErrors[0].message").value("must not be null"))
@@ -146,12 +146,12 @@ class BindApiExceptionHandlerTest {
     @Test
     @WithMockUser
     void testDisableAddingPath(@Autowired ErrorHandlingProperties properties) throws Exception {
-        properties.getCodes().put("org.springframework.validation.BindException", "BIND_FAILED");
+        properties.getCodes().put("org.springframework.web.bind.MethodArgumentNotValidException", "METHOD_ARG_NOT_VALID");
         properties.setAddPathToError(false);
         mockMvc.perform(MockMvcRequestBuilders.get("/test/field-validation")
                                               .queryParam("param1", "foo"))
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("code").value("BIND_FAILED"))
+               .andExpect(jsonPath("code").value("METHOD_ARG_NOT_VALID"))
                .andExpect(jsonPath("fieldErrors", hasSize(1)))
                .andExpect(jsonPath("fieldErrors[0].code").value("REQUIRED_NOT_NULL"))
                .andExpect(jsonPath("fieldErrors[0].message").value("must not be null"))

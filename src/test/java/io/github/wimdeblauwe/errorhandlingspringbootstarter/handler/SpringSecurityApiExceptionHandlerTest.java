@@ -53,7 +53,7 @@ class SpringSecurityApiExceptionHandlerTest {
         mockMvc.perform(get("/test/spring-security/admin"))
                .andExpect(status().isForbidden())
                .andExpect(header().string("Content-Type", "application/json"))
-               .andExpect(jsonPath("code").value("ACCESS_DENIED"))
+               .andExpect(jsonPath("code").value("AUTHORIZATION_DENIED"))
                .andExpect(jsonPath("message").value("Access Denied"));
     }
 
