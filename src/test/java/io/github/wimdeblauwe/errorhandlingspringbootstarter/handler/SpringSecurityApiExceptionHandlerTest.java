@@ -17,6 +17,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -130,15 +131,15 @@ class SpringSecurityApiExceptionHandlerTest {
         public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                        UnauthorizedEntryPoint unauthorizedEntryPoint,
                                                        AccessDeniedHandler accessDeniedHandler) throws Exception {
-            http.httpBasic().disable();
+            http.httpBasic(AbstractHttpConfigurer::disable);
 
-            http.authorizeHttpRequests()
-                .requestMatchers("/test/spring-security/admin-global").hasRole("ADMIN")
-                .anyRequest().authenticated();
+            http.authorizeHttpRequests(customizer -> customizer
+                    .requestMatchers("/test/spring-security/admin-global").hasRole("ADMIN")
+                    .anyRequest().authenticated());
 
-            http.exceptionHandling()
-                .authenticationEntryPoint(unauthorizedEntryPoint)
-                .accessDeniedHandler(accessDeniedHandler);
+            http.exceptionHandling(customizer -> customizer
+                    .authenticationEntryPoint(unauthorizedEntryPoint)
+                    .accessDeniedHandler(accessDeniedHandler));
 
             return http.build();
         }
