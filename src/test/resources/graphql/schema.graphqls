@@ -1,0 +1,27 @@
+type Person {
+    id: Int!
+    firstName: String!
+    lastName: String!
+    age: Int
+    children: Int
+}
+
+input PersonInput {
+    id: Int
+    firstName: String!
+    lastName: String!
+    age: Int
+    children: Int
+}
+
+type Query {
+    findPersonById(id: Int!): Person
+    findPersonThrowRuntimeException: Person
+    findPersonThrowAccessDeniedException: Person
+}
+
+type Mutation {
+    createPersonMutation(personInput: PersonInput!): Person
+    updatePersonMutation(personInput: PersonInput!): Person
+    updatePersonMutationThrowSqlException(personInput: PersonInput!): Person
+}
