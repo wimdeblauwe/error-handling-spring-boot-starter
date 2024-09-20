@@ -4,14 +4,13 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ElementKind;
 import jakarta.validation.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -136,6 +135,7 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
     }
 
     private String getMessage(ConstraintViolationException exception) {
-        return "Validation failed. Error count: " + exception.getConstraintViolations().size();
+        return errorMessageMapper.getErrorMessageIfConfiguredInProperties(exception)
+                                 .orElseGet(() -> "Validation failed. Error count: " + exception.getConstraintViolations().size());
     }
 }
