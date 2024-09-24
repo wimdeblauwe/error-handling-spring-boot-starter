@@ -472,8 +472,58 @@ The response JSON:
 
 ==== General override of error messages
 
-By using `error.handling.messages` property, it is possible to globally set an error message for a certain exception.
-This is most useful for the validation messages.
+By using `error.handling.messages` property, it is possible to globally set an error message for a certain exception or a certain validation annotation.
+
+===== Exception
+
+Suppose you have this defined:
+
+[source,properties]
+----
+error.handling.messages.com.company.application.user.UserNotFoundException=The user was not found
+----
+
+The response JSON:
+
+[source,json]
+----
+{
+  "code": "USER_NOT_FOUND",
+  "message": "The user was not found" //<.>
+}
+----
+
+<.> The output uses the configured override.
+
+This can also be used for exception types that are not part of your own application.
+
+For example:
+
+[source,properties]
+----
+error.handling.messages.jakarta.validation.ConstraintViolationException=There was a validation failure.
+----
+
+Will output the following JSON:
+
+[source,json]
+----
+{
+  "code": "VALIDATION_FAILED",
+  "message": "There was a validation failure.",
+  "fieldErrors": [
+    {
+      "code": "INVALID_SIZE",
+      "property": "name",
+      "message": "size must be between 10 and 2147483647",
+      "rejectedValue": "",
+      "path": "name"
+    }
+  ]
+}
+----
+
+===== Validation annotation
 
 Suppose you have this defined:
 
