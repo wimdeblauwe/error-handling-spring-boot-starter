@@ -112,6 +112,20 @@ class ConstraintViolationApiExceptionHandlerTest {
 
     @Test
     @WithMockUser
+    void testErrorMessageOverride(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.getMessages().put("jakarta.validation.ConstraintViolationException", "There was a validation failure.");
+        mockMvc.perform(post("/test/validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"value2\": \"\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("code").value("VALIDATION_FAILED"))
+               .andExpect(jsonPath("message").value("There was a validation failure."))
+        ;
+    }
+
+    @Test
+    @WithMockUser
     void testFieldErrorCodeOverride(@Autowired ErrorHandlingProperties properties) throws Exception {
         properties.getCodes().put("NotNull", "NOT_NULL");
         mockMvc.perform(post("/test/validation")

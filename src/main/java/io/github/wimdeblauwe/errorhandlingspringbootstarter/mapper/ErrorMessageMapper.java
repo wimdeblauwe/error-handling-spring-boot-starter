@@ -2,6 +2,8 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 
+import java.util.Optional;
+
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -20,6 +22,10 @@ public class ErrorMessageMapper {
             return code;
         }
         return exception.getMessage();
+    }
+
+    public Optional<String> getErrorMessageIfConfiguredInProperties(Throwable exception) {
+        return Optional.ofNullable(getErrorMessageFromProperties(exception.getClass()));
     }
 
     public String getErrorMessage(String fieldSpecificCode, String code, String defaultMessage) {

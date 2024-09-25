@@ -472,8 +472,58 @@ The response JSON:
 
 ==== General override of error messages
 
-By using `error.handling.messages` property, it is possible to globally set an error message for a certain exception.
-This is most useful for the validation messages.
+By using `error.handling.messages` property, it is possible to globally set an error message for a certain exception or a certain validation annotation.
+
+===== Exception
+
+Suppose you have this defined:
+
+[source,properties]
+----
+error.handling.messages.com.company.application.user.UserNotFoundException=The user was not found
+----
+
+The response JSON:
+
+[source,json]
+----
+{
+  "code": "USER_NOT_FOUND",
+  "message": "The user was not found" //<.>
+}
+----
+
+<.> The output uses the configured override.
+
+This can also be used for exception types that are not part of your own application.
+
+For example:
+
+[source,properties]
+----
+error.handling.messages.jakarta.validation.ConstraintViolationException=There was a validation failure.
+----
+
+Will output the following JSON:
+
+[source,json]
+----
+{
+  "code": "VALIDATION_FAILED",
+  "message": "There was a validation failure.",
+  "fieldErrors": [
+    {
+      "code": "INVALID_SIZE",
+      "property": "name",
+      "message": "size must be between 10 and 2147483647",
+      "rejectedValue": "",
+      "path": "name"
+    }
+  ]
+}
+----
+
+===== Validation annotation
 
 Suppose you have this defined:
 
@@ -1212,8 +1262,10 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageM
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
 public class WebSecurityConfiguration {
     @Bean
@@ -1227,11 +1279,11 @@ public class WebSecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    UnauthorizedEntryPoint unauthorizedEntryPoint) throws Exception {
-        http.httpBasic().disable();
+        http.httpBasic(AbstractHttpConfigurer::disable);
 
-        http.authorizeHttpRequests().anyRequest().authenticated();
+        http.authorizeHttpRequests(customizer -> customizer.anyRequest().authenticated());
 
-        http.exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint);//<.>
+        http.exceptionHandling(customizer -> customizer.authenticationEntryPoint(unauthorizedEntryPoint));//<.>
 
         return http.build();
     }
@@ -1258,6 +1310,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMap
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
 public class WebSecurityConfiguration {
 
@@ -1272,11 +1325,11 @@ public class WebSecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    AccessDeniedHandler accessDeniedHandler) throws Exception {
-        http.httpBasic().disable();
+        http.httpBasic(AbstractHttpConfigurer::disable);
 
-        http.authorizeHttpRequests().anyRequest().authenticated();
+        http.authorizeHttpRequests(customizer -> customizer.anyRequest().authenticated());
 
-        http.exceptionHandling().accessDeniedHandler(accessDeniedHandler);//<.>
+        http.exceptionHandling(customizer -> customizer.accessDeniedHandler(accessDeniedHandler));//<.>
 
         return http.build();
     }

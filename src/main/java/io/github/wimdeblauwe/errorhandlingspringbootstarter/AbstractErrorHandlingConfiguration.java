@@ -1,6 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.BindApiExceptionHandler;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.HandlerMethodValidationExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.HttpMessageNotReadableApiExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.TypeMismatchApiExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
@@ -89,6 +90,14 @@ public abstract class AbstractErrorHandlingConfiguration {
                                                            ErrorCodeMapper errorCodeMapper,
                                                            ErrorMessageMapper errorMessageMapper) {
         return new BindApiExceptionHandler(properties, httpStatusMapper, errorCodeMapper, errorMessageMapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public HandlerMethodValidationExceptionHandler handlerMethodValidationExceptionHandler(HttpStatusMapper httpStatusMapper,
+                                                                                           ErrorCodeMapper errorCodeMapper,
+                                                                                           ErrorMessageMapper errorMessageMapper) {
+        return new HandlerMethodValidationExceptionHandler(httpStatusMapper, errorCodeMapper, errorMessageMapper);
     }
 
     @Bean
