@@ -1538,7 +1538,7 @@ For users integrating this error handling library into a Spring Boot project tha
 
 === How to Annotate Endpoints for Error Responses
 
-To ensure that error responses are properly documented in Swagger, add the @ApiResponse annotation to your controller methods. This annotation defines how error responses should be structured in the generated API documentation.
+To ensure that error responses are properly documented in Swagger, add the `@ApiResponse` annotation to your controller methods. This annotation defines how error responses should be structured in the generated API documentation.
 
 ==== Example Usage:
 
