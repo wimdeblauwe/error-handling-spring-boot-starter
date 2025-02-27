@@ -1534,7 +1534,7 @@ When this is set to `true`, you can use any superclass from your `Exception` typ
 
 == Adding Error Responses to OpenAPI Documentation
 
-For users integrating this error handling library into a Spring Boot project that uses OpenAPI (Swagger) for API documentation, it is necessary to explicitly define the error response structure in API documentation.
+For users integrating this error handling library into a Spring Boot project that uses  https://www.openapis.org/[OpenAPI]  (Swagger) for API documentation, it is necessary to explicitly define the error response structure in API documentation.
 
 === How to Annotate Endpoints for Error Responses
 
@@ -1560,9 +1560,9 @@ public ResponseEntity<String> getExample(@PathVariable String id) {
 
 === Explanation
 
-@ApiResponse(responseCode = "404", ...) → Specifies that a 404 Not Found response should be documented.
+@ApiResponse(responseCode = "404", ...) -> Specifies that a 404 Not Found response should be documented.
 
-@Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)) → Defines the response format and links it to the ApiErrorResponse class, ensuring consistent error documentation.
+@Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)) -> Defines the response format and links it to the ApiErrorResponse class, ensuring consistent error documentation.
 
 ApiErrorResponse.class should be the class representing your standardized error structure.
 
