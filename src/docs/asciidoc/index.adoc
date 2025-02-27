@@ -1532,6 +1532,40 @@ When this is set to `true`, you can use any superclass from your `Exception` typ
 |`false`.
 |===
 
+== Adding Error Responses to OpenAPI Documentation
+
+For users integrating this error handling library into a Spring Boot project that uses OpenAPI (Swagger) for API documentation, it is necessary to explicitly define the error response structure in API documentation.
+
+=== How to Annotate Endpoints for Error Responses
+
+To ensure that error responses are properly documented in Swagger, add the @ApiResponse annotation to your controller methods. This annotation defines how error responses should be structured in the generated API documentation.
+
+==== Example Usage:
+
+[source,java]
+----
+@GetMapping("/{id}")
+@ApiResponse(
+    responseCode = "404",
+    content = @Content(
+        mediaType = "application/json",
+        schema = @Schema(implementation = ApiErrorResponse.class)
+    )
+)
+public ResponseEntity<String> getExample(@PathVariable String id) {
+    // Your controller logic here
+    return ResponseEntity.ok("Example response");
+}
+----
+
+=== Explanation
+
+@ApiResponse(responseCode = "404", ...) → Specifies that a 404 Not Found response should be documented.
+
+@Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)) → Defines the response format and links it to the ApiErrorResponse class, ensuring consistent error documentation.
+
+ApiErrorResponse.class should be the class representing your standardized error structure.
+
 == Support
 
 If you have problems with the library, or you are missing a feature, feel free to create an issue on GitHub at https://github.com/wimdeblauwe/error-handling-spring-boot-starter.
