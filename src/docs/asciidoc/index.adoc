@@ -171,10 +171,40 @@ The library is automatically active when it is on the classpath.
 There is nothing special to configure for unit tests that use `@WebMvcTest`.
 The library is automatically active when it is on the classpath.
 
+[NOTE]
+====
+If you have custom exception handlers, you will need to add them using `@Import` to have them loaded in your `@WebMvcTest`.
+
+Example:
+[source,java]
+----
+@WebMvcTest(MyController.class)
+@Import(MyCustomExceptionHandler.class)
+class MyControllerTests {
+
+}
+----
+====
+
 ==== With `@WebFluxTest`
 
 There is nothing special to configure for unit tests that use `@WebFluxTest`.
 The library is automatically active when it is on the classpath.
+
+[NOTE]
+====
+If you have custom exception handlers, you will need to add them using `@Import` to have them loaded in your `@WebFluxTest`.
+
+Example:
+[source,java]
+----
+@WebFluxTest(MyController.class)
+@Import(MyCustomExceptionHandler.class)
+class MyControllerTests {
+
+}
+----
+====
 
 == Configuration
 
