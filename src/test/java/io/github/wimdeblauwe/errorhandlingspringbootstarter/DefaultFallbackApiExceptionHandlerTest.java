@@ -4,6 +4,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.exception.*;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ResponseStatusExceptionHttpResponseStatusFromExceptionMapper;
 import org.assertj.core.api.HamcrestCondition;
 import org.assertj.core.util.Lists;
 import org.hamcrest.Matchers;
@@ -15,6 +16,7 @@ import org.springframework.web.server.MethodNotAllowedException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -357,7 +359,8 @@ class DefaultFallbackApiExceptionHandlerTest {
     }
 
     private DefaultFallbackApiExceptionHandler createDefaultFallbackApiExceptionHandler(ErrorHandlingProperties properties) {
-        return new DefaultFallbackApiExceptionHandler(new HttpStatusMapper(properties),
+        return new DefaultFallbackApiExceptionHandler(new HttpStatusMapper(properties,
+                                                                           List.of(new ResponseStatusExceptionHttpResponseStatusFromExceptionMapper())),
                                                       new ErrorCodeMapper(properties),
                                                       new ErrorMessageMapper(properties));
     }
