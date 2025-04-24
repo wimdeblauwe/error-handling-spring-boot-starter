@@ -171,10 +171,40 @@ The library is automatically active when it is on the classpath.
 There is nothing special to configure for unit tests that use `@WebMvcTest`.
 The library is automatically active when it is on the classpath.
 
+[NOTE]
+====
+If you have custom exception handlers, you will need to add them using `@Import` to have them loaded in your `@WebMvcTest`.
+
+Example:
+[source,java]
+----
+@WebMvcTest(MyController.class)
+@Import(MyCustomExceptionHandler.class)
+class MyControllerTests {
+
+}
+----
+====
+
 ==== With `@WebFluxTest`
 
 There is nothing special to configure for unit tests that use `@WebFluxTest`.
 The library is automatically active when it is on the classpath.
+
+[NOTE]
+====
+If you have custom exception handlers, you will need to add them using `@Import` to have them loaded in your `@WebFluxTest`.
+
+Example:
+[source,java]
+----
+@WebFluxTest(MyController.class)
+@Import(MyCustomExceptionHandler.class)
+class MyControllerTests {
+
+}
+----
+====
 
 == Configuration
 
@@ -221,9 +251,9 @@ error.handling.http-statuses.java.lang.IllegalArgumentException=bad_request
 By setting this, any `IllegalArgumentException` that happens will have a _400 Bad Request_ response code.
 The values are the enum values from https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/http/HttpStatus.html[`org.springframework.http.HttpStatus`].
 
-==== Use `ResponseStatusException`
+==== Get the response from the exception instance
 
-When the exception class is `org.springframework.web.server.ResponseStatusException` (or one of the sub-classes), then the response status is taken from the status set on the Exception itself.
+Some exception classes like https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/server/ResponseStatusException.html[`ResponseStatusException`] or https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/client/RestClientResponseException.html[`RestClientResponseException`] contain the wanted response status. The library will automatically use that response status in the returned response.
 
 As an example, when a `MethodNotAllowedException` is thrown, this is the resulting JSON:
 
@@ -236,6 +266,32 @@ As an example, when a `MethodNotAllowedException` is thrown, this is the resulti
 ----
 
 and the response code will be _405 Method Not Allowed_.
+
+[TIP]
+====
+This mechanism is extensible. If you have an exception class that contains the response status, then you can create a bean that implements `io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpResponseStatusFromExceptionMapper` to have the library automatically extract the response status from the exception.
+
+[source,java]
+----
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpResponseStatusFromExceptionMapper;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.stereotype.Component;
+
+@Component
+class CustomHttpResponseStatusFromExceptionMapper implements HttpResponseStatusFromExceptionMapper {
+
+  @Override
+  public boolean canExtractResponseStatus(Throwable exception) {
+    return exception instanceof MyCustomHttpResponseStatusException;
+  }
+
+  @Override
+  public HttpStatusCode getResponseStatus(Throwable exception) {
+    return ((MyCustomHttpResponseStatusException) exception).getHttpStatusCode();
+  }
+}
+----
+====
 
 ==== Add HTTP response status in JSON response
 
@@ -1531,6 +1587,40 @@ When this is set to `true`, you can use any superclass from your `Exception` typ
 |Set this to `true` to have the library intercept any exception thrown from custom filters and also have the same error responses as exceptions thrown from controller methods.
 |`false`.
 |===
+
+== Adding Error Responses to OpenAPI Documentation
+
+For users integrating this error handling library into a Spring Boot project that uses  https://www.openapis.org/[OpenAPI]  (Swagger) for API documentation, it is necessary to explicitly define the error response structure in API documentation.
+
+=== How to Annotate Endpoints for Error Responses
+
+To ensure that error responses are properly documented in Swagger, add the `@ApiResponse` annotation to your controller methods. This annotation defines how error responses should be structured in the generated API documentation.
+
+==== Example Usage:
+
+[source,java]
+----
+@GetMapping("/{id}")
+@ApiResponse(
+    responseCode = "404",
+    content = @Content(
+        mediaType = "application/json",
+        schema = @Schema(implementation = ApiErrorResponse.class)
+    )
+)
+public ResponseEntity<String> getExample(@PathVariable String id) {
+    // Your controller logic here
+    return ResponseEntity.ok("Example response");
+}
+----
+
+=== Explanation
+
+@ApiResponse(responseCode = "404", ...) -> Specifies that a 404 Not Found response should be documented.
+
+@Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)) -> Defines the response format and links it to the ApiErrorResponse class, ensuring consistent error documentation.
+
+ApiErrorResponse.class should be the class representing your standardized error structure.
 
 == Support
 

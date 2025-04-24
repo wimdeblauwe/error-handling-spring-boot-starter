@@ -4,14 +4,14 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.BindApiExcep
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.HandlerMethodValidationExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.HttpMessageNotReadableApiExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.TypeMismatchApiExceptionHandler;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
 
@@ -39,8 +39,20 @@ public abstract class AbstractErrorHandlingConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public HttpStatusMapper httpStatusMapper(ErrorHandlingProperties properties) {
-        return new HttpStatusMapper(properties);
+    public HttpStatusMapper httpStatusMapper(ErrorHandlingProperties properties,
+                                             List<HttpResponseStatusFromExceptionMapper> httpResponseStatusFromExceptionMapperList) {
+        return new HttpStatusMapper(properties, httpResponseStatusFromExceptionMapperList);
+    }
+
+    @Bean
+    public ResponseStatusExceptionHttpResponseStatusFromExceptionMapper responseStatusExceptionHttpResponseStatusFromExceptionMapper() {
+        return new ResponseStatusExceptionHttpResponseStatusFromExceptionMapper();
+    }
+
+    @Bean
+    @ConditionalOnClass(RestClientResponseException.class)
+    public RestClientResponseExceptionHttpResponseStatusFromExceptionMapper restClientResponseExceptionHttpResponseStatusFromExceptionMapper() {
+        return new RestClientResponseExceptionHttpResponseStatusFromExceptionMapper();
     }
 
     @Bean
