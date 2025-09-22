@@ -1,15 +1,15 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.boot.jackson.ObjectValueSerializer;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ValueSerializer;
 
 import java.util.List;
 import java.util.Map;
 
 @JsonComponent
-public class ApiErrorResponseSerializer extends ValueSerializer<ApiErrorResponse> {
+public class ApiErrorResponseSerializer extends ObjectValueSerializer<ApiErrorResponse> {
 
     private final ErrorHandlingProperties properties;
 
@@ -18,10 +18,9 @@ public class ApiErrorResponseSerializer extends ValueSerializer<ApiErrorResponse
     }
 
     @Override
-    public void serialize(ApiErrorResponse errorResponse,
-                          JsonGenerator jsonGenerator,
-                          SerializationContext serializerProvider) {
-        jsonGenerator.writeStartObject();
+    public void serializeObject(ApiErrorResponse errorResponse,
+                                JsonGenerator jsonGenerator,
+                                SerializationContext serializationContext) {
         if (properties.isHttpStatusInJsonResponse()) {
             jsonGenerator.writeNumberProperty("status", errorResponse.getHttpStatus().value());
         }
@@ -74,7 +73,5 @@ public class ApiErrorResponseSerializer extends ValueSerializer<ApiErrorResponse
         for (String property : properties.keySet()) {
             jsonGenerator.writePOJOProperty(property, properties.get(property));
         }
-
-        jsonGenerator.writeEndObject();
     }
 }
