@@ -69,9 +69,8 @@ public class ApiErrorResponseSerializer extends ObjectValueSerializer<ApiErrorRe
             jsonGenerator.writeEndArray();
         }
 
-        Map<String, Object> properties = errorResponse.getProperties();
-        for (String property : properties.keySet()) {
-            jsonGenerator.writePOJOProperty(property, properties.get(property));
+        for (var errorProperty : errorResponse.getProperties().entrySet()) {
+            jsonGenerator.writePOJOProperty(errorProperty.getKey(), errorProperty.getValue());
         }
     }
 }
