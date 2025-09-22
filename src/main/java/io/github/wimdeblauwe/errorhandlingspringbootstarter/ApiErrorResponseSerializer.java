@@ -32,13 +32,13 @@ public class ApiErrorResponseSerializer extends ObjectValueSerializer<ApiErrorRe
         if (!fieldErrors.isEmpty()) {
             jsonGenerator.writeArrayPropertyStart(fieldNames.getFieldErrors());
             for (ApiFieldError fieldError : fieldErrors) {
-                jsonGenerator.writeStartObject();
-                jsonGenerator.writeStringProperty(fieldNames.getCode(), fieldError.getCode());
-                jsonGenerator.writeStringProperty(fieldNames.getMessage(), fieldError.getMessage());
-                jsonGenerator.writeStringProperty("property", fieldError.getProperty());
-                jsonGenerator.writePOJOProperty("rejectedValue", fieldError.getRejectedValue());
-                jsonGenerator.writeStringProperty("path", fieldError.getPath());
-                jsonGenerator.writeEndObject();
+                jsonGenerator.writeStartObject()
+                    .writeStringProperty(fieldNames.getCode(), fieldError.getCode())
+                    .writeStringProperty(fieldNames.getMessage(), fieldError.getMessage())
+                    .writeStringProperty("property", fieldError.getProperty())
+                    .writePOJOProperty("rejectedValue", fieldError.getRejectedValue())
+                    .writeStringProperty("path", fieldError.getPath())
+                    .writeEndObject();
             }
             jsonGenerator.writeEndArray();
         }
@@ -47,10 +47,10 @@ public class ApiErrorResponseSerializer extends ObjectValueSerializer<ApiErrorRe
         if (!globalErrors.isEmpty()) {
             jsonGenerator.writeArrayPropertyStart(fieldNames.getGlobalErrors());
             for (ApiGlobalError globalError : globalErrors) {
-                jsonGenerator.writeStartObject();
-                jsonGenerator.writeStringProperty(fieldNames.getCode(), globalError.getCode());
-                jsonGenerator.writeStringProperty(fieldNames.getMessage(), globalError.getMessage());
-                jsonGenerator.writeEndObject();
+                jsonGenerator.writeStartObject()
+                    .writeStringProperty(fieldNames.getCode(), globalError.getCode())
+                    .writeStringProperty(fieldNames.getMessage(), globalError.getMessage())
+                    .writeEndObject();
             }
             jsonGenerator.writeEndArray();
         }
@@ -59,12 +59,12 @@ public class ApiErrorResponseSerializer extends ObjectValueSerializer<ApiErrorRe
         if (!parameterErrors.isEmpty()) {
             jsonGenerator.writeArrayPropertyStart(fieldNames.getParameterErrors());
             for (ApiParameterError parameterError : parameterErrors) {
-                jsonGenerator.writeStartObject();
-                jsonGenerator.writeStringProperty(fieldNames.getCode(), parameterError.getCode());
-                jsonGenerator.writeStringProperty(fieldNames.getMessage(), parameterError.getMessage());
-                jsonGenerator.writeStringProperty("parameter", parameterError.getParameter());
-                jsonGenerator.writePOJOProperty("rejectedValue", parameterError.getRejectedValue());
-                jsonGenerator.writeEndObject();
+                jsonGenerator.writeStartObject()
+                    .writeStringProperty(fieldNames.getCode(), parameterError.getCode())
+                    .writeStringProperty(fieldNames.getMessage(), parameterError.getMessage())
+                    .writeStringProperty("parameter", parameterError.getParameter())
+                    .writePOJOProperty("rejectedValue", parameterError.getRejectedValue())
+                    .writeEndObject();
             }
             jsonGenerator.writeEndArray();
         }
