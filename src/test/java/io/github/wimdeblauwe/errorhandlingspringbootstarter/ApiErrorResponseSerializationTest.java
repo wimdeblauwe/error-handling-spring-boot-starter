@@ -11,8 +11,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.io.IOException;
-
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 @JsonTest
@@ -25,7 +23,7 @@ class ApiErrorResponseSerializationTest {
     private ErrorHandlingProperties properties;
 
     @Test
-    void testSerialization() throws IOException {
+    void testSerialization() {
         String json = objectMapper.writeValueAsString(new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message"));
         assertThatJson(json).and(
                 jsonAssert -> jsonAssert.node("code").isEqualTo("TEST_CODE"),
@@ -36,7 +34,7 @@ class ApiErrorResponseSerializationTest {
     }
 
     @Test
-    void testSerializationWithFieldError() throws IOException {
+    void testSerializationWithFieldError() {
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
         response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", "bad", "path"));
         String json = objectMapper.writeValueAsString(response);
@@ -53,7 +51,7 @@ class ApiErrorResponseSerializationTest {
     }
 
     @Test
-    void testSerializationWithFieldErrorWithNullRejectedValue() throws IOException {
+    void testSerializationWithFieldErrorWithNullRejectedValue() {
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
         response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", null, "path"));
         String json = objectMapper.writeValueAsString(response);
@@ -70,7 +68,7 @@ class ApiErrorResponseSerializationTest {
     }
 
     @Test
-    void testSerializationWithGlobalError() throws IOException {
+    void testSerializationWithGlobalError() {
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
         response.addGlobalError(new ApiGlobalError("GLOBAL_ERROR_CODE", "Test Global Message"));
         String json = objectMapper.writeValueAsString(response);
@@ -84,7 +82,7 @@ class ApiErrorResponseSerializationTest {
     }
 
     @Test
-    void testSerializationWithErrorProperty() throws IOException {
+    void testSerializationWithErrorProperty() {
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
         response.addErrorProperty("property1", "stringValue");
         response.addErrorProperty("property2", 15);
@@ -99,7 +97,7 @@ class ApiErrorResponseSerializationTest {
     }
 
     @Test
-    void testSerializationWithErrorPropertyThatIsNull() throws IOException {
+    void testSerializationWithErrorPropertyThatIsNull() {
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
         response.addErrorProperty("property1", null);
         String json = objectMapper.writeValueAsString(response);
@@ -113,7 +111,7 @@ class ApiErrorResponseSerializationTest {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void testHttpStatusInJsonResponse() throws IOException {
+    void testHttpStatusInJsonResponse() {
         properties.setHttpStatusInJsonResponse(true);
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_REQUEST, "TEST_CODE", "Test message");
 
@@ -124,7 +122,7 @@ class ApiErrorResponseSerializationTest {
     }
 
     @Test
-    void testHttpStatusInJsonResponseDisabledByDefault() throws IOException {
+    void testHttpStatusInJsonResponseDisabledByDefault() {
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_REQUEST, "TEST_CODE", "Test message");
 
         String json = objectMapper.writeValueAsString(response);
@@ -152,7 +150,7 @@ class ApiErrorResponseSerializationTest {
         }
 
         @Test
-        void testSerializationWithCustomMessageFieldName() throws IOException {
+        void testSerializationWithCustomMessageFieldName() {
             String json = objectMapper.writeValueAsString(new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message"));
             assertThatJson(json).and(
                     jsonAssert -> jsonAssert.node("errorCode").isEqualTo("TEST_CODE"),
@@ -163,7 +161,7 @@ class ApiErrorResponseSerializationTest {
         }
 
         @Test
-        void testSerializationWithFieldError() throws IOException {
+        void testSerializationWithFieldError() {
             ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
             response.addFieldError(new ApiFieldError("FIELD_ERROR_CODE", "testField", "Test Field Message", "bad", "path"));
             String json = objectMapper.writeValueAsString(response);
@@ -180,7 +178,7 @@ class ApiErrorResponseSerializationTest {
         }
 
         @Test
-        void testSerializationWithGlobalError() throws IOException {
+        void testSerializationWithGlobalError() {
             ApiErrorResponse response = new ApiErrorResponse(HttpStatus.BAD_GATEWAY, "TEST_CODE", "Test message");
             response.addGlobalError(new ApiGlobalError("GLOBAL_ERROR_CODE", "Test Global Message"));
             String json = objectMapper.writeValueAsString(response);
