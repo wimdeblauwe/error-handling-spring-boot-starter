@@ -4,12 +4,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatusCode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @JsonTest
 @Import(ErrorHandlingProperties.class)
@@ -27,13 +28,24 @@ class ApiErrorResponseDeserializationTest {
             }""";
 
         var response = objectMapper.readValue(json, ApiErrorResponse.class);
-        assertEquals("USER_NOT_FOUND", response.getCode());
-        assertEquals("Could not find user with id 123", response.getMessage());
-        assertNull(response.getHttpStatus());
-        assertTrue(response.getFieldErrors().isEmpty());
-        assertTrue(response.getGlobalErrors().isEmpty());
-        assertTrue(response.getParameterErrors().isEmpty());
-        assertTrue(response.getProperties().isEmpty());
+
+        assertThat(response).extracting(
+                ApiErrorResponse::getCode,
+                ApiErrorResponse::getMessage,
+                ApiErrorResponse::getHttpStatus,
+                ApiErrorResponse::getFieldErrors,
+                ApiErrorResponse::getGlobalErrors,
+                ApiErrorResponse::getParameterErrors,
+                ApiErrorResponse::getProperties)
+            .containsExactly(
+                "USER_NOT_FOUND",
+                "Could not find user with id 123",
+                null,
+                List.of(),
+                List.of(),
+                List.of(),
+                Map.of()
+            );
     }
 
     @Test
@@ -44,8 +56,13 @@ class ApiErrorResponseDeserializationTest {
               "code": "USER_NOT_FOUND",
               "message": "Could not find user with id 123"
             }""";
-        var apiErrorResponse = objectMapper.readValue(json, ApiErrorResponse.class);
-        assertEquals(404, apiErrorResponse.getHttpStatus().value());
+        var response = objectMapper.readValue(json, ApiErrorResponse.class);
+
+        assertThat(response).extracting(
+                ApiErrorResponse::getCode,
+                ApiErrorResponse::getMessage,
+                ApiErrorResponse::getHttpStatus)
+            .containsExactly("USER_NOT_FOUND", "Could not find user with id 123", HttpStatusCode.valueOf(404));
     }
 
     @Test
