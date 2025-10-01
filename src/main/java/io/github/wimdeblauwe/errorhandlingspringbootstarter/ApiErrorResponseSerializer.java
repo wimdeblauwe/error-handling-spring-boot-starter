@@ -6,7 +6,6 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 
 import java.util.List;
-import java.util.Map;
 
 @JsonComponent
 public class ApiErrorResponseSerializer extends ObjectValueSerializer<ApiErrorResponse> {
