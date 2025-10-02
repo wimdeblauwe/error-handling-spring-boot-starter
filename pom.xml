@@ -18,7 +18,7 @@
         <java.version>17</java.version>
 
         <!-- Test Dependencies -->
-        <json-unit.version>2.19.0</json-unit.version>
+        <json-unit.version>4.1.1</json-unit.version>
 
         <!-- Plugins -->
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -103,10 +103,27 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
+                    <!--
+                    This is an ancient version of the org.json:json lib repackaged under a different groupId
+                    https://central.sonatype.com/artifact/com.vaadin.external.google/android-json
+
+                    It's incompatible with the net.javacrumbs.json-unit dependencies, so we exclude it and include
+                    a more recent version below
+                    -->
+                    <groupId>com.vaadin.external.google</groupId>
+                    <artifactId>android-json</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.junit.vintage</groupId>
                     <artifactId>junit-vintage-engine</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20250517</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
