@@ -145,18 +145,34 @@ class ApiErrorResponseDeserializationTest {
                 },
                 {
                   "code": "INVALID",
-                  "property": "complexType",
+                  "property": "arrayType",
                   "message": "invalid value",
                   "rejectedValue": [99],
-                  "path": "complexType"
+                  "path": "arrayType"
+                },
+                {
+                  "code": "INVALID",
+                  "property": "objectType",
+                  "message": "invalid value",
+                  "rejectedValue": {"foo": "bar"},
+                  "path": "objectType"
                 }
               ]
             }""";
 
         var fieldErrors = objectMapper.readValue(json, ApiErrorResponse.class).getFieldErrors();
-        assertThat(fieldErrors).hasSize(7)
+        assertThat(fieldErrors).hasSize(8)
             .extracting(ApiFieldError::getRejectedValue)
-            .containsExactly("string", null, 66, 3_147_483_647L, 66.6, true, List.of(99));
+            .containsExactly(
+                "string",
+                null,
+                66,
+                3_147_483_647L,
+                66.6,
+                true,
+                List.of(99),
+                Map.of("foo", "bar")
+            );
     }
 
     @Test
