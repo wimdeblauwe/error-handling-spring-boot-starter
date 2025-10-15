@@ -12,6 +12,7 @@ import tools.jackson.databind.ValueDeserializer;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * This deserializer should do the inverse of ApiErrorResponseSerializer. For example, we cannot assume the
@@ -38,31 +39,6 @@ public class ApiErrorResponseDeserializer extends ValueDeserializer<ApiErrorResp
         this.errorFieldNames = errorHandlingProperties.getJsonFieldNames();
     }
 
-    /**
-     * Extract a simple value from a JsonNode.
-     *
-     * @param node
-     * @return A String, Number, Boolean or null.
-     */
-    private Object toSimpleValue(JsonNode node) {
-        return switch (node.getNodeType()) {
-            case NULL, MISSING -> null;
-            case BOOLEAN -> node.asBoolean();
-            case NUMBER -> {
-                if (node.isFloatingPointNumber()) {
-                    yield node.asDouble();
-                } else if (node.canConvertToInt()) {
-                    yield node.asInt();
-                } else {
-                    yield node.asLong();
-                }
-            }
-            case STRING -> node.asString();
-            // For complex types (arrays, objects), return a string representation
-            default -> node.toString();
-        };
-    }
-
     @Override
     public ApiErrorResponse deserialize(JsonParser parser, DeserializationContext ctx) throws JacksonException {
         var codeFieldName = errorFieldNames.getCode();
@@ -82,11 +58,14 @@ public class ApiErrorResponseDeserializer extends ValueDeserializer<ApiErrorResp
             }
         };
 
+        // Converts the value of a JSON node to a String, Boolean, Number, List, null, etc.
+        Function<JsonNode, Object> toNodeValue = node -> ctx.readTreeAsValue(node, Object.class);
+
         deserializeArray.accept(errorFieldNames.getFieldErrors(), error -> {
             var errorCode = error.get(codeFieldName).asString();
             var errorMessage = error.get(messageFieldName).asString();
             var property = error.get("property").asString();
-            var rejectedValue = toSimpleValue(error.get("rejectedValue"));
+            var rejectedValue = toNodeValue.apply(error.get("rejectedValue"));
             var path = error.get("path").asString();
             var fieldError = new ApiFieldError(errorCode, property, errorMessage, rejectedValue, path);
             apiErrorResponse.addFieldError(fieldError);
@@ -102,7 +81,7 @@ public class ApiErrorResponseDeserializer extends ValueDeserializer<ApiErrorResp
             var errorCode = error.get(codeFieldName).asString();
             var errorMessage = error.get(messageFieldName).asString();
             var parameter = error.get("parameter").asString();
-            var rejectedValue = toSimpleValue(error.get("rejectedValue"));
+            var rejectedValue = toNodeValue.apply(error.get("rejectedValue"));
             var parameterError = new ApiParameterError(errorCode, parameter, errorMessage, rejectedValue);
             apiErrorResponse.addParameterError(parameterError);
         });
@@ -120,7 +99,7 @@ public class ApiErrorResponseDeserializer extends ValueDeserializer<ApiErrorResp
         // https://wimdeblauwe.github.io/error-handling-spring-boot-starter/4.6.0/#adding-extra-properties-in-the-response
         jsonRoot.propertyNames().forEach(propertyName -> {
             if (!knownRootProperties.contains(propertyName)) {
-                var propertyValue = toSimpleValue(jsonRoot.get(propertyName));
+                var propertyValue = toNodeValue.apply(jsonRoot.get(propertyName));
                 apiErrorResponse.addErrorProperty(propertyName, propertyValue);
             }
         });

@@ -156,7 +156,7 @@ class ApiErrorResponseDeserializationTest {
         var fieldErrors = objectMapper.readValue(json, ApiErrorResponse.class).getFieldErrors();
         assertThat(fieldErrors).hasSize(7)
             .extracting(ApiFieldError::getRejectedValue)
-            .containsExactly("string", null, 66, 3_147_483_647L, 66.6, true, "[99]");
+            .containsExactly("string", null, 66, 3_147_483_647L, 66.6, true, List.of(99));
     }
 
     @Test
