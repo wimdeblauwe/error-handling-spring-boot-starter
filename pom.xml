@@ -104,11 +104,10 @@
             <exclusions>
                 <exclusion>
                     <!--
-                    This is an ancient version of the org.json:json lib repackaged under a different groupId
-                    https://central.sonatype.com/artifact/com.vaadin.external.google/android-json
-
+                    This is an ancient version of the org.json:json lib repackaged under a different groupId.
                     It's incompatible with the net.javacrumbs.json-unit dependencies, so we exclude it and include
-                    a more recent version below
+                    a more recent version below. See this issue for more information:
+                    https://github.com/spring-projects/spring-boot/issues/47385
                     -->
                     <groupId>com.vaadin.external.google</groupId>
                     <artifactId>android-json</artifactId>
