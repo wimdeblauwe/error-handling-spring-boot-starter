@@ -113,42 +113,14 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <!--
-                    This is an ancient version of the org.json:json lib repackaged under a different groupId.
-                    It's incompatible with the net.javacrumbs.json-unit dependencies, so we exclude it and include
-                    a more recent version below. See this issue for more information:
-                    https://github.com/spring-projects/spring-boot/issues/47385
-                    -->
-                    <groupId>com.vaadin.external.google</groupId>
-                    <artifactId>android-json</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.junit.vintage</groupId>
                     <artifactId>junit-vintage-engine</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20250517</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.javacrumbs.json-unit</groupId>
-            <artifactId>json-unit</artifactId>
-            <version>${json-unit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.javacrumbs.json-unit</groupId>
-            <artifactId>json-unit-assertj</artifactId>
-            <version>${json-unit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
