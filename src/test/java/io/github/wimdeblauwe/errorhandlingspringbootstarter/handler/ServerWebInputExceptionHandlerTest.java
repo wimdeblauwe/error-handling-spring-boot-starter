@@ -28,7 +28,7 @@ class ServerWebInputExceptionHandlerTest {
 
     @Test
     @WithMockUser
-    void testMatrixVariable() throws Exception {
+    void testMatrixVariable() {
         webTestClient.get()
                      .uri("/matrix-variable")
                      .accept(MediaType.APPLICATION_JSON)
@@ -43,7 +43,7 @@ class ServerWebInputExceptionHandlerTest {
 
     @Test
     @WithMockUser
-    void testRequestCookie() throws Exception {
+    void testRequestCookie() {
         webTestClient.get()
                      .uri("/request-cookie")
                      .accept(MediaType.APPLICATION_JSON)
@@ -60,7 +60,7 @@ class ServerWebInputExceptionHandlerTest {
 
     @Test
     @WithMockUser
-    void testRequestHeader() throws Exception {
+    void testRequestHeader() {
         webTestClient.get()
                      .uri("/request-header")
                      .accept(MediaType.APPLICATION_JSON)
@@ -77,7 +77,7 @@ class ServerWebInputExceptionHandlerTest {
 
     @Test
     @WithMockUser
-    void testRequestParameter() throws Exception {
+    void testRequestParameter() {
         webTestClient.get()
                      .uri("/request-parameter")
                      .accept(MediaType.APPLICATION_JSON)

@@ -62,7 +62,7 @@ public class ApiErrorResponseAccessDeniedHandler implements AccessDeniedHandler 
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
-            throws IOException, ServletException {
+            throws IOException {
         ApiErrorResponse errorResponse = createResponse(accessDeniedException);
 
         response.setStatus(errorResponse.getHttpStatus().value());

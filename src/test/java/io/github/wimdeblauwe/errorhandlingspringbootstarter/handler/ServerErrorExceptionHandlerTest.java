@@ -28,7 +28,7 @@ class ServerErrorExceptionHandlerTest {
 
     @Test
     @WithMockUser
-    void testPathVariable() throws Exception {
+    void testPathVariable() {
         webTestClient.get()
                      .uri("/path-variable")
                      .accept(MediaType.APPLICATION_JSON)

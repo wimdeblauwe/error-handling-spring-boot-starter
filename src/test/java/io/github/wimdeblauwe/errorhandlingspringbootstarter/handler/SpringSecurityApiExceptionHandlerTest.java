@@ -130,7 +130,7 @@ class SpringSecurityApiExceptionHandlerTest {
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                        UnauthorizedEntryPoint unauthorizedEntryPoint,
-                                                       AccessDeniedHandler accessDeniedHandler) throws Exception {
+                                                       AccessDeniedHandler accessDeniedHandler) {
             http.httpBasic(AbstractHttpConfigurer::disable);
 
             http.authorizeHttpRequests(customizer -> customizer
