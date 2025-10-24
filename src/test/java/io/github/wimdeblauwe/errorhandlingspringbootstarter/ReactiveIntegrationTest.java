@@ -3,7 +3,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -26,7 +26,7 @@ public class ReactiveIntegrationTest {
 
     @Test
     @WithMockUser
-    void testRuntimeException() throws Exception {
+    void testRuntimeException() {
         webTestClient.get()
                      .uri("/integration-test/runtime")
                      .accept(MediaType.ALL)
@@ -36,7 +36,7 @@ public class ReactiveIntegrationTest {
 
     @Test
     @WithMockUser
-    void testExceptionWithBadRequestStatus() throws Exception {
+    void testExceptionWithBadRequestStatus() {
         webTestClient.get()
                      .uri("/integration-test/bad-request")
                      .exchange()
@@ -45,7 +45,7 @@ public class ReactiveIntegrationTest {
 
     @Test
     @WithMockUser
-    void testApplicationException() throws Exception {
+    void testApplicationException() {
         webTestClient.get()
                      .uri("/integration-test/application-request")
                      .exchange()

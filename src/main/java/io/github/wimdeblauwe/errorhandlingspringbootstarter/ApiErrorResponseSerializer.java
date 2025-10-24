@@ -1,13 +1,13 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
-import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.boot.jackson.JacksonComponent;
 import org.springframework.boot.jackson.ObjectValueSerializer;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 
 import java.util.List;
 
-@JsonComponent
+@JacksonComponent
 public class ApiErrorResponseSerializer extends ObjectValueSerializer<ApiErrorResponse> {
 
     private final ErrorHandlingProperties properties;

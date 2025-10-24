@@ -1,7 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties.JsonFieldNames;
-import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.boot.jackson.JacksonComponent;
 import org.springframework.http.HttpStatusCode;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
@@ -30,7 +30,7 @@ import java.util.function.Function;
  *
  * This starter restores the ability to fully deserialize an ApiErrorResponse in Spring Boot v4 via the snippet above.
  */
-@JsonComponent
+@JacksonComponent
 public class ApiErrorResponseDeserializer extends ValueDeserializer<ApiErrorResponse> {
 
     private final JsonFieldNames errorFieldNames;
