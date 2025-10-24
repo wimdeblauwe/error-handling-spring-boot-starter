@@ -2,13 +2,13 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.exception.MyCustomHttpResponseStatusException;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpResponseStatusFromExceptionMapper;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,7 +23,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(value = IntegrationTestRestController.class,
         properties = {"spring.main.allow-bean-definition-overriding=true",
                 "error.handling.full-stacktrace-http-statuses[0]=500"})
-@Import({IntegrationTest.WebSecurityConfig.class, IntegrationTest.ResponseCustomizerConfiguration.class, IntegrationTest.CustomHttpResponseStatusFromExceptionMapper.class})
+@Import({
+    ServletErrorHandlingConfiguration.class,
+    IntegrationTest.WebSecurityConfig.class,
+    IntegrationTest.ResponseCustomizerConfiguration.class,
+    IntegrationTest.CustomHttpResponseStatusFromExceptionMapper.class
+})
 public class IntegrationTest {
 
     @Autowired
@@ -57,7 +62,7 @@ public class IntegrationTest {
 
     static class WebSecurityConfig {
         @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) {
             http.authorizeHttpRequests(registry -> registry.anyRequest().permitAll());
             return http.build();
         }

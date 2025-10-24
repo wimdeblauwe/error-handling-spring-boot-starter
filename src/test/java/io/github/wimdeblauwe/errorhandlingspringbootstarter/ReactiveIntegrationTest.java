@@ -1,9 +1,11 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive.ReactiveErrorHandlingConfiguration;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -19,6 +21,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
         },
         controllers = ReactiveIntegrationTestRestController.class
 )
+@Import(ReactiveErrorHandlingConfiguration.class)
 public class ReactiveIntegrationTest {
 
     @Autowired
@@ -26,7 +29,7 @@ public class ReactiveIntegrationTest {
 
     @Test
     @WithMockUser
-    void testRuntimeException() throws Exception {
+    void testRuntimeException() {
         webTestClient.get()
                      .uri("/integration-test/runtime")
                      .accept(MediaType.ALL)
@@ -36,7 +39,7 @@ public class ReactiveIntegrationTest {
 
     @Test
     @WithMockUser
-    void testExceptionWithBadRequestStatus() throws Exception {
+    void testExceptionWithBadRequestStatus() {
         webTestClient.get()
                      .uri("/integration-test/bad-request")
                      .exchange()
@@ -45,7 +48,7 @@ public class ReactiveIntegrationTest {
 
     @Test
     @WithMockUser
-    void testApplicationException() throws Exception {
+    void testApplicationException() {
         webTestClient.get()
                      .uri("/integration-test/application-request")
                      .exchange()
@@ -62,10 +65,11 @@ public class ReactiveIntegrationTest {
                      .post()
                      .uri("/integration-test")
                      .contentType(MediaType.APPLICATION_JSON)
-                     .bodyValue("{\n" +
-                                        "  \"name\": \"\",\n" +
-                                        "  \"email\": \"invalid\"\n" +
-                                        "}")
+                     .bodyValue("""
+                         {
+                           "name": "",
+                           "email": "invalid"
+                         }""")
                      .exchange()
                      .expectStatus().isBadRequest()
                      .expectBody()

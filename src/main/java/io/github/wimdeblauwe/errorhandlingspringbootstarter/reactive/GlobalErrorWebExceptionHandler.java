@@ -1,15 +1,13 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponseCustomizer;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
 import org.springframework.boot.autoconfigure.web.WebProperties;
-import org.springframework.boot.autoconfigure.web.reactive.error.DefaultErrorWebExceptionHandler;
-import org.springframework.boot.web.reactive.error.ErrorAttributes;
+import org.springframework.boot.webflux.autoconfigure.error.DefaultErrorWebExceptionHandler;
+import org.springframework.boot.webflux.error.ErrorAttributes;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;

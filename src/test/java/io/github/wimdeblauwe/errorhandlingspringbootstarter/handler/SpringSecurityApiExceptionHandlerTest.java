@@ -1,6 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import tools.jackson.databind.ObjectMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponseAccessDeniedHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.UnauthorizedEntryPoint;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
@@ -9,7 +10,6 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMap
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.AccessDeniedException;
@@ -64,7 +64,7 @@ class SpringSecurityApiExceptionHandlerTest {
         mockMvc.perform(get("/test/spring-security/admin-global"))
                .andExpect(status().isForbidden())
                .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"))
-               .andExpect(jsonPath("code").value("ACCESS_DENIED"))
+               .andExpect(jsonPath("code").value("AUTHORIZATION_DENIED"))
                .andExpect(jsonPath("message").value("Access Denied"));
     }
 
@@ -130,7 +130,7 @@ class SpringSecurityApiExceptionHandlerTest {
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                        UnauthorizedEntryPoint unauthorizedEntryPoint,
-                                                       AccessDeniedHandler accessDeniedHandler) throws Exception {
+                                                       AccessDeniedHandler accessDeniedHandler) {
             http.httpBasic(AbstractHttpConfigurer::disable);
 
             http.authorizeHttpRequests(customizer -> customizer

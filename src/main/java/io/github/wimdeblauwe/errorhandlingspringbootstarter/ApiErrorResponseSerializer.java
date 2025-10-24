@@ -1,16 +1,14 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.boot.jackson.JacksonComponent;
+import org.springframework.boot.jackson.ObjectValueSerializer;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
-@JsonComponent
-public class ApiErrorResponseSerializer extends JsonSerializer<ApiErrorResponse> {
+@JacksonComponent
+public class ApiErrorResponseSerializer extends ObjectValueSerializer<ApiErrorResponse> {
 
     private final ErrorHandlingProperties properties;
 
@@ -19,63 +17,59 @@ public class ApiErrorResponseSerializer extends JsonSerializer<ApiErrorResponse>
     }
 
     @Override
-    public void serialize(ApiErrorResponse errorResponse,
-                          JsonGenerator jsonGenerator,
-                          SerializerProvider serializerProvider) throws IOException {
-        jsonGenerator.writeStartObject();
+    public void serializeObject(ApiErrorResponse errorResponse,
+                                JsonGenerator jsonGenerator,
+                                SerializationContext serializationContext) {
         if (properties.isHttpStatusInJsonResponse()) {
-            jsonGenerator.writeNumberField("status", errorResponse.getHttpStatus().value());
+            jsonGenerator.writeNumberProperty("status", errorResponse.getHttpStatus().value());
         }
         ErrorHandlingProperties.JsonFieldNames fieldNames = properties.getJsonFieldNames();
-        jsonGenerator.writeStringField(fieldNames.getCode(), errorResponse.getCode());
-        jsonGenerator.writeStringField(fieldNames.getMessage(), errorResponse.getMessage());
+        jsonGenerator.writeStringProperty(fieldNames.getCode(), errorResponse.getCode());
+        jsonGenerator.writeStringProperty(fieldNames.getMessage(), errorResponse.getMessage());
 
         List<ApiFieldError> fieldErrors = errorResponse.getFieldErrors();
         if (!fieldErrors.isEmpty()) {
-            jsonGenerator.writeArrayFieldStart(fieldNames.getFieldErrors());
+            jsonGenerator.writeArrayPropertyStart(fieldNames.getFieldErrors());
             for (ApiFieldError fieldError : fieldErrors) {
-                jsonGenerator.writeStartObject();
-                jsonGenerator.writeStringField(fieldNames.getCode(), fieldError.getCode());
-                jsonGenerator.writeStringField(fieldNames.getMessage(), fieldError.getMessage());
-                jsonGenerator.writeStringField("property", fieldError.getProperty());
-                jsonGenerator.writeObjectField("rejectedValue", fieldError.getRejectedValue());
-                jsonGenerator.writeObjectField("path", fieldError.getPath());
-                jsonGenerator.writeEndObject();
+                jsonGenerator.writeStartObject()
+                    .writeStringProperty(fieldNames.getCode(), fieldError.getCode())
+                    .writeStringProperty(fieldNames.getMessage(), fieldError.getMessage())
+                    .writeStringProperty("property", fieldError.getProperty())
+                    .writePOJOProperty("rejectedValue", fieldError.getRejectedValue())
+                    .writeStringProperty("path", fieldError.getPath())
+                    .writeEndObject();
             }
             jsonGenerator.writeEndArray();
         }
 
         List<ApiGlobalError> globalErrors = errorResponse.getGlobalErrors();
         if (!globalErrors.isEmpty()) {
-            jsonGenerator.writeArrayFieldStart(fieldNames.getGlobalErrors());
+            jsonGenerator.writeArrayPropertyStart(fieldNames.getGlobalErrors());
             for (ApiGlobalError globalError : globalErrors) {
-                jsonGenerator.writeStartObject();
-                jsonGenerator.writeStringField(fieldNames.getCode(), globalError.getCode());
-                jsonGenerator.writeStringField(fieldNames.getMessage(), globalError.getMessage());
-                jsonGenerator.writeEndObject();
+                jsonGenerator.writeStartObject()
+                    .writeStringProperty(fieldNames.getCode(), globalError.getCode())
+                    .writeStringProperty(fieldNames.getMessage(), globalError.getMessage())
+                    .writeEndObject();
             }
             jsonGenerator.writeEndArray();
         }
 
         List<ApiParameterError> parameterErrors = errorResponse.getParameterErrors();
         if (!parameterErrors.isEmpty()) {
-            jsonGenerator.writeArrayFieldStart(fieldNames.getParameterErrors());
+            jsonGenerator.writeArrayPropertyStart(fieldNames.getParameterErrors());
             for (ApiParameterError parameterError : parameterErrors) {
-                jsonGenerator.writeStartObject();
-                jsonGenerator.writeStringField(fieldNames.getCode(), parameterError.getCode());
-                jsonGenerator.writeStringField(fieldNames.getMessage(), parameterError.getMessage());
-                jsonGenerator.writeStringField("parameter", parameterError.getParameter());
-                jsonGenerator.writeObjectField("rejectedValue", parameterError.getRejectedValue());
-                jsonGenerator.writeEndObject();
+                jsonGenerator.writeStartObject()
+                    .writeStringProperty(fieldNames.getCode(), parameterError.getCode())
+                    .writeStringProperty(fieldNames.getMessage(), parameterError.getMessage())
+                    .writeStringProperty("parameter", parameterError.getParameter())
+                    .writePOJOProperty("rejectedValue", parameterError.getRejectedValue())
+                    .writeEndObject();
             }
             jsonGenerator.writeEndArray();
         }
 
-        Map<String, Object> properties = errorResponse.getProperties();
-        for (String property : properties.keySet()) {
-            jsonGenerator.writeObjectField(property, properties.get(property));
+        for (var errorProperty : errorResponse.getProperties().entrySet()) {
+            jsonGenerator.writePOJOProperty(errorProperty.getKey(), errorProperty.getValue());
         }
-
-        jsonGenerator.writeEndObject();
     }
 }

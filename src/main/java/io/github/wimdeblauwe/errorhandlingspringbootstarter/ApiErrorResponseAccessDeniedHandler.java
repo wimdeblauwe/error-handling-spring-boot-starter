@@ -1,6 +1,6 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
@@ -62,7 +62,7 @@ public class ApiErrorResponseAccessDeniedHandler implements AccessDeniedHandler 
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
-            throws IOException, ServletException {
+            throws IOException {
         ApiErrorResponse errorResponse = createResponse(accessDeniedException);
 
         response.setStatus(errorResponse.getHttpStatus().value());

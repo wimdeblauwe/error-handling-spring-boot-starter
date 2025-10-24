@@ -1,10 +1,12 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive.ReactiveErrorHandlingConfiguration;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -18,6 +20,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
         },
         controllers = ServerWebInputExceptionHandlerTestController.class
 )
+@Import(ReactiveErrorHandlingConfiguration.class)
 class ServerWebInputExceptionHandlerTest {
 
     @Autowired
@@ -25,7 +28,7 @@ class ServerWebInputExceptionHandlerTest {
 
     @Test
     @WithMockUser
-    void testMatrixVariable() throws Exception {
+    void testMatrixVariable() {
         webTestClient.get()
                      .uri("/matrix-variable")
                      .accept(MediaType.APPLICATION_JSON)
@@ -40,7 +43,7 @@ class ServerWebInputExceptionHandlerTest {
 
     @Test
     @WithMockUser
-    void testRequestCookie() throws Exception {
+    void testRequestCookie() {
         webTestClient.get()
                      .uri("/request-cookie")
                      .accept(MediaType.APPLICATION_JSON)
@@ -57,7 +60,7 @@ class ServerWebInputExceptionHandlerTest {
 
     @Test
     @WithMockUser
-    void testRequestHeader() throws Exception {
+    void testRequestHeader() {
         webTestClient.get()
                      .uri("/request-header")
                      .accept(MediaType.APPLICATION_JSON)
@@ -74,7 +77,7 @@ class ServerWebInputExceptionHandlerTest {
 
     @Test
     @WithMockUser
-    void testRequestParameter() throws Exception {
+    void testRequestParameter() {
         webTestClient.get()
                      .uri("/request-parameter")
                      .accept(MediaType.APPLICATION_JSON)
