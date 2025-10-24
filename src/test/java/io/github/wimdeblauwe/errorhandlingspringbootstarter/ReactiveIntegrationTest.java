@@ -65,10 +65,11 @@ public class ReactiveIntegrationTest {
                      .post()
                      .uri("/integration-test")
                      .contentType(MediaType.APPLICATION_JSON)
-                     .bodyValue("{\n" +
-                                        "  \"name\": \"\",\n" +
-                                        "  \"email\": \"invalid\"\n" +
-                                        "}")
+                     .bodyValue("""
+                         {
+                           "name": "",
+                           "email": "invalid"
+                         }""")
                      .exchange()
                      .expectStatus().isBadRequest()
                      .expectBody()
