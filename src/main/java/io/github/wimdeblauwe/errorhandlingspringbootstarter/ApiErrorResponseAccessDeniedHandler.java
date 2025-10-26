@@ -15,6 +15,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * Use this {@link AccessDeniedHandler} implementation if you want to have a consistent response
@@ -65,7 +66,7 @@ public class ApiErrorResponseAccessDeniedHandler implements AccessDeniedHandler 
             throws IOException {
         ApiErrorResponse errorResponse = createResponse(accessDeniedException);
 
-        response.setStatus(errorResponse.getHttpStatus().value());
+        response.setStatus(Objects.requireNonNull(errorResponse.getHttpStatus()).value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));

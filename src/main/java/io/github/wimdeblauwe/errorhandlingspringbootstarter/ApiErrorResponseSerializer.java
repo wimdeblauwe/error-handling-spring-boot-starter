@@ -6,6 +6,7 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 
 import java.util.List;
+import java.util.Objects;
 
 @JacksonComponent
 public class ApiErrorResponseSerializer extends ObjectValueSerializer<ApiErrorResponse> {
@@ -21,7 +22,7 @@ public class ApiErrorResponseSerializer extends ObjectValueSerializer<ApiErrorRe
                                 JsonGenerator jsonGenerator,
                                 SerializationContext serializationContext) {
         if (properties.isHttpStatusInJsonResponse()) {
-            jsonGenerator.writeNumberProperty("status", errorResponse.getHttpStatus().value());
+            jsonGenerator.writeNumberProperty("status", Objects.requireNonNull(errorResponse.getHttpStatus()).value());
         }
         ErrorHandlingProperties.JsonFieldNames fieldNames = properties.getJsonFieldNames();
         jsonGenerator.writeStringProperty(fieldNames.getCode(), errorResponse.getCode());

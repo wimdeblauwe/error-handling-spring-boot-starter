@@ -2,6 +2,9 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.exception.ApplicationException;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.exception.ExceptionWithBadRequestStatus;
+import jakarta.validation.constraints.NotNull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.function.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -37,26 +40,6 @@ public class ReactiveIntegrationTestRestController {
     public static class UserDto {
     }
 
-    public static class CreateUserRequest {
-        @NotBlank
-        private String name;
-        @Email
-        private String email;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
+    public record CreateUserRequest(@NotBlank @NotNull String name, @Email @NotNull String email) {
     }
 }

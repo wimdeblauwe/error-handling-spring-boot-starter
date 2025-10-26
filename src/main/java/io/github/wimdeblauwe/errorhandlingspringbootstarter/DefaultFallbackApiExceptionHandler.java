@@ -3,6 +3,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -20,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionHandler {
@@ -50,8 +52,8 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
         return response;
     }
 
-    private Map<String, Object> getFieldResponseErrorProperties(Throwable exception) {
-        Map<String, Object> result = new HashMap<>();
+    private Map<String, @Nullable Object> getFieldResponseErrorProperties(Throwable exception) {
+        Map<String, @Nullable Object> result = new HashMap<>();
         ReflectionUtils.doWithFields(exception.getClass(), field -> {
             if (field.isAnnotationPresent(ResponseErrorProperty.class)) {
                 try {
@@ -68,8 +70,8 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
         return result;
     }
 
-    private Map<String, Object> getMethodResponseErrorProperties(Throwable exception) {
-        Map<String, Object> result = new HashMap<>();
+    private Map<String, @Nullable Object> getMethodResponseErrorProperties(Throwable exception) {
+        Map<String, @Nullable Object> result = new HashMap<>();
         Class<? extends Throwable> exceptionClass = exception.getClass();
         ReflectionUtils.doWithMethods(exceptionClass, method -> {
             if (method.isAnnotationPresent(ResponseErrorProperty.class)
@@ -93,8 +95,7 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
 
     private String getPropertyName(Field field) {
         ResponseErrorProperty annotation = AnnotationUtils.getAnnotation(field, ResponseErrorProperty.class);
-        assert annotation != null;
-        if (StringUtils.hasText(annotation.value())) {
+        if (StringUtils.hasText(Objects.requireNonNull(annotation).value())) {
             return annotation.value();
         }
 
@@ -103,8 +104,8 @@ public class DefaultFallbackApiExceptionHandler implements FallbackApiExceptionH
 
     private String getPropertyName(Class<? extends Throwable> exceptionClass, Method method) {
         ResponseErrorProperty annotation = AnnotationUtils.getAnnotation(method, ResponseErrorProperty.class);
-        assert annotation != null;
-        if (StringUtils.hasText(annotation.value())) {
+
+        if (StringUtils.hasText(Objects.requireNonNull(annotation).value())) {
             return annotation.value();
         }
 

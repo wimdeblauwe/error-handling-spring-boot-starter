@@ -14,6 +14,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * Use this {@link AuthenticationEntryPoint} implementation if you want to have a consistent response
@@ -63,7 +64,7 @@ public class UnauthorizedEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         ApiErrorResponse errorResponse = createResponse(authException);
 
-        response.setStatus(errorResponse.getHttpStatus().value());
+        response.setStatus(Objects.requireNonNull(errorResponse.getHttpStatus()).value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));

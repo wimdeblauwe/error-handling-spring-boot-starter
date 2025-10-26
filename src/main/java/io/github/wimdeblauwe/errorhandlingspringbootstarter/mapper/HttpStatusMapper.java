@@ -1,6 +1,7 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -40,7 +41,8 @@ public class HttpStatusMapper {
         return defaultHttpStatus;
     }
 
-    private HttpStatusCode getHttpStatusFromPropertiesOrAnnotation(Class<?> exceptionClass) {
+    @Nullable
+    private HttpStatusCode getHttpStatusFromPropertiesOrAnnotation(@Nullable Class<?> exceptionClass) {
         if (exceptionClass == null) {
             return null;
         }

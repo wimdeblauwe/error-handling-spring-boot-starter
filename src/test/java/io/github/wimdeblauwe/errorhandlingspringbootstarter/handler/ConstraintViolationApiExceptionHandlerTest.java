@@ -1,8 +1,13 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
+import jakarta.validation.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,17 +22,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -271,6 +273,7 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("fieldErrors[1].path", equalTo("name")))
         ;
     }
+
     @Test
     @WithMockUser
     void testNestedPropertyPathFromList(@Autowired ErrorHandlingProperties properties) throws Exception {
@@ -313,9 +316,9 @@ class ConstraintViolationApiExceptionHandlerTest {
         mockMvc.perform(post("/test/map-validation")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{" +
-                                         "\"one\":" +
+                                                 "\"one\":" +
                                                  "{\"name\": \"Will Smith\", \"kids\": [{\"name\": \"Jaden Smith\"}]}," +
-                                         "\"two\":" +
+                                                 "\"two\":" +
                                                  "{\"name\": \"\", \"kids\": [{\"name\": \"\"}]}}")
                                 .with(csrf()))
                .andExpect(status().isBadRequest())
@@ -436,54 +439,13 @@ class ConstraintViolationApiExceptionHandlerTest {
         }
     }
 
-    public static class Person {
-
-        @Size(min = 1, max = 255)
-        private String name;
-
-        private List<@Valid Person> kids = new ArrayList<>();
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public List<Person> getKids() {
-            return kids;
-        }
-
-        public void setKids(List<Person> kids) {
-            this.kids = kids;
-        }
+    public record Person(@Size(min = 1, max = 255) String name,
+                         List<@Valid Person> kids) {
     }
 
     @ValuesEqual
-    public static class TestRequestBody {
-        @NotNull
-        private String value;
-
-        @NotNull
-        @Size(min = 1, max = 255)
-        private String value2;
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public String getValue2() {
-            return value2;
-        }
-
-        public void setValue2(String value2) {
-            this.value2 = value2;
-        }
+    public record TestRequestBody(@NotNull String value,
+                                  @NotNull @Size(min = 1, max = 255) String value2) {
     }
 
 
@@ -504,46 +466,16 @@ class ConstraintViolationApiExceptionHandlerTest {
         @Override
         public boolean isValid(TestRequestBody requestBody,
                                ConstraintValidatorContext context) {
-            return Objects.equals(requestBody.getValue(), requestBody.getValue2());
+            return Objects.equals(requestBody.value(), requestBody.value2());
         }
     }
 
-    public static class MultiNestedRequest {
-        @Valid
-        private MultiNestedLevel1 level1;
-
-        public MultiNestedLevel1 getLevel1() {
-            return level1;
-        }
-
-        public void setLevel1(MultiNestedLevel1 level1) {
-            this.level1 = level1;
-        }
+    public record MultiNestedRequest(@Valid MultiNestedLevel1 level1) {
     }
 
-    public static class MultiNestedLevel1 {
-        @Valid
-        private MultiNestedLevel2 level2;
-
-        public MultiNestedLevel2 getLevel2() {
-            return level2;
-        }
-
-        public void setLevel2(MultiNestedLevel2 level2) {
-            this.level2 = level2;
-        }
+    public record MultiNestedLevel1(@Valid MultiNestedLevel2 level2) {
     }
 
-    public static class MultiNestedLevel2 {
-        @NotBlank
-        private String fieldAtLevel2;
-
-        public String getFieldAtLevel2() {
-            return fieldAtLevel2;
-        }
-
-        public void setFieldAtLevel2(String fieldAtLevel2) {
-            this.fieldAtLevel2 = fieldAtLevel2;
-        }
+    public record MultiNestedLevel2(@NotBlank String fieldAtLevel2) {
     }
 }

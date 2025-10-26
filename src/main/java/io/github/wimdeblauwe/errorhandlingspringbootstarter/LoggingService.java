@@ -5,6 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatusCode;
 
+import java.util.Map;
+import java.util.Objects;
+
 public class LoggingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingService.class);
     private final ErrorHandlingProperties properties;
@@ -15,6 +18,7 @@ public class LoggingService {
 
     public void logException(ApiErrorResponse errorResponse, Throwable exception) {
         HttpStatusCode httpStatus = errorResponse.getHttpStatus();
+        Objects.requireNonNull(httpStatus);
         if (properties.getFullStacktraceClasses().contains(exception.getClass())) {
             logAccordingToRequestedLogLevel(httpStatus, exception, true);
         } else if (!properties.getFullStacktraceHttpStatuses().isEmpty()) {
@@ -27,14 +31,16 @@ public class LoggingService {
         }
     }
 
+    @SuppressWarnings("NullAway")
     private void logAccordingToRequestedLogLevel(HttpStatusCode httpStatus, Throwable exception, boolean includeStacktrace) {
         String httpStatusValue = String.valueOf(httpStatus.value());
-        if (properties.getLogLevels().get(httpStatusValue) != null) {
-            doLogOnLogLevel(properties.getLogLevels().get(httpStatusValue), exception, includeStacktrace);
-        } else if (properties.getLogLevels().get(getStatusWithLastNumberAsWildcard(httpStatusValue)) != null) {
-            doLogOnLogLevel(properties.getLogLevels().get(getStatusWithLastNumberAsWildcard(httpStatusValue)), exception, includeStacktrace);
-        } else if (properties.getLogLevels().get(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue)) != null) {
-            doLogOnLogLevel(properties.getLogLevels().get(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue)), exception, includeStacktrace);
+        Map<String, LogLevel> logLevels = properties.getLogLevels();
+        if (logLevels.get(httpStatusValue) != null) {
+            doLogOnLogLevel(logLevels.get(httpStatusValue), exception, includeStacktrace);
+        } else if (logLevels.get(getStatusWithLastNumberAsWildcard(httpStatusValue)) != null) {
+            doLogOnLogLevel(logLevels.get(getStatusWithLastNumberAsWildcard(httpStatusValue)), exception, includeStacktrace);
+        } else if (logLevels.get(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue)) != null) {
+            doLogOnLogLevel(logLevels.get(getStatusWithLastTwoNumbersAsWildcard(httpStatusValue)), exception, includeStacktrace);
         } else {
             doLogOnLogLevel(LogLevel.ERROR, exception, includeStacktrace);
         }

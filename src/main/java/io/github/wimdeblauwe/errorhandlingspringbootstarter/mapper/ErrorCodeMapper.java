@@ -2,6 +2,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.util.Locale;
@@ -50,7 +51,8 @@ public class ErrorCodeMapper {
         return result;
     }
 
-    private String getErrorCodeFromPropertiesOrAnnotation(Class<?> exceptionClass) {
+    @Nullable
+    private String getErrorCodeFromPropertiesOrAnnotation(@Nullable Class<?> exceptionClass) {
         if (exceptionClass == null) {
             return null;
         }

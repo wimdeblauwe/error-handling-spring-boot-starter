@@ -4,6 +4,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
@@ -28,6 +29,7 @@ public abstract class AbstractApiExceptionHandler implements ApiExceptionHandler
         return errorCodeMapper.getErrorCode(exception);
     }
 
+    @Nullable
     protected String getErrorMessage(Throwable exception) {
         return errorMessageMapper.getErrorMessage(exception);
     }

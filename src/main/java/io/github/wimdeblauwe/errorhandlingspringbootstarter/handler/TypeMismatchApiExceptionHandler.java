@@ -5,6 +5,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingPropert
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -34,6 +35,7 @@ public class TypeMismatchApiExceptionHandler extends AbstractApiExceptionHandler
         return response;
     }
 
+    @Nullable
     private String getPropertyName(TypeMismatchException exception) {
         if (exception instanceof MethodArgumentTypeMismatchException methodArgumentTypeMismatchException) {
             return methodArgumentTypeMismatchException.getName();
