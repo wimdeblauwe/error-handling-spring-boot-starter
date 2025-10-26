@@ -16,16 +16,19 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
+        <jspecify.version>1.0.0</jspecify.version>
 
         <!-- Test Dependencies -->
         <json-unit.version>4.1.1</json-unit.version>
 
         <!-- Plugins -->
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
+        <errorprone.version>2.43.0</errorprone.version>
+        <nullaway.version>0.12.10</nullaway.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
-        <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
-        <maven-javadoc-plugin.version>3.4.1</maven-javadoc-plugin.version>
-        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.2.3</maven-gpg-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
@@ -60,6 +63,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <version>${jspecify.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -140,7 +148,8 @@
                 <configuration>
                     <rules>
                         <requireJavaVersion>
-                            <version>[${java.version}, 18)</version>
+                            <!-- The JDK we compile with needs to be at least 21, but the resulting jar will work on 17 -->
+                            <version>[21, )</version>
                         </requireJavaVersion>
                     </rules>
                 </configuration>
@@ -149,8 +158,37 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>${java.version}</release>
+                    <parameters>true</parameters>
+                    <encoding>UTF-8</encoding>
+                    <fork>true</fork>
+                    <compilerArgs>
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>--should-stop=ifError=FLOW</arg>
+                        <arg>-Xplugin:ErrorProne -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+                    </compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${errorprone.version}</version>
+                        </path>
+                        <path>
+                            <groupId>com.uber.nullaway</groupId>
+                            <artifactId>nullaway</artifactId>
+                            <version>${nullaway.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
