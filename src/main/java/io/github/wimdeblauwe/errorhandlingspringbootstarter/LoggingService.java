@@ -70,6 +70,8 @@ public class LoggingService {
         switch (properties.getExceptionLogging()) {
             case WITH_STACKTRACE -> logAccordingToRequestedLogLevel(httpStatus, exception, true);
             case MESSAGE_ONLY -> logAccordingToRequestedLogLevel(httpStatus, exception, false);
+            case NO_LOGGING -> {
+            }
         }
     }
 

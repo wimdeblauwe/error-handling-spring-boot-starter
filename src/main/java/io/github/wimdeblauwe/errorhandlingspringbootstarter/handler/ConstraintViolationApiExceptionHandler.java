@@ -82,12 +82,12 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
                       }
                   })
                   .forEach(error -> {
-                      if (error instanceof ApiFieldError) {
-                          response.addFieldError((ApiFieldError) error);
-                      } else if (error instanceof ApiGlobalError) {
-                          response.addGlobalError((ApiGlobalError) error);
-                      } else if (error instanceof ApiParameterError) {
-                          response.addParameterError((ApiParameterError) error);
+                      if (error instanceof ApiFieldError apiFieldError) {
+                          response.addFieldError(apiFieldError);
+                      } else if (error instanceof ApiGlobalError apiGlobalError) {
+                          response.addGlobalError(apiGlobalError);
+                      } else if (error instanceof ApiParameterError apiParameterError) {
+                          response.addParameterError(apiParameterError);
                       }
                   });
 

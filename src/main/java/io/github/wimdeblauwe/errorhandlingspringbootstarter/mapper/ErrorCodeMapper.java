@@ -22,14 +22,10 @@ public class ErrorCodeMapper {
         if (code != null) {
             return code;
         }
-        switch (properties.getDefaultErrorCodeStrategy()) {
-            case FULL_QUALIFIED_NAME:
-                return exception.getClass().getName();
-            case ALL_CAPS:
-                return convertToAllCaps(exception.getClass().getSimpleName());
-            default:
-                throw new IllegalArgumentException("Unknown default error code strategy: " + properties.getDefaultErrorCodeStrategy());
-        }
+        return switch (properties.getDefaultErrorCodeStrategy()) {
+            case FULL_QUALIFIED_NAME -> exception.getClass().getName();
+            case ALL_CAPS -> convertToAllCaps(exception.getClass().getSimpleName());
+        };
     }
 
     public String getErrorCode(String fieldSpecificErrorCode, String errorCode) {

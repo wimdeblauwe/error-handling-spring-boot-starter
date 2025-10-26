@@ -35,8 +35,8 @@ public class TypeMismatchApiExceptionHandler extends AbstractApiExceptionHandler
     }
 
     private String getPropertyName(TypeMismatchException exception) {
-        if (exception instanceof MethodArgumentTypeMismatchException) {
-            return ((MethodArgumentTypeMismatchException) exception).getName();
+        if (exception instanceof MethodArgumentTypeMismatchException methodArgumentTypeMismatchException) {
+            return methodArgumentTypeMismatchException.getName();
         } else {
             return exception.getPropertyName();
         }
