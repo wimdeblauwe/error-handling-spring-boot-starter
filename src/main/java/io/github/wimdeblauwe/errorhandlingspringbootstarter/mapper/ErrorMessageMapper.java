@@ -1,7 +1,9 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.springframework.util.StringUtils.hasText;
@@ -16,6 +18,7 @@ public class ErrorMessageMapper {
         this.properties = properties;
     }
 
+    @Nullable
     public String getErrorMessage(Throwable exception) {
         String code = getErrorMessageFromProperties(exception.getClass());
         if (hasText(code)) {
@@ -44,7 +47,8 @@ public class ErrorMessageMapper {
         return defaultMessage;
     }
 
-    private String getErrorMessageFromProperties(Class<?> exceptionClass) {
+    @Nullable
+    private String getErrorMessageFromProperties(@Nullable Class<?> exceptionClass) {
         if (exceptionClass == null) {
             return null;
         }

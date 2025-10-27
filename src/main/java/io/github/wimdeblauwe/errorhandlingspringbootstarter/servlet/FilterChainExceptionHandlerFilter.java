@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class FilterChainExceptionHandlerFilter extends OncePerRequestFilter {
 
@@ -28,7 +29,7 @@ public class FilterChainExceptionHandlerFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception ex) {
             ApiErrorResponse errorResponse = errorHandlingFacade.handle(ex);
-            response.setStatus(errorResponse.getHttpStatus().value());
+            response.setStatus(Objects.requireNonNull(errorResponse.getHttpStatus()).value());
             var jsonResponseBody = objectMapper.writeValueAsString(errorResponse);
             response.getWriter().write(jsonResponseBody);
         }

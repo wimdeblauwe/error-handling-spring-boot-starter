@@ -1,8 +1,11 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
+import jakarta.validation.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.validation.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -228,29 +227,8 @@ class BindApiExceptionHandlerWithMethodArgumentNotValidTest {
     }
 
     @ValuesEqual
-    public static class TestRequestBody {
-        @NotNull
-        private String value;
-
-        @NotNull
-        @Size(min = 1, max = 255)
-        private String value2;
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public String getValue2() {
-            return value2;
-        }
-
-        public void setValue2(String value2) {
-            this.value2 = value2;
-        }
+    public record TestRequestBody(@NotNull String value,
+                                  @NotNull @Size(min = 1, max = 255) String value2) {
     }
 
 
@@ -271,7 +249,7 @@ class BindApiExceptionHandlerWithMethodArgumentNotValidTest {
         @Override
         public boolean isValid(TestRequestBody requestBody,
                                ConstraintValidatorContext context) {
-            return Objects.equals(requestBody.getValue(), requestBody.getValue2());
+            return Objects.equals(requestBody.value(), requestBody.value2());
         }
     }
 }

@@ -8,6 +8,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ElementKind;
 import jakarta.validation.Path;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -82,12 +83,12 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
                       }
                   })
                   .forEach(error -> {
-                      if (error instanceof ApiFieldError) {
-                          response.addFieldError((ApiFieldError) error);
-                      } else if (error instanceof ApiGlobalError) {
-                          response.addGlobalError((ApiGlobalError) error);
-                      } else if (error instanceof ApiParameterError) {
-                          response.addParameterError((ApiParameterError) error);
+                      if (error instanceof ApiFieldError apiFieldError) {
+                          response.addFieldError(apiFieldError);
+                      } else if (error instanceof ApiGlobalError apiGlobalError) {
+                          response.addGlobalError(apiGlobalError);
+                      } else if (error instanceof ApiParameterError apiParameterError) {
+                          response.addParameterError(apiParameterError);
                       }
                   });
 
@@ -98,6 +99,7 @@ public class ConstraintViolationApiExceptionHandler extends AbstractApiException
         return StreamSupport.stream(path.spliterator(), false).reduce((a, b) -> b);
     }
 
+    @Nullable
     private String getPath(ConstraintViolation<?> constraintViolation) {
         if (!properties.isAddPathToError()) {
             return null;

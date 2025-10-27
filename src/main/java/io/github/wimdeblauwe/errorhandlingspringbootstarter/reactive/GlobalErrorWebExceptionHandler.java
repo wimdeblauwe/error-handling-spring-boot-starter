@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.server.*;
 import reactor.core.publisher.Mono;
 
 import java.util.Locale;
+import java.util.Objects;
 
 public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
@@ -46,9 +47,9 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
         LOGGER.debug("webRequest: {}", request);
         LOGGER.debug("locale: {}", locale);
 
-        ApiErrorResponse errorResponse = errorHandlingFacade.handle(exception);
+        ApiErrorResponse errorResponse = errorHandlingFacade.handle(Objects.requireNonNull(exception));
 
-        return ServerResponse.status(errorResponse.getHttpStatus())
+        return ServerResponse.status(Objects.requireNonNull(errorResponse.getHttpStatus()))
                              .contentType(MediaType.APPLICATION_JSON)
                              .body(BodyInserters.fromValue(errorResponse));
     }

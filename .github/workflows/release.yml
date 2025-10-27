@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-java@v4
         with: # running setup-java again overwrites the settings.xml
           distribution: 'temurin'
-          java-version: 17
+          java-version: 21
           cache: 'maven'
           server-id: ossrh
           server-username: OSSRH_USERNAME

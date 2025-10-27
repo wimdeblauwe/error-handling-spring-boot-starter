@@ -4,6 +4,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingPropert
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import jakarta.validation.*;
 import jakarta.validation.constraints.NotNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -105,17 +106,7 @@ class HandlerMethodValidationExceptionHandlerTest {
         }
     }
 
-    static class EventRequest {
-        @NotNull
-        private LocalDateTime dateTime;
-
-        public LocalDateTime getDateTime() {
-            return dateTime;
-        }
-
-        public void setDateTime(LocalDateTime dateTime) {
-            this.dateTime = dateTime;
-        }
+    record EventRequest( @NotNull LocalDateTime dateTime) {
     }
 
     @Documented
@@ -139,6 +130,7 @@ class HandlerMethodValidationExceptionHandlerTest {
 
     static class MultiPartFileValidator implements ConstraintValidator<ValidFileType, MultipartFile> {
 
+        @Nullable
         private List<String> allowed;
 
         @Override
@@ -148,7 +140,7 @@ class HandlerMethodValidationExceptionHandlerTest {
 
         @Override
         public boolean isValid(MultipartFile file, ConstraintValidatorContext context) {
-            return file == null || allowed.contains(file.getContentType());
+            return file == null || (allowed != null && allowed.contains(file.getContentType()));
         }
     }
 }
