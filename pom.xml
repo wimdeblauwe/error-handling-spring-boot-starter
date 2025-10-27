@@ -322,7 +322,8 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[${java.version}, 18)</version>
+                                    <!-- The JDK we compile with needs to be at least 21, but the resulting jar will work on 17 -->
+                                    <version>[21, )</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
