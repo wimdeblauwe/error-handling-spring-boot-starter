@@ -19,7 +19,7 @@ public interface ApiExceptionHandler {
      * thrown the Throwable.
      *
      * @param exception the Throwable that needs to be handled
-     * @return the non-null ApiErrorResponse
+     * @return an ApiErrorResponse or null
      */
     @Nullable
     ApiErrorResponse handle(Throwable exception);
