@@ -1,7 +1,5 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
-import org.jspecify.annotations.Nullable;
-
 public interface ApiExceptionHandler {
     /**
      * Determine if this {@link ApiExceptionHandler} can handle the given {@link Throwable}.
@@ -21,6 +19,5 @@ public interface ApiExceptionHandler {
      * @param exception the Throwable that needs to be handled
      * @return the non-null ApiErrorResponse
      */
-    @Nullable
     ApiErrorResponse handle(Throwable exception);
 }
