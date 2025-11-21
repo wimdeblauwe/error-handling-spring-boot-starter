@@ -5,7 +5,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingPropert
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -198,49 +198,11 @@ class BindApiExceptionHandlerTest {
 
     }
 
-    public static class TestRequest {
-        @NotNull
-        private String param1;
-        @NotNull
-        private String param2;
-
-        public String getParam1() {
-            return param1;
-        }
-
-        public void setParam1(String param1) {
-            this.param1 = param1;
-        }
-
-        public String getParam2() {
-            return param2;
-        }
-
-        public void setParam2(String param2) {
-            this.param2 = param2;
-        }
+    public record TestRequest(@NotNull String param1, @NotNull String param2) {
     }
 
     @ValidRequest
-    public static class TestRequestForObjectValidation {
-        private String param1;
-        private String param2;
-
-        public String getParam1() {
-            return param1;
-        }
-
-        public void setParam1(String param1) {
-            this.param1 = param1;
-        }
-
-        public String getParam2() {
-            return param2;
-        }
-
-        public void setParam2(String param2) {
-            this.param2 = param2;
-        }
+    public record TestRequestForObjectValidation(String param1, String param2) {
     }
 
     @Target(ElementType.TYPE)
@@ -260,7 +222,7 @@ class BindApiExceptionHandlerTest {
         @Override
         public boolean isValid(TestRequestForObjectValidation request,
                                ConstraintValidatorContext context) {
-            if (request.getParam1() != null && request.getParam2() != null) {
+            if (request.param1() != null && request.param2() != null) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate("Param1 and Param2 cannot be combined")
                        .addConstraintViolation();

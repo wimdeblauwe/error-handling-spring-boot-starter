@@ -1,15 +1,15 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingFacade;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class FilterChainExceptionHandlerFilter extends OncePerRequestFilter {
 
@@ -23,13 +23,13 @@ public class FilterChainExceptionHandlerFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+            throws IOException {
 
         try {
             filterChain.doFilter(request, response);
         } catch (Exception ex) {
             ApiErrorResponse errorResponse = errorHandlingFacade.handle(ex);
-            response.setStatus(errorResponse.getHttpStatus().value());
+            response.setStatus(Objects.requireNonNull(errorResponse.getHttpStatus()).value());
             var jsonResponseBody = objectMapper.writeValueAsString(errorResponse);
             response.getWriter().write(jsonResponseBody);
         }

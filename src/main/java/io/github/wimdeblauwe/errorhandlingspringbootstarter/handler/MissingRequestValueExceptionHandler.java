@@ -25,21 +25,21 @@ public class MissingRequestValueExceptionHandler extends AbstractApiExceptionHan
         ApiErrorResponse response = new ApiErrorResponse(getHttpStatus(exception),
                                                          getErrorCode(exception),
                                                          getErrorMessage(exception));
-        if (exception instanceof MissingMatrixVariableException) {
-            response.addErrorProperty("variableName", ((MissingMatrixVariableException) exception).getVariableName());
-            addParameterInfo(response, ((MissingMatrixVariableException) exception).getParameter());
-        } else if (exception instanceof MissingPathVariableException) {
-            response.addErrorProperty("variableName", ((MissingPathVariableException) exception).getVariableName());
-            addParameterInfo(response, ((MissingPathVariableException) exception).getParameter());
-        } else if (exception instanceof MissingRequestCookieException) {
-            response.addErrorProperty("cookieName", ((MissingRequestCookieException) exception).getCookieName());
-            addParameterInfo(response, ((MissingRequestCookieException) exception).getParameter());
-        } else if (exception instanceof MissingRequestHeaderException) {
-            response.addErrorProperty("headerName", ((MissingRequestHeaderException) exception).getHeaderName());
-            addParameterInfo(response, ((MissingRequestHeaderException) exception).getParameter());
-        } else if (exception instanceof MissingServletRequestParameterException) {
-            String parameterName = ((MissingServletRequestParameterException) exception).getParameterName();
-            String parameterType = ((MissingServletRequestParameterException) exception).getParameterType();
+        if (exception instanceof MissingMatrixVariableException missingMatrixVariableException) {
+            response.addErrorProperty("variableName", missingMatrixVariableException.getVariableName());
+            addParameterInfo(response, missingMatrixVariableException.getParameter());
+        } else if (exception instanceof MissingPathVariableException missingPathVariableException) {
+            response.addErrorProperty("variableName", missingPathVariableException.getVariableName());
+            addParameterInfo(response, missingPathVariableException.getParameter());
+        } else if (exception instanceof MissingRequestCookieException missingRequestCookieException) {
+            response.addErrorProperty("cookieName", missingRequestCookieException.getCookieName());
+            addParameterInfo(response, missingRequestCookieException.getParameter());
+        } else if (exception instanceof MissingRequestHeaderException missingRequestHeaderException) {
+            response.addErrorProperty("headerName", missingRequestHeaderException.getHeaderName());
+            addParameterInfo(response, missingRequestHeaderException.getParameter());
+        } else if (exception instanceof MissingServletRequestParameterException missingServletRequestParameterException) {
+            String parameterName = missingServletRequestParameterException.getParameterName();
+            String parameterType = missingServletRequestParameterException.getParameterType();
             response.addErrorProperty("parameterName", parameterName);
             response.addErrorProperty("parameterType", parameterType);
         }

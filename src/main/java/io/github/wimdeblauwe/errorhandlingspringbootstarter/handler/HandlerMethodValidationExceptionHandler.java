@@ -12,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class HandlerMethodValidationExceptionHandler extends AbstractApiExceptionHandler {
@@ -37,9 +38,9 @@ public class HandlerMethodValidationExceptionHandler extends AbstractApiExceptio
         errors.forEach(error -> {
             if (error instanceof FieldError fieldError) {
                 var apiFieldError = new ApiFieldError(
-                        errorCodeMapper.getErrorCode(fieldError.getCode()),
+                        errorCodeMapper.getErrorCode(Objects.requireNonNull(fieldError.getCode())),
                         fieldError.getField(),
-                        errorMessageMapper.getErrorMessage(fieldError.getCode(), fieldError.getDefaultMessage()),
+                        errorMessageMapper.getErrorMessage(fieldError.getCode(), Objects.requireNonNull(fieldError.getDefaultMessage())),
                         fieldError.getRejectedValue(),
                         null);
                 response.addFieldError(apiFieldError);
@@ -48,10 +49,12 @@ public class HandlerMethodValidationExceptionHandler extends AbstractApiExceptio
                                        .filter(codes -> codes.length > 0)
                                        .map(codes -> codes[codes.length - 1])
                                        .orElse(null);
-                var apiGlobalErrorMessage = new ApiGlobalError(
-                        errorCodeMapper.getErrorCode(lastCode),
-                        errorMessageMapper.getErrorMessage(lastCode, error.getDefaultMessage()));
-                response.addGlobalError(apiGlobalErrorMessage);
+                if( lastCode != null) {
+                    var apiGlobalErrorMessage = new ApiGlobalError(
+                            errorCodeMapper.getErrorCode(lastCode),
+                            errorMessageMapper.getErrorMessage(lastCode, Objects.requireNonNull(error.getDefaultMessage())));
+                    response.addGlobalError(apiGlobalErrorMessage);
+                }
             }
         });
 

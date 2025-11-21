@@ -3,8 +3,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.springframework.http.HttpStatus;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatusCode;
 
 import java.util.ArrayList;
@@ -14,15 +13,17 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ApiErrorResponse {
+    @Nullable
     private final HttpStatusCode httpStatus;
     private final String code;
+    @Nullable
     private final String message;
-    private final Map<String, Object> properties;
+    private final Map<String, @Nullable Object> properties;
     private final List<ApiFieldError> fieldErrors;
     private final List<ApiGlobalError> globalErrors;
     private final List<ApiParameterError> parameterErrors;
 
-    public ApiErrorResponse(HttpStatusCode httpStatus, String code, String message) {
+    public ApiErrorResponse(@Nullable HttpStatusCode httpStatus, String code, @Nullable String message) {
         this.httpStatus = httpStatus;
         this.code = code;
         this.message = message;
@@ -32,6 +33,7 @@ public class ApiErrorResponse {
         this.parameterErrors = new ArrayList<>();
     }
 
+    @Nullable
     @JsonIgnore
     public HttpStatusCode getHttpStatus() {
         return httpStatus;
@@ -41,12 +43,13 @@ public class ApiErrorResponse {
         return code;
     }
 
+    @Nullable
     public String getMessage() {
         return message;
     }
 
     @JsonAnyGetter
-    public Map<String, Object> getProperties() {
+    public Map<String, @Nullable Object> getProperties() {
         return properties;
     }
 
@@ -62,11 +65,11 @@ public class ApiErrorResponse {
         return parameterErrors;
     }
 
-    public void addErrorProperties(Map<String, Object> errorProperties) {
+    public void addErrorProperties(Map<String, @Nullable Object> errorProperties) {
         properties.putAll(errorProperties);
     }
 
-    public void addErrorProperty(String propertyName, Object propertyValue) {
+    public void addErrorProperty(String propertyName, @Nullable Object propertyValue) {
         properties.put(propertyName, propertyValue);
     }
 

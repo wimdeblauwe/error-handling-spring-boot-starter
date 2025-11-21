@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import java.util.Locale;
+import java.util.Objects;
 
 @ControllerAdvice(annotations = RestController.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -31,7 +32,7 @@ public class ErrorHandlingControllerAdvice {
 
         ApiErrorResponse errorResponse = errorHandlingFacade.handle(exception);
 
-        return ResponseEntity.status(errorResponse.getHttpStatus())
+        return ResponseEntity.status(Objects.requireNonNull(errorResponse.getHttpStatus()))
                              .body(errorResponse);
     }
 }

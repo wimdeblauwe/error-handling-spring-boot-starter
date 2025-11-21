@@ -2,11 +2,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class ErrorHandlingFacade {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlingFacade.class);
 
     private final List<ApiExceptionHandler> handlers;
     private final FallbackApiExceptionHandler fallbackHandler;

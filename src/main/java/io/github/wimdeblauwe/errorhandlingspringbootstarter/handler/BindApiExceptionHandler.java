@@ -8,11 +8,14 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapp
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpStatusMapper;
 import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.util.Objects;
 
 /**
  * Class to handle {@link BindException} and {@link MethodArgumentNotValidException} exceptions. This is typically
@@ -58,8 +61,8 @@ public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
 
         if (bindingResult.hasGlobalErrors()) {
             bindingResult.getGlobalErrors().stream()
-                         .map(globalError -> new ApiGlobalError(errorCodeMapper.getErrorCode(globalError.getCode()),
-                                                                errorMessageMapper.getErrorMessage(globalError.getCode(), globalError.getDefaultMessage())))
+                         .map(globalError -> new ApiGlobalError(errorCodeMapper.getErrorCode(Objects.requireNonNull(globalError.getCode())),
+                                                                errorMessageMapper.getErrorMessage(globalError.getCode(), Objects.requireNonNull(globalError.getDefaultMessage()))))
                          .forEach(response::addGlobalError);
         }
 
@@ -69,19 +72,20 @@ public class BindApiExceptionHandler extends AbstractApiExceptionHandler {
     private String getCode(FieldError fieldError) {
         String code = fieldError.getCode();
         String fieldSpecificCode = fieldError.getField() + "." + code;
-        return errorCodeMapper.getErrorCode(fieldSpecificCode, code);
+        return errorCodeMapper.getErrorCode(fieldSpecificCode, Objects.requireNonNull(code));
     }
 
     private String getMessage(FieldError fieldError) {
         String code = fieldError.getCode();
         String fieldSpecificCode = fieldError.getField() + "." + code;
-        return errorMessageMapper.getErrorMessage(fieldSpecificCode, code, fieldError.getDefaultMessage());
+        return errorMessageMapper.getErrorMessage(fieldSpecificCode, Objects.requireNonNull(code), Objects.requireNonNull(fieldError.getDefaultMessage()));
     }
 
     private String getMessage(BindingResult bindingResult) {
         return "Validation failed for object='" + bindingResult.getObjectName() + "'. Error count: " + bindingResult.getErrorCount();
     }
 
+    @Nullable
     private String getPath(FieldError fieldError) {
         if (!properties.isAddPathToError()) {
             return null;

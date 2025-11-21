@@ -16,9 +16,9 @@ jobs:
         uses: actions/setup-java@v4
         with: # running setup-java again overwrites the settings.xml
           distribution: 'temurin'
-          java-version: 17
+          java-version: 21
           cache: 'maven'
-          server-id: ossrh
+          server-id: central
           server-username: OSSRH_USERNAME
           server-password: OSSRH_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
