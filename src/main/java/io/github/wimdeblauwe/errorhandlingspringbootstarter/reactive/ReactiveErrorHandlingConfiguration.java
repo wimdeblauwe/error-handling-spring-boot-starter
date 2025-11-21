@@ -12,9 +12,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.SearchStrategy;
-import org.springframework.boot.web.server.autoconfigure.ServerProperties;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.server.autoconfigure.ServerProperties;
 import org.springframework.boot.webflux.error.DefaultErrorAttributes;
 import org.springframework.boot.webflux.error.ErrorAttributes;
 import org.springframework.context.ApplicationContext;
@@ -61,16 +61,15 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
     @ConditionalOnMissingBean
     @Order(-2)
     public GlobalErrorWebExceptionHandler globalErrorWebExceptionHandler(ErrorAttributes errorAttributes,
-                                                                   ServerProperties serverProperties,
-                                                                   WebProperties webProperties,
-                                                                   ObjectProvider<ViewResolver> viewResolvers,
-                                                                   ServerCodecConfigurer serverCodecConfigurer,
-                                                                   ApplicationContext applicationContext,
+                                                                         WebProperties webProperties,
+                                                                         ObjectProvider<ViewResolver> viewResolvers,
+                                                                         ServerCodecConfigurer serverCodecConfigurer,
+                                                                         ApplicationContext applicationContext,
                                                                          ErrorHandlingFacade errorHandlingFacade) {
 
         GlobalErrorWebExceptionHandler exceptionHandler = new GlobalErrorWebExceptionHandler(errorAttributes,
                                                                                              webProperties.getResources(),
-                                                                                             serverProperties.getError(),
+                                                                                             webProperties.getError(),
                                                                                              applicationContext,
                                                                                              errorHandlingFacade);
         exceptionHandler.setViewResolvers(viewResolvers.orderedStream().collect(Collectors.toList()));
