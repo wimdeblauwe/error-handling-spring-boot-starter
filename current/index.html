@@ -136,7 +136,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 4.6.0.</p>
+<p>This documentation is for version 5.0.0.</p>
 </div>
 </div>
 </div>
@@ -1812,7 +1812,7 @@ Second, set the bean as the entrypoint.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java"><span class="fold-block hide-when-folded">import com.fasterxml.jackson.databind.ObjectMapper;
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="fold-block hide-when-folded">import tools.jackson.databind.ObjectMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.UnauthorizedEntryPoint;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
@@ -1871,7 +1871,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java"><span class="fold-block hide-when-folded">import com.fasterxml.jackson.databind.ObjectMapper;
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="fold-block hide-when-folded">import tools.jackson.databind.ObjectMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.UnauthorizedEntryPoint;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorMessageMapper;
@@ -2072,11 +2072,13 @@ There is also the <code>io.github.wimdeblauwe.errorhandlingspringbootstarter.han
 
 </span><span class="fold-block hide-when-folded">import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 </span><span class="fold-block">@Component <i class="conum" data-value="1"></i><b>(1)</b>
 public class CustomExceptionApiExceptionHandler implements ApiExceptionHandler { <i class="conum" data-value="2"></i><b>(2)</b>
@@ -2091,11 +2093,12 @@ public class CustomExceptionApiExceptionHandler implements ApiExceptionHandler {
 
         ApiErrorResponse response = new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, <i class="conum" data-value="4"></i><b>(4)</b>
                                                          "MY_CUSTOM_EXCEPTION",
-                                                         exception.getMessage());
+                                                         Objects.requireNonNull(exception.getMessage()));
         Throwable cause = customException.getCause();
+        Objects.requireNonNull(cause);
         Map&lt;String, Object&gt; nestedCause = new HashMap&lt;&gt;();
         nestedCause.put("code", "CAUSE");
-        nestedCause.put("message", cause.getMessage());
+        nestedCause.put("message", Objects.requireNonNull(cause.getMessage()));
         response.addErrorProperty("cause", nestedCause); <i class="conum" data-value="5"></i><b>(5)</b>
 
         return response;
@@ -2387,7 +2390,7 @@ public ResponseEntity&lt;String&gt; getExample(@PathVariable String id) {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-04-24 14:06:23 UTC
+Last updated 2025-11-21 08:01:14 UTC
 </div>
 </div>
 </div>
