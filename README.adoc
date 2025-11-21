@@ -33,10 +33,10 @@ NOTE: Documentation is very important to us, so if you find something missing fr
 |===
 |error-handling-spring-boot-starter |Spring Boot|Minimum Java version|Docs
 
-|https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/5.0.0-rc.1[5.0.0-rc.1]
-|4.0.0-RC1
+|https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/5.0.0[5.0.0]
+|4.0.0
 |17
-|https://wimdeblauwe.github.io/error-handling-spring-boot-starter/5.0.0-rc.1/[Documentation 5.0.0-rc.1]
+|https://wimdeblauwe.github.io/error-handling-spring-boot-starter/5.0.0/[Documentation 5.0.0]
 
 |https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/4.6.0[4.6.0]
 |3.3.x, 3.4.x, 3.5.x
