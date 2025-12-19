@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
-@ContextConfiguration(classes = {ServletErrorHandlingConfiguration.class,
+@ContextConfiguration(classes = {
         FilterChainExceptionHandlerFilterTest.TestController.class,
         FilterChainExceptionHandlerFilterTest.TestConfig.class})
 @TestPropertySource(properties = "error.handling.handle-filter-chain-exceptions=true")

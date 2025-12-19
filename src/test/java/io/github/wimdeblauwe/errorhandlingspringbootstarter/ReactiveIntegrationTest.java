@@ -25,7 +25,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
         },
         controllers = ReactiveIntegrationTestRestController.class
 )
-@Import(ReactiveErrorHandlingConfiguration.class)
 public class ReactiveIntegrationTest {
 
     @Autowired
