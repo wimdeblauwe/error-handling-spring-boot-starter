@@ -2,7 +2,6 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import jakarta.validation.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -33,8 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
-@ContextConfiguration(classes = {ServletErrorHandlingConfiguration.class,
-        BindApiExceptionHandlerWithMethodArgumentNotValidTest.TestController.class})
+@ContextConfiguration(classes = {BindApiExceptionHandlerWithMethodArgumentNotValidTest.TestController.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class BindApiExceptionHandlerWithMethodArgumentNotValidTest {
 

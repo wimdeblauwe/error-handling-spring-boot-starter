@@ -1,7 +1,6 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import jakarta.validation.*;
 import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
@@ -34,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest
-@ContextConfiguration(classes = {ServletErrorHandlingConfiguration.class,
+@ContextConfiguration(classes = {
         HandlerMethodValidationExceptionHandlerTest.TestController.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class HandlerMethodValidationExceptionHandlerTest {
@@ -106,7 +105,7 @@ class HandlerMethodValidationExceptionHandlerTest {
         }
     }
 
-    record EventRequest( @NotNull LocalDateTime dateTime) {
+    record EventRequest(@NotNull LocalDateTime dateTime) {
     }
 
     @Documented

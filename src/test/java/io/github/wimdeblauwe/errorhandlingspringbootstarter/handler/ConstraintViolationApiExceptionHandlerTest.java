@@ -2,7 +2,6 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
 
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import jakarta.validation.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -40,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
-@ContextConfiguration(classes = {ServletErrorHandlingConfiguration.class,
+@ContextConfiguration(classes = {
         ConstraintViolationApiExceptionHandlerTest.TestController.class,
         ConstraintViolationApiExceptionHandlerTest.TestParameterValidationController.class})
 @Import(ConstraintViolationApiExceptionHandlerTest.TestService.class)

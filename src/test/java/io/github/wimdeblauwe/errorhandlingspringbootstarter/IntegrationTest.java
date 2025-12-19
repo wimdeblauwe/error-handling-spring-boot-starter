@@ -2,7 +2,6 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.exception.MyCustomHttpResponseStatusException;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpResponseStatusFromExceptionMapper;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet.ServletErrorHandlingConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -24,7 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         properties = {"spring.main.allow-bean-definition-overriding=true",
                 "error.handling.full-stacktrace-http-statuses[0]=500"})
 @Import({
-    ServletErrorHandlingConfiguration.class,
     IntegrationTest.WebSecurityConfig.class,
     IntegrationTest.ResponseCustomizerConfiguration.class,
     IntegrationTest.CustomHttpResponseStatusFromExceptionMapper.class
