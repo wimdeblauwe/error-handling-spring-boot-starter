@@ -5,6 +5,7 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,6 +34,7 @@ public class ErrorHandlingControllerAdvice {
         ApiErrorResponse errorResponse = errorHandlingFacade.handle(exception);
 
         return ResponseEntity.status(Objects.requireNonNull(errorResponse.getHttpStatus()))
+                             .contentType(MediaType.APPLICATION_JSON)
                              .body(errorResponse);
     }
 }
