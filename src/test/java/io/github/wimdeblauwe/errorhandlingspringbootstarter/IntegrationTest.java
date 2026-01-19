@@ -2,6 +2,7 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.exception.MyCustomHttpResponseStatusException;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.HttpResponseStatusFromExceptionMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -9,16 +10,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.Instant;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(value = IntegrationTestRestController.class,
         properties = {"spring.main.allow-bean-definition-overriding=true",
@@ -53,6 +56,18 @@ public class IntegrationTest {
                .andExpect(jsonPath("instant").exists())
                .andExpect(jsonPath("currentApplication").value("test-app"))
         ;
+    }
+
+    @Test
+    void testSse() throws Exception {
+        MvcResult result = mockMvc.perform(get("/integration-test/sse")
+                                                      .accept(MediaType.TEXT_EVENT_STREAM))
+                                     .andExpect(request().asyncStarted())
+                                     .andReturn();
+
+        mockMvc.perform(asyncDispatch(result))
+               .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+               .andExpect(content().string(Matchers.containsString("Simulated SSE error")));
     }
 
     static class WebSecurityConfig {
