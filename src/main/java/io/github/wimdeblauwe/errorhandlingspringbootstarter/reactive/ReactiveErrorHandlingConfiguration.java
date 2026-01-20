@@ -65,17 +65,27 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
                                                                          ObjectProvider<ViewResolver> viewResolvers,
                                                                          ServerCodecConfigurer serverCodecConfigurer,
                                                                          ApplicationContext applicationContext,
-                                                                         ErrorHandlingFacade errorHandlingFacade) {
+                                                                         ErrorHandlingFacade errorHandlingFacade,
+                                                                         ErrorHandlingProperties errorHandlingProperties,
+                                                                         ProblemDetailFactory problemDetailFactory) {
 
         GlobalErrorWebExceptionHandler exceptionHandler = new GlobalErrorWebExceptionHandler(errorAttributes,
                                                                                              webProperties.getResources(),
                                                                                              webProperties.getError(),
                                                                                              applicationContext,
-                                                                                             errorHandlingFacade);
+                                                                                             errorHandlingFacade,
+                                                                                             errorHandlingProperties,
+                                                                                             problemDetailFactory);
         exceptionHandler.setViewResolvers(viewResolvers.orderedStream().collect(Collectors.toList()));
         exceptionHandler.setMessageWriters(serverCodecConfigurer.getWriters());
         exceptionHandler.setMessageReaders(serverCodecConfigurer.getReaders());
         return exceptionHandler;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ProblemDetailFactory responseEntityFactory(ErrorHandlingProperties errorHandlingProperties) {
+        return new ProblemDetailFactory(errorHandlingProperties);
     }
 
     @Bean

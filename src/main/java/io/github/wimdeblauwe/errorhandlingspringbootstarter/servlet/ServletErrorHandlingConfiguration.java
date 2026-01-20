@@ -39,8 +39,16 @@ public class ServletErrorHandlingConfiguration extends AbstractErrorHandlingConf
 
     @Bean
     @ConditionalOnMissingBean
-    public ErrorHandlingControllerAdvice errorHandlingControllerAdvice(ErrorHandlingFacade errorHandlingFacade) {
-        return new ErrorHandlingControllerAdvice(errorHandlingFacade);
+    public ErrorHandlingControllerAdvice errorHandlingControllerAdvice(ErrorHandlingFacade errorHandlingFacade,
+                                                                       ErrorHandlingProperties errorHandlingProperties,
+                                                                       ProblemDetailFactory problemDetailFactory) {
+        return new ErrorHandlingControllerAdvice(errorHandlingFacade, errorHandlingProperties, problemDetailFactory);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ProblemDetailFactory responseEntityFactory(ErrorHandlingProperties errorHandlingProperties) {
+        return new ProblemDetailFactory(errorHandlingProperties);
     }
 
     @Bean

@@ -2,6 +2,8 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingFacade;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ProblemDetailFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
@@ -21,14 +23,21 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
 
     private final ErrorHandlingFacade errorHandlingFacade;
+    private final ErrorHandlingProperties errorHandlingProperties;
+    private final ProblemDetailFactory problemDetailFactory;
+
 
     public GlobalErrorWebExceptionHandler(ErrorAttributes errorAttributes,
                                           WebProperties.Resources resources,
                                           ErrorProperties errorProperties,
                                           ApplicationContext applicationContext,
-                                          ErrorHandlingFacade errorHandlingFacade) {
+                                          ErrorHandlingFacade errorHandlingFacade,
+                                          ErrorHandlingProperties errorHandlingProperties,
+                                          ProblemDetailFactory problemDetailFactory) {
         super(errorAttributes, resources, errorProperties, applicationContext);
         this.errorHandlingFacade = errorHandlingFacade;
+        this.errorHandlingProperties = errorHandlingProperties;
+        this.problemDetailFactory = problemDetailFactory;
     }
 
     @Override
@@ -49,8 +58,14 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
 
         ApiErrorResponse errorResponse = errorHandlingFacade.handle(Objects.requireNonNull(exception));
 
-        return ServerResponse.status(Objects.requireNonNull(errorResponse.getHttpStatus()))
-                             .contentType(MediaType.APPLICATION_JSON)
-                             .body(BodyInserters.fromValue(errorResponse));
+        if (errorHandlingProperties.isUseProblemDetailFormat()) {
+            return ServerResponse.status(Objects.requireNonNull(errorResponse.getHttpStatus()))
+                                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                                 .body(BodyInserters.fromValue(problemDetailFactory.build(errorResponse)));
+        } else {
+            return ServerResponse.status(Objects.requireNonNull(errorResponse.getHttpStatus()))
+                                 .contentType(MediaType.APPLICATION_JSON)
+                                 .body(BodyInserters.fromValue(errorResponse));
+        }
     }
 }

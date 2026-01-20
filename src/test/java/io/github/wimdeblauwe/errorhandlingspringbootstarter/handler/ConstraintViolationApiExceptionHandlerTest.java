@@ -35,8 +35,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest
 @ContextConfiguration(classes = {
@@ -359,6 +358,30 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("fieldErrors", hasSize(1)))
                .andExpect(jsonPath("fieldErrors[0].property", equalTo("fieldAtLevel2")))
                .andExpect(jsonPath("fieldErrors[0].path").doesNotExist())
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void testConstraintViolationExceptionUsingProblemDetailFormat(@Autowired ErrorHandlingProperties properties) throws Exception {
+        properties.setUseProblemDetailFormat(true);
+        mockMvc.perform(post("/test/validation")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"value2\": \"\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+               .andExpect(jsonPath("title").value("Bad Request"))
+               .andExpect(jsonPath("type").value("validation-failed"))
+               .andExpect(jsonPath("detail").value("Validation failed. Error count: 3"))
+               .andExpect(jsonPath("fieldErrors", hasSize(2)))
+               .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
+               .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
+               .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
+               .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
+               .andExpect(jsonPath("globalErrors", hasSize(1)))
+               .andExpect(jsonPath("globalErrors..code", allOf(hasItem("ValuesEqual"))))
+               .andExpect(jsonPath("globalErrors..message", allOf(hasItem("Values not equal"))))
         ;
     }
 

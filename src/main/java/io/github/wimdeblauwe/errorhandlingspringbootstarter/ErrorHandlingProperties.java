@@ -41,6 +41,10 @@ public class ErrorHandlingProperties {
 
     private boolean handleFilterChainExceptions = false;
 
+    private boolean useProblemDetailFormat = false;
+
+    private String problemDetailTypePrefix = "";
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -151,6 +155,22 @@ public class ErrorHandlingProperties {
 
     public void setHandleFilterChainExceptions(boolean handleFilterChainExceptions) {
         this.handleFilterChainExceptions = handleFilterChainExceptions;
+    }
+
+    public boolean isUseProblemDetailFormat() {
+        return useProblemDetailFormat;
+    }
+
+    public void setUseProblemDetailFormat(boolean useProblemDetailFormat) {
+        this.useProblemDetailFormat = useProblemDetailFormat;
+    }
+
+    public String getProblemDetailTypePrefix() {
+        return problemDetailTypePrefix;
+    }
+
+    public void setProblemDetailTypePrefix(String problemDetailTypePrefix) {
+        this.problemDetailTypePrefix = problemDetailTypePrefix;
     }
 
     public enum ExceptionLogging {
