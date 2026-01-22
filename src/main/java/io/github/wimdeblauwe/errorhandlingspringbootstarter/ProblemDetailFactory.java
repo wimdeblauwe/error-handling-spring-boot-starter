@@ -29,8 +29,7 @@ public class ProblemDetailFactory {
         } catch (URISyntaxException ignored) {
         }
 
-        HashMap<String, Object> allProperties = new HashMap<>();
-        allProperties.putAll(errorResponse.getProperties());
+        HashMap<String, Object> allProperties = new HashMap<>(errorResponse.getProperties());
         List<ApiFieldError> fieldErrors = errorResponse.getFieldErrors();
         if (!fieldErrors.isEmpty()) {
             allProperties.put("fieldErrors", fieldErrors);
