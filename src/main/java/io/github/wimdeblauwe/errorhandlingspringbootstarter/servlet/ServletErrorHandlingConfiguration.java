@@ -1,6 +1,5 @@
 package io.github.wimdeblauwe.errorhandlingspringbootstarter.servlet;
 
-import tools.jackson.databind.ObjectMapper;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.MissingRequestValueExceptionHandler;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.mapper.ErrorCodeMapper;
@@ -16,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.Ordered;
+import tools.jackson.databind.ObjectMapper;
 
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -40,14 +40,24 @@ public class ServletErrorHandlingConfiguration extends AbstractErrorHandlingConf
     @Bean
     @ConditionalOnMissingBean
     public ErrorHandlingControllerAdvice errorHandlingControllerAdvice(ErrorHandlingFacade errorHandlingFacade,
-                                                                       ErrorHandlingProperties errorHandlingProperties,
-                                                                       ProblemDetailFactory problemDetailFactory) {
-        return new ErrorHandlingControllerAdvice(errorHandlingFacade, errorHandlingProperties, problemDetailFactory);
+                                                                       ServletResponseFactory responseEntityFactory) {
+        return new ErrorHandlingControllerAdvice(errorHandlingFacade, responseEntityFactory);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public ProblemDetailFactory responseEntityFactory(ErrorHandlingProperties errorHandlingProperties) {
+    public ServletResponseFactory responseEntityFactory(ErrorHandlingProperties properties,
+                                                        ProblemDetailFactory problemDetailFactory) {
+        if (properties.isUseProblemDetailFormat()) {
+            return new ServletProblemDetailResponseFactory(problemDetailFactory);
+        } else {
+            return new ServletDefaultResponseFactory();
+        }
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ProblemDetailFactory problemDetailFactory(ErrorHandlingProperties errorHandlingProperties) {
         return new ProblemDetailFactory(errorHandlingProperties);
     }
 

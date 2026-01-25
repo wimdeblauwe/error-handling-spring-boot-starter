@@ -4,8 +4,6 @@ import io.github.wimdeblauwe.errorhandlingspringbootstarter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import java.util.Locale;
-import java.util.Objects;
 
 @ControllerAdvice(annotations = RestController.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -21,13 +18,11 @@ public class ErrorHandlingControllerAdvice {
     private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlingControllerAdvice.class);
 
     private final ErrorHandlingFacade errorHandlingFacade;
-    private final ErrorHandlingProperties errorHandlingProperties;
-    private final ProblemDetailFactory problemDetailFactory;
+    private final ServletResponseFactory responseFactory;
 
-    public ErrorHandlingControllerAdvice(ErrorHandlingFacade errorHandlingFacade, ErrorHandlingProperties errorHandlingProperties, ProblemDetailFactory problemDetailFactory) {
+    public ErrorHandlingControllerAdvice(ErrorHandlingFacade errorHandlingFacade, ServletResponseFactory responseFactory) {
         this.errorHandlingFacade = errorHandlingFacade;
-        this.errorHandlingProperties = errorHandlingProperties;
-        this.problemDetailFactory = problemDetailFactory;
+        this.responseFactory = responseFactory;
     }
 
     @ExceptionHandler
@@ -37,15 +32,6 @@ public class ErrorHandlingControllerAdvice {
 
         ApiErrorResponse errorResponse = errorHandlingFacade.handle(exception);
 
-        if (errorHandlingProperties.isUseProblemDetailFormat()) {
-            ProblemDetail problemDetail = problemDetailFactory.build(errorResponse);
-            return ResponseEntity.status(Objects.requireNonNull(errorResponse.getHttpStatus()))
-                                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-                                 .body(problemDetail);
-        } else {
-            return ResponseEntity.status(Objects.requireNonNull(errorResponse.getHttpStatus()))
-                                 .contentType(MediaType.APPLICATION_JSON)
-                                 .body(errorResponse);
-        }
+        return responseFactory.create(errorResponse);
     }
 }

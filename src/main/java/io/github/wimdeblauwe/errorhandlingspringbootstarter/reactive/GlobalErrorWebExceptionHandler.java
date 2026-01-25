@@ -2,8 +2,6 @@ package io.github.wimdeblauwe.errorhandlingspringbootstarter.reactive;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingFacade;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ErrorHandlingProperties;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ProblemDetailFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
@@ -11,8 +9,6 @@ import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.webflux.autoconfigure.error.DefaultErrorWebExceptionHandler;
 import org.springframework.boot.webflux.error.ErrorAttributes;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.*;
 import reactor.core.publisher.Mono;
 
@@ -23,21 +19,17 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
 
     private final ErrorHandlingFacade errorHandlingFacade;
-    private final ErrorHandlingProperties errorHandlingProperties;
-    private final ProblemDetailFactory problemDetailFactory;
-
+    private final ReactiveResponseFactory responseFactory;
 
     public GlobalErrorWebExceptionHandler(ErrorAttributes errorAttributes,
                                           WebProperties.Resources resources,
                                           ErrorProperties errorProperties,
                                           ApplicationContext applicationContext,
                                           ErrorHandlingFacade errorHandlingFacade,
-                                          ErrorHandlingProperties errorHandlingProperties,
-                                          ProblemDetailFactory problemDetailFactory) {
+                                          ReactiveResponseFactory responseFactory) {
         super(errorAttributes, resources, errorProperties, applicationContext);
         this.errorHandlingFacade = errorHandlingFacade;
-        this.errorHandlingProperties = errorHandlingProperties;
-        this.problemDetailFactory = problemDetailFactory;
+        this.responseFactory = responseFactory;
     }
 
     @Override
@@ -58,14 +50,6 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
 
         ApiErrorResponse errorResponse = errorHandlingFacade.handle(Objects.requireNonNull(exception));
 
-        if (errorHandlingProperties.isUseProblemDetailFormat()) {
-            return ServerResponse.status(Objects.requireNonNull(errorResponse.getHttpStatus()))
-                                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-                                 .body(BodyInserters.fromValue(problemDetailFactory.build(errorResponse)));
-        } else {
-            return ServerResponse.status(Objects.requireNonNull(errorResponse.getHttpStatus()))
-                                 .contentType(MediaType.APPLICATION_JSON)
-                                 .body(BodyInserters.fromValue(errorResponse));
-        }
+        return responseFactory.create(errorResponse);
     }
 }
