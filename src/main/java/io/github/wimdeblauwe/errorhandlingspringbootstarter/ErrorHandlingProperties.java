@@ -45,6 +45,8 @@ public class ErrorHandlingProperties {
 
     private String problemDetailTypePrefix = "";
 
+    private boolean problemDetailConvertToKebabCase = true;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -171,6 +173,14 @@ public class ErrorHandlingProperties {
 
     public void setProblemDetailTypePrefix(String problemDetailTypePrefix) {
         this.problemDetailTypePrefix = problemDetailTypePrefix;
+    }
+
+    public boolean isProblemDetailConvertToKebabCase() {
+        return problemDetailConvertToKebabCase;
+    }
+
+    public void setProblemDetailConvertToKebabCase(boolean problemDetailConvertToKebabCase) {
+        this.problemDetailConvertToKebabCase = problemDetailConvertToKebabCase;
     }
 
     public enum ExceptionLogging {

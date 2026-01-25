@@ -44,6 +44,9 @@ public class ProblemDetailFactory {
     }
 
     private String toKebabCase(String input) {
+        if (!properties.isProblemDetailConvertToKebabCase()) {
+            return input;
+        }
         if (input.isEmpty()) {
             return input;
         }
