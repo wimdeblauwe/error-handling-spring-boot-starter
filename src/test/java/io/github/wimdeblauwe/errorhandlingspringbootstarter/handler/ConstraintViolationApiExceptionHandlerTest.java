@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -17,6 +18,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +37,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest
 @ContextConfiguration(classes = {
@@ -360,6 +361,33 @@ class ConstraintViolationApiExceptionHandlerTest {
                .andExpect(jsonPath("fieldErrors[0].property", equalTo("fieldAtLevel2")))
                .andExpect(jsonPath("fieldErrors[0].path").doesNotExist())
         ;
+    }
+
+    @Nested
+    @TestPropertySource(properties = "error.handling.use-problem-detail-format=true")
+    class ProblemDetailsFormatTests {
+        @Test
+        @WithMockUser
+        void testConstraintViolationExceptionUsingProblemDetailFormat() throws Exception {
+            mockMvc.perform(post("/test/validation")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content("{\"value2\": \"\"}")
+                                    .with(csrf()))
+                   .andExpect(status().isBadRequest())
+                   .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                   .andExpect(jsonPath("title").value("Bad Request"))
+                   .andExpect(jsonPath("type").value("validation-failed"))
+                   .andExpect(jsonPath("detail").value("Validation failed. Error count: 3"))
+                   .andExpect(jsonPath("fieldErrors", hasSize(2)))
+                   .andExpect(jsonPath("fieldErrors..code", allOf(hasItem("REQUIRED_NOT_NULL"), hasItem("INVALID_SIZE"))))
+                   .andExpect(jsonPath("fieldErrors..property", allOf(hasItem("value"), hasItem("value2"))))
+                   .andExpect(jsonPath("fieldErrors..message", allOf(hasItem("must not be null"), hasItem("size must be between 1 and 255"))))
+                   .andExpect(jsonPath("fieldErrors..rejectedValue", allOf(hasItem(Matchers.nullValue()), hasItem(""))))
+                   .andExpect(jsonPath("globalErrors", hasSize(1)))
+                   .andExpect(jsonPath("globalErrors..code", allOf(hasItem("ValuesEqual"))))
+                   .andExpect(jsonPath("globalErrors..message", allOf(hasItem("Values not equal"))))
+            ;
+        }
     }
 
     @RestController

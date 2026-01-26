@@ -1,0 +1,36 @@
+name: Publish versioned docs
+on:
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    name: "Build with ${{ matrix.java }}"
+    strategy:
+      matrix:
+        java: [ 17 ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup java ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: ./mvnw -B -ntp clean verify
+
+      - name: Set Release version env variable
+        run: |
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - name: GitHub Pages action (versioned dir)
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/generated-docs
+          destination_dir: ${{ env.RELEASE_VERSION }}
+          exclude_assets: 'img/banner-logo.svg,img/doc-background.svg,img/doc-background-dark.svg'

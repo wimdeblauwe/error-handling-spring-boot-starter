@@ -1295,6 +1295,28 @@ With this configuration, 400 Bad Request will be printed on DEBUG level.
 401 Unauthorized will be printed on INFO.
 Finally, all status code in the 5xx range will be printed on ERROR.
 
+==== Filter logging
+
+If you like to filter certain exceptions from being logged (while you still want the exception handling to happen), then you can declare a `@Bean` of type `io.github.wimdeblauwe.errorhandlingspringbootstarter.LoggingServiceFilter`:
+
+[source,java]
+----
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.LoggingServiceFilter;
+import org.springframework.stereotype.Component;
+
+@Component
+public class MyLoggingServiceFilter implements LoggingServiceFilter {
+    @Override
+    public boolean shouldLogException(ApiErrorResponse errorResponse,
+                                      Throwable exception) {
+        if( exception instanceof SomeException ) {
+            return false;
+        }
+        return true;
+    }
+}
+----
+
 === Spring Security
 
 ==== AuthenticationEntryPoint
@@ -1459,6 +1481,173 @@ Those are implementations of `jakarta.servlet.Filter`, usually subclasses of `or
 
 By setting the property `error.handling.handle-filter-chain-exceptions` to `true`, the library will handle those exceptions and return error responses just like is done for exceptions coming from controller methods.
 
+=== Problem Detail format (RFC 9457)
+
+The library supports the https://www.rfc-editor.org/rfc/rfc9457[RFC 9457] Problem Detail format as an alternative to the default JSON response format.
+When enabled, error responses will use the standardized Problem Detail structure and the `application/problem+json` content type.
+
+==== Enabling Problem Detail format
+
+To enable Problem Detail format, set the following property:
+
+[source,properties]
+----
+error.handling.use-problem-detail-format=true
+----
+
+==== Response format comparison
+
+When Problem Detail format is disabled (default), the response looks like this:
+
+[source,json]
+----
+{
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id 123"
+}
+----
+
+When Problem Detail format is enabled, the same error produces:
+
+[source,json]
+----
+{
+  "type": "user-not-found",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Could not find user with id 123"
+}
+----
+
+The Problem Detail format is built like this:
+
+[cols="1,1"]
+|===
+|Problem Detail field | Description
+
+|`type`
+|Value of the `code` field (converted to kebab-case by default)
+
+|`detail`
+|Value of the `message` field
+
+|`title`
+|The HTTP status text (This is coming from Spring itself)
+
+|`status`
+|The numeric HTTP status code
+|===
+
+==== Configuring the type prefix
+
+You can add a prefix to the `type` field to create fully qualified URIs.
+This is useful for providing documentation links for your error types:
+
+[source,properties]
+----
+error.handling.use-problem-detail-format=true
+error.handling.problem-detail-type-prefix=https://api.example.com/errors/
+----
+
+With this configuration, the response becomes:
+
+[source,json]
+----
+{
+  "type": "https://api.example.com/errors/user-not-found",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Could not find user with id 123"
+}
+----
+
+==== Disabling kebab-case conversion
+
+By default, error codes are converted to kebab-case for the `type` field (e.g., `USER_NOT_FOUND` becomes `user-not-found`).
+To preserve the original error code format, disable the conversion:
+
+[source,properties]
+----
+error.handling.use-problem-detail-format=true
+error.handling.problem-detail-convert-to-kebab-case=false
+----
+
+Result:
+
+[source,json]
+----
+{
+  "type": "USER_NOT_FOUND",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Could not find user with id 123"
+}
+----
+
+==== Validation errors with Problem Detail
+
+Validation errors include `fieldErrors` and `globalErrors` as additional properties in the Problem Detail response:
+
+[source,json]
+----
+{
+  "type": "validation-failed",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "Validation failed for object='exampleRequestBody'. Error count: 2",
+  "fieldErrors": [
+    {
+      "code": "INVALID_SIZE",
+      "property": "name",
+      "message": "size must be between 10 and 2147483647",
+      "rejectedValue": "",
+      "path": "name"
+    },
+    {
+      "code": "REQUIRED_NOT_BLANK",
+      "property": "favoriteMovie",
+      "message": "must not be blank",
+      "rejectedValue": null,
+      "path": "favoriteMovie"
+    }
+  ]
+}
+----
+
+==== Custom properties with Problem Detail
+
+Custom properties added via `@ResponseErrorProperty` are included in the Problem Detail response:
+
+[source,java]
+----
+@ResponseStatus(HttpStatus.CONFLICT)
+@ResponseErrorCode("OPTIMISTIC_LOCKING_ERROR")
+public class OptimisticLockingException extends RuntimeException {
+
+    @ResponseErrorProperty
+    private final String identifier;
+
+    @ResponseErrorProperty
+    private final String persistentClassName;
+
+    // constructor and getters
+}
+----
+
+With the type prefix configured, the response would be:
+
+[source,json]
+----
+{
+  "type": "https://api.example.com/errors/optimistic-locking-error",
+  "title": "Conflict",
+  "status": 409,
+  "detail": "Object of class [com.example.user.User] with identifier [1]: optimistic locking failed",
+  "identifier": "1",
+  "persistentClassName": "com.example.user.User"
+}
+----
+
 == Custom exception handler
 
 If the <<Configuration,extensive customization options>> are not enough, you can write your own `ApiExceptionHandler` implementation.
@@ -1585,7 +1774,19 @@ When this is set to `true`, you can use any superclass from your `Exception` typ
 
 |error.handling.handle-filter-chain-exceptions
 |Set this to `true` to have the library intercept any exception thrown from custom filters and also have the same error responses as exceptions thrown from controller methods.
-|`false`.
+|`false`
+
+|error.handling.use-problem-detail-format
+|Set this to `true` to use the https://www.rfc-editor.org/rfc/rfc9457[RFC 9457] Problem Detail format for error responses instead of the default format.
+|`false`
+
+|error.handling.problem-detail-type-prefix
+|The prefix to use for the `type` field in Problem Detail responses. This is typically a URL that serves as a namespace for the error types.
+|Empty string
+
+|error.handling.problem-detail-convert-to-kebab-case
+|When using Problem Detail format, this controls whether the error code is converted to kebab-case for the `type` field. For example, `USER_NOT_FOUND` would become `user-not-found`.
+|`true`
 |===
 
 == Adding Error Responses to OpenAPI Documentation

@@ -65,17 +65,36 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
                                                                          ObjectProvider<ViewResolver> viewResolvers,
                                                                          ServerCodecConfigurer serverCodecConfigurer,
                                                                          ApplicationContext applicationContext,
-                                                                         ErrorHandlingFacade errorHandlingFacade) {
+                                                                         ErrorHandlingFacade errorHandlingFacade,
+                                                                         ReactiveResponseFactory responseEntityFactory) {
 
         GlobalErrorWebExceptionHandler exceptionHandler = new GlobalErrorWebExceptionHandler(errorAttributes,
                                                                                              webProperties.getResources(),
                                                                                              webProperties.getError(),
                                                                                              applicationContext,
-                                                                                             errorHandlingFacade);
+                                                                                             errorHandlingFacade,
+                                                                                             responseEntityFactory
+        );
         exceptionHandler.setViewResolvers(viewResolvers.orderedStream().collect(Collectors.toList()));
         exceptionHandler.setMessageWriters(serverCodecConfigurer.getWriters());
         exceptionHandler.setMessageReaders(serverCodecConfigurer.getReaders());
         return exceptionHandler;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ReactiveResponseFactory responseEntityFactory(ErrorHandlingProperties errorHandlingProperties, ProblemDetailFactory problemDetailFactory) {
+        if (errorHandlingProperties.isUseProblemDetailFormat()) {
+            return new ReactiveProblemDetailResponseFactory(problemDetailFactory);
+        } else {
+            return new ReactiveDefaultResponseFactory();
+        }
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ProblemDetailFactory problemDetailFactory(ErrorHandlingProperties errorHandlingProperties) {
+        return new ProblemDetailFactory(errorHandlingProperties);
     }
 
     @Bean
