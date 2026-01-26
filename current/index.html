@@ -105,7 +105,11 @@
 </ul>
 </li>
 <li><a href="#custom-json-response-field-names">3.7. Custom JSON response field names</a></li>
-<li><a href="#logging">3.8. Logging</a></li>
+<li><a href="#logging">3.8. Logging</a>
+<ul class="sectlevel3">
+<li><a href="#filter-logging">3.8.1. Filter logging</a></li>
+</ul>
+</li>
 <li><a href="#spring-security">3.9. Spring Security</a>
 <ul class="sectlevel3">
 <li><a href="#authenticationentrypoint">3.9.1. AuthenticationEntryPoint</a></li>
@@ -114,6 +118,16 @@
 </li>
 <li><a href="#handle-non-rest-controller-exceptions">3.10. Handle non-rest controller exceptions</a></li>
 <li><a href="#handle-filter-exceptions">3.11. Handle filter exceptions</a></li>
+<li><a href="#problem-detail-format-rfc-9457">3.12. Problem Detail format (RFC 9457)</a>
+<ul class="sectlevel3">
+<li><a href="#enabling-problem-detail-format">3.12.1. Enabling Problem Detail format</a></li>
+<li><a href="#response-format-comparison">3.12.2. Response format comparison</a></li>
+<li><a href="#configuring-the-type-prefix">3.12.3. Configuring the type prefix</a></li>
+<li><a href="#disabling-kebab-case-conversion">3.12.4. Disabling kebab-case conversion</a></li>
+<li><a href="#validation-errors-with-problem-detail">3.12.5. Validation errors with Problem Detail</a></li>
+<li><a href="#custom-properties-with-problem-detail">3.12.6. Custom properties with Problem Detail</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#custom-exception-handler">4. Custom exception handler</a></li>
@@ -136,7 +150,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This documentation is for version 5.0.1.</p>
+<p>This documentation is for version 5.1.0.</p>
 </div>
 </div>
 </div>
@@ -1791,6 +1805,31 @@ error.handling.log-levels.5xx=ERROR</code></pre>
 401 Unauthorized will be printed on INFO.
 Finally, all status code in the 5xx range will be printed on ERROR.</p>
 </div>
+<div class="sect3">
+<h4 id="filter-logging"><a class="anchor" href="#filter-logging"></a>3.8.1. Filter logging</h4>
+<div class="paragraph">
+<p>If you like to filter certain exceptions from being logged (while you still want the exception handling to happen), then you can declare a <code>@Bean</code> of type <code>io.github.wimdeblauwe.errorhandlingspringbootstarter.LoggingServiceFilter</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="fold-block hide-when-folded">import io.github.wimdeblauwe.errorhandlingspringbootstarter.LoggingServiceFilter;
+import org.springframework.stereotype.Component;
+
+</span><span class="fold-block">@Component
+public class MyLoggingServiceFilter implements LoggingServiceFilter {
+    @Override
+    public boolean shouldLogException(ApiErrorResponse errorResponse,
+                                      Throwable exception) {
+        if( exception instanceof SomeException ) {
+            return false;
+        }
+        return true;
+    }
+}
+</span></code></pre>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="spring-security"><a class="anchor" href="#spring-security"></a>3.9. Spring Security</h3>
@@ -2007,6 +2046,206 @@ Those are implementations of <code>jakarta.servlet.Filter</code>, usually subcla
 </div>
 <div class="paragraph">
 <p>By setting the property <code>error.handling.handle-filter-chain-exceptions</code> to <code>true</code>, the library will handle those exceptions and return error responses just like is done for exceptions coming from controller methods.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="problem-detail-format-rfc-9457"><a class="anchor" href="#problem-detail-format-rfc-9457"></a>3.12. Problem Detail format (RFC 9457)</h3>
+<div class="paragraph">
+<p>The library supports the <a href="https://www.rfc-editor.org/rfc/rfc9457">RFC 9457</a> Problem Detail format as an alternative to the default JSON response format.
+When enabled, error responses will use the standardized Problem Detail structure and the <code>application/problem+json</code> content type.</p>
+</div>
+<div class="sect3">
+<h4 id="enabling-problem-detail-format"><a class="anchor" href="#enabling-problem-detail-format"></a>3.12.1. Enabling Problem Detail format</h4>
+<div class="paragraph">
+<p>To enable Problem Detail format, set the following property:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.use-problem-detail-format=true</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="response-format-comparison"><a class="anchor" href="#response-format-comparison"></a>3.12.2. Response format comparison</h4>
+<div class="paragraph">
+<p>When Problem Detail format is disabled (default), the response looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "code": "USER_NOT_FOUND",
+  "message": "Could not find user with id 123"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When Problem Detail format is enabled, the same error produces:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "type": "user-not-found",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Could not find user with id 123"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The Problem Detail format is built like this:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Problem Detail field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>type</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value of the <code>code</code> field (converted to kebab-case by default)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>detail</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value of the <code>message</code> field</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>title</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The HTTP status text (This is coming from Spring itself)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>status</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The numeric HTTP status code</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="configuring-the-type-prefix"><a class="anchor" href="#configuring-the-type-prefix"></a>3.12.3. Configuring the type prefix</h4>
+<div class="paragraph">
+<p>You can add a prefix to the <code>type</code> field to create fully qualified URIs.
+This is useful for providing documentation links for your error types:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.use-problem-detail-format=true
+error.handling.problem-detail-type-prefix=https://api.example.com/errors/</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this configuration, the response becomes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "type": "https://api.example.com/errors/user-not-found",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Could not find user with id 123"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="disabling-kebab-case-conversion"><a class="anchor" href="#disabling-kebab-case-conversion"></a>3.12.4. Disabling kebab-case conversion</h4>
+<div class="paragraph">
+<p>By default, error codes are converted to kebab-case for the <code>type</code> field (e.g., <code>USER_NOT_FOUND</code> becomes <code>user-not-found</code>).
+To preserve the original error code format, disable the conversion:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-properties" data-lang="properties">error.handling.use-problem-detail-format=true
+error.handling.problem-detail-convert-to-kebab-case=false</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Result:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "type": "USER_NOT_FOUND",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Could not find user with id 123"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="validation-errors-with-problem-detail"><a class="anchor" href="#validation-errors-with-problem-detail"></a>3.12.5. Validation errors with Problem Detail</h4>
+<div class="paragraph">
+<p>Validation errors include <code>fieldErrors</code> and <code>globalErrors</code> as additional properties in the Problem Detail response:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "type": "validation-failed",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "Validation failed for object='exampleRequestBody'. Error count: 2",
+  "fieldErrors": [
+    {
+      "code": "INVALID_SIZE",
+      "property": "name",
+      "message": "size must be between 10 and 2147483647",
+      "rejectedValue": "",
+      "path": "name"
+    },
+    {
+      "code": "REQUIRED_NOT_BLANK",
+      "property": "favoriteMovie",
+      "message": "must not be blank",
+      "rejectedValue": null,
+      "path": "favoriteMovie"
+    }
+  ]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="custom-properties-with-problem-detail"><a class="anchor" href="#custom-properties-with-problem-detail"></a>3.12.6. Custom properties with Problem Detail</h4>
+<div class="paragraph">
+<p>Custom properties added via <code>@ResponseErrorProperty</code> are included in the Problem Detail response:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">@ResponseStatus(HttpStatus.CONFLICT)
+@ResponseErrorCode("OPTIMISTIC_LOCKING_ERROR")
+public class OptimisticLockingException extends RuntimeException {
+
+    @ResponseErrorProperty
+    private final String identifier;
+
+    @ResponseErrorProperty
+    private final String persistentClassName;
+
+    // constructor and getters
+}
+</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With the type prefix configured, the response would be:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "type": "https://api.example.com/errors/optimistic-locking-error",
+  "title": "Conflict",
+  "status": 409,
+  "detail": "Object of class [com.example.user.User] with identifier [1]: optimistic locking failed",
+  "identifier": "1",
+  "persistentClassName": "com.example.user.User"
+}</code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -2326,7 +2565,34 @@ When this is set to <code>true</code>, you can use any superclass from your <cod
 <p>Set this to <code>true</code> to have the library intercept any exception thrown from custom filters and also have the same error responses as exceptions thrown from controller methods.</p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>false</code>.</p>
+<p><code>false</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.use-problem-detail-format</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Set this to <code>true</code> to use the <a href="https://www.rfc-editor.org/rfc/rfc9457">RFC 9457</a> Problem Detail format for error responses instead of the default format.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>false</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.problem-detail-type-prefix</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The prefix to use for the <code>type</code> field in Problem Detail responses. This is typically a URL that serves as a namespace for the error types.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Empty string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error.handling.problem-detail-convert-to-kebab-case</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>When using Problem Detail format, this controls whether the error code is converted to kebab-case for the <code>type</code> field. For example, <code>USER_NOT_FOUND</code> would become <code>user-not-found</code>.</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>true</code></p>
 </div></div></td>
 </tr>
 </tbody>
@@ -2390,7 +2656,7 @@ public ResponseEntity&lt;String&gt; getExample(@PathVariable String id) {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-12-19 14:45:03 UTC
+Last updated 2026-01-26 20:47:39 UTC
 </div>
 </div>
 </div>
