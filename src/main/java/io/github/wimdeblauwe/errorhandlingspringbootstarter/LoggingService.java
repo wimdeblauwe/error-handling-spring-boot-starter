@@ -11,12 +11,19 @@ import java.util.Objects;
 public class LoggingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingService.class);
     private final ErrorHandlingProperties properties;
+    private final LoggingServiceFilter loggingServiceFilter;
 
-    public LoggingService(ErrorHandlingProperties properties) {
+    public LoggingService(ErrorHandlingProperties properties,
+                          LoggingServiceFilter loggingServiceFilter) {
         this.properties = properties;
+        this.loggingServiceFilter = loggingServiceFilter;
     }
 
     public void logException(ApiErrorResponse errorResponse, Throwable exception) {
+        if(!loggingServiceFilter.shouldLogException(errorResponse, exception)) {
+            return;
+        }
+
         HttpStatusCode httpStatus = errorResponse.getHttpStatus();
         Objects.requireNonNull(httpStatus);
         if (properties.getFullStacktraceClasses().contains(exception.getClass())) {
