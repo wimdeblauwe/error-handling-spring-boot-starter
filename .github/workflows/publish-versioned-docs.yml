@@ -28,9 +28,6 @@ jobs:
           echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: GitHub Pages action (versioned dir)
-        if: |
-          github.ref == 'refs/heads/master' &&
-           matrix.java == 17
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
