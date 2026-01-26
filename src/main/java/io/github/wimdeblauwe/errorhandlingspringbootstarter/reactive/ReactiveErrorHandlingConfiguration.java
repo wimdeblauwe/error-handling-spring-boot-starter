@@ -25,7 +25,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.web.reactive.result.view.ViewResolver;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @AutoConfiguration
@@ -62,22 +61,41 @@ public class ReactiveErrorHandlingConfiguration extends AbstractErrorHandlingCon
     @ConditionalOnMissingBean
     @Order(-2)
     public GlobalErrorWebExceptionHandler globalErrorWebExceptionHandler(ErrorAttributes errorAttributes,
-                                                                   ServerProperties serverProperties,
-                                                                   WebProperties webProperties,
-                                                                   ObjectProvider<ViewResolver> viewResolvers,
-                                                                   ServerCodecConfigurer serverCodecConfigurer,
-                                                                   ApplicationContext applicationContext,
-                                                                         ErrorHandlingFacade errorHandlingFacade) {
+                                                                         ServerProperties serverProperties,
+                                                                         WebProperties webProperties,
+                                                                         ObjectProvider<ViewResolver> viewResolvers,
+                                                                         ServerCodecConfigurer serverCodecConfigurer,
+                                                                         ApplicationContext applicationContext,
+                                                                         ErrorHandlingFacade errorHandlingFacade,
+                                                                         ReactiveResponseFactory responseEntityFactory) {
 
         GlobalErrorWebExceptionHandler exceptionHandler = new GlobalErrorWebExceptionHandler(errorAttributes,
                                                                                              webProperties.getResources(),
                                                                                              serverProperties.getError(),
                                                                                              applicationContext,
-                                                                                             errorHandlingFacade);
+                                                                                             errorHandlingFacade,
+                                                                                             responseEntityFactory
+        );
         exceptionHandler.setViewResolvers(viewResolvers.orderedStream().collect(Collectors.toList()));
         exceptionHandler.setMessageWriters(serverCodecConfigurer.getWriters());
         exceptionHandler.setMessageReaders(serverCodecConfigurer.getReaders());
         return exceptionHandler;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ReactiveResponseFactory responseEntityFactory(ErrorHandlingProperties errorHandlingProperties, ProblemDetailFactory problemDetailFactory) {
+        if (errorHandlingProperties.isUseProblemDetailFormat()) {
+            return new ReactiveProblemDetailResponseFactory(problemDetailFactory);
+        } else {
+            return new ReactiveDefaultResponseFactory();
+        }
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ProblemDetailFactory problemDetailFactory(ErrorHandlingProperties errorHandlingProperties) {
+        return new ProblemDetailFactory(errorHandlingProperties);
     }
 
     @Bean

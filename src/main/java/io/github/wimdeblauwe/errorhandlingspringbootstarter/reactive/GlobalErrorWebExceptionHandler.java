@@ -11,8 +11,6 @@ import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.DefaultErrorWebExceptionHandler;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.*;
 import reactor.core.publisher.Mono;
 
@@ -22,14 +20,17 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
 
     private final ErrorHandlingFacade errorHandlingFacade;
+    private final ReactiveResponseFactory responseFactory;
 
     public GlobalErrorWebExceptionHandler(ErrorAttributes errorAttributes,
                                           WebProperties.Resources resources,
                                           ErrorProperties errorProperties,
                                           ApplicationContext applicationContext,
-                                          ErrorHandlingFacade errorHandlingFacade) {
+                                          ErrorHandlingFacade errorHandlingFacade,
+                                          ReactiveResponseFactory responseFactory) {
         super(errorAttributes, resources, errorProperties, applicationContext);
         this.errorHandlingFacade = errorHandlingFacade;
+        this.responseFactory = responseFactory;
     }
 
     @Override
@@ -50,8 +51,6 @@ public class GlobalErrorWebExceptionHandler extends DefaultErrorWebExceptionHand
 
         ApiErrorResponse errorResponse = errorHandlingFacade.handle(exception);
 
-        return ServerResponse.status(errorResponse.getHttpStatus())
-                             .contentType(MediaType.APPLICATION_JSON)
-                             .body(BodyInserters.fromValue(errorResponse));
+        return responseFactory.create(errorResponse);
     }
 }
