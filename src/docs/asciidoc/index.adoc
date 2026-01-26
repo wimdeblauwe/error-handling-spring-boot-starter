@@ -1295,6 +1295,28 @@ With this configuration, 400 Bad Request will be printed on DEBUG level.
 401 Unauthorized will be printed on INFO.
 Finally, all status code in the 5xx range will be printed on ERROR.
 
+==== Filter logging
+
+If you like to filter certain exceptions from being logged (while you still want the exception handling to happen), then you can declare a `@Bean` of type `io.github.wimdeblauwe.errorhandlingspringbootstarter.LoggingServiceFilter`:
+
+[source,java]
+----
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.LoggingServiceFilter;
+import org.springframework.stereotype.Component;
+
+@Component
+public class MyLoggingServiceFilter implements LoggingServiceFilter {
+    @Override
+    public boolean shouldLogException(ApiErrorResponse errorResponse,
+                                      Throwable exception) {
+        if( exception instanceof SomeException ) {
+            return false;
+        }
+        return true;
+    }
+}
+----
+
 === Spring Security
 
 ==== AuthenticationEntryPoint

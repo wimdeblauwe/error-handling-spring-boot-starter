@@ -33,8 +33,15 @@ public abstract class AbstractErrorHandlingConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public LoggingService loggingService(ErrorHandlingProperties properties) {
-        return new LoggingService(properties);
+    public LoggingService loggingService(ErrorHandlingProperties properties,
+                                         LoggingServiceFilter loggingServiceFilter) {
+        return new LoggingService(properties, loggingServiceFilter);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public LoggingServiceFilter loggingServiceFilter() {
+        return new AlwaysLogLoggingServiceFilter();
     }
 
     @Bean
