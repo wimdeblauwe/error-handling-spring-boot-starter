@@ -43,6 +43,11 @@ NOTE: Documentation is very important to us, so if you find something missing fr
 |17
 |https://wimdeblauwe.github.io/error-handling-spring-boot-starter/5.0.1/[Documentation 5.0.1]
 
+|https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/4.7.0[4.7.0]
+|3.5.x
+|17
+|https://wimdeblauwe.github.io/error-handling-spring-boot-starter/4.7.0/[Documentation 4.7.0]
+
 |https://github.com/wimdeblauwe/error-handling-spring-boot-starter/releases/tag/4.6.0[4.6.0]
 |3.3.x, 3.4.x, 3.5.x
 |17
