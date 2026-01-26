@@ -8,12 +8,19 @@ import org.springframework.http.HttpStatusCode;
 public class LoggingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingService.class);
     private final ErrorHandlingProperties properties;
+    private final LoggingServiceFilter loggingServiceFilter;
 
-    public LoggingService(ErrorHandlingProperties properties) {
+    public LoggingService(ErrorHandlingProperties properties,
+                          LoggingServiceFilter loggingServiceFilter) {
         this.properties = properties;
+        this.loggingServiceFilter = loggingServiceFilter;
     }
 
     public void logException(ApiErrorResponse errorResponse, Throwable exception) {
+        if(!loggingServiceFilter.shouldLogException(errorResponse, exception)) {
+            return;
+        }
+
         HttpStatusCode httpStatus = errorResponse.getHttpStatus();
         if (properties.getFullStacktraceClasses().contains(exception.getClass())) {
             logAccordingToRequestedLogLevel(httpStatus, exception, true);
