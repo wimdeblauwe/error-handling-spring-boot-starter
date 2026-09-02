@@ -14,6 +14,8 @@ image:https://github.com/wimdeblauwe/error-handling-spring-boot-starter/actions/
 
 image:https://img.shields.io/maven-central/v/io.github.wimdeblauwe/error-handling-spring-boot-starter[Maven Central Version]
 
+📕 Want to write production-ready Spring Boot starters like this one? Read https://www.wimdeblauwe.com/books/crafting-spring-boot-starters/[Crafting Spring Boot Starters].
+
 toc::[]
 
 == Goal
