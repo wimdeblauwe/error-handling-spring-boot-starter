@@ -12,7 +12,7 @@ endif::[]
 
 image:https://github.com/wimdeblauwe/error-handling-spring-boot-starter/actions/workflows/build.yml/badge.svg[]
 
-image:https://maven-badges.herokuapp.com/maven-central/io.github.wimdeblauwe/error-handling-spring-boot-starter/badge.svg["Maven Central",link="https://search.maven.org/search?q=a:error-handling-spring-boot-starter"]
+image:https://img.shields.io/maven-central/v/io.github.wimdeblauwe/error-handling-spring-boot-starter[Maven Central Version]
 
 toc::[]
 
