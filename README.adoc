@@ -16,8 +16,6 @@ image:https://img.shields.io/maven-central/v/io.github.wimdeblauwe/error-handlin
 
 📕 Want to write production-ready Spring Boot starters like this one? Read https://www.wimdeblauwe.com/books/crafting-spring-boot-starters/[Crafting Spring Boot Starters].
 
-toc::[]
-
 == Goal
 
 The goal of the project is to make it easy to have proper and consistent error responses for REST APIs build with Spring Boot.
