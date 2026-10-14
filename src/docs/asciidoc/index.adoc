@@ -12,9 +12,6 @@ Wim Deblauwe
 :hide-uri-scheme:
 :docinfo: shared,private
 
-:include: ../../main/java/io/github/wimdeblauwe/errorhandlingspringbootstarter
-:include-test: ../../test/java/io/github/wimdeblauwe/errorhandlingspringbootstarter
-
 This documentation is for version {project-version}.
 
 == Goal
@@ -1656,7 +1653,29 @@ The contract that you need to implement is defined in the `io.github.wimdeblauwe
 
 [source,java]
 ----
-include::{include}/ApiExceptionHandler.java[]
+package io.github.wimdeblauwe.errorhandlingspringbootstarter;
+
+public interface ApiExceptionHandler {
+    /**
+     * Determine if this {@link ApiExceptionHandler} can handle the given {@link Throwable}.
+     * It is guaranteed that this method is called first, and the {@link #handle(Throwable)} method
+     * will only be called if this method returns <code>true</code>.
+     *
+     * @param exception the Throwable that needs to be handled
+     * @return true if this handler can handle the Throwable, false otherwise.
+     */
+    boolean canHandle(Throwable exception);
+
+    /**
+     * Handle the given {@link Throwable} and return an {@link ApiErrorResponse} instance
+     * that will be serialized to JSON and returned from the controller method that has
+     * thrown the Throwable.
+     *
+     * @param exception the Throwable that needs to be handled
+     * @return the non-null ApiErrorResponse
+     */
+    ApiErrorResponse handle(Throwable exception);
+}
 ----
 
 NOTE: There is also the `io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.AbstractApiExceptionHandler` implementation that you can use as a base class.
@@ -1667,7 +1686,42 @@ The implementation could look something like this:
 
 [source,java]
 ----
-include::{include-test}/handler/CustomExceptionApiExceptionHandler.java[]
+package io.github.wimdeblauwe.errorhandlingspringbootstarter.handler;
+
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiErrorResponse;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ApiExceptionHandler;
+import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+@Component //<.>
+public class CustomExceptionApiExceptionHandler implements ApiExceptionHandler { //<.>
+    @Override
+    public boolean canHandle(Throwable exception) {
+        return exception instanceof CustomException; //<.>
+    }
+
+    @Override
+    public ApiErrorResponse handle(Throwable exception) {
+        CustomException customException = (CustomException) exception;
+
+        ApiErrorResponse response = new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, //<.>
+                                                         "MY_CUSTOM_EXCEPTION",
+                                                         Objects.requireNonNull(exception.getMessage()));
+        Throwable cause = customException.getCause();
+        Objects.requireNonNull(cause);
+        Map<String, Object> nestedCause = new HashMap<>();
+        nestedCause.put("code", "CAUSE");
+        nestedCause.put("message", Objects.requireNonNull(cause.getMessage()));
+        response.addErrorProperty("cause", nestedCause); //<.>
+
+        return response;
+    }
+}
 ----
 
 <.> Ensure your custom handler is added to the Spring context.
