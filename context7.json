@@ -1,0 +1,18 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Error Handling Spring Boot Starter",
+  "description": "Spring Boot starter that provides opinionated, consistent and configurable JSON error responses for REST APIs.",
+  "folders": ["src/docs"],
+  "excludeFolders": ["src/main", "src/test", "target", ".github", ".mvn"],
+  "rules": [
+    "Add the io.github.wimdeblauwe:error-handling-spring-boot-starter dependency; no extra configuration is needed to get started.",
+    "Configure behaviour with the error.handling.* properties in application.properties before writing custom code.",
+    "Use @ResponseErrorCode, @ResponseStatus and @ResponseErrorProperty on custom exceptions to control the error response.",
+    "Implement ApiExceptionHandler (or extend AbstractApiExceptionHandler) as a Spring bean only when properties and annotations are not sufficient.",
+    "Use ApiErrorResponseCustomizer to add properties to every error response."
+  ],
+  "previousVersions": [
+    { "tag": "5.1.1" },
+    { "tag": "4.7.0" }
+  ]
+}
